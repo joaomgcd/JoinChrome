@@ -134,13 +134,9 @@ addEventListener("unload", function (event) {
     back.dispatch("popupunloaded");
 }, true);
 var settingsElement = document.getElementById("settings");
-var keyboardSettingsElement = document.getElementById("keyboardsettings");
 var topBarPopoutElement = document.getElementById("topBarPopout");
 settingsElement.onclick = function(){
     openTab(OPTIONS_URL);
-}
-keyboardSettingsElement.onclick=function(){
-    openTab("chrome://extensions/configureCommands");
 }
 topBarPopoutElement.onclick = function(){
     back.createPushClipboardWindow(localStorage.selectedTab);
