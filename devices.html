@@ -20,16 +20,8 @@
 		a{
 			color: #FF9800;
 		}
-		 .devicesbody{
-            width: 440px;
-        }
-		.notificationsbody{
+		body {
 			width: 440px;
-
-		}
-		.smsbody{
-			width: 440px;
-
 		}
 		#tabsplaceholder{
 			text-align: center;
@@ -229,7 +221,8 @@
 			height:100%;
 		}
 		#tools{			
-			margin-right: 10px;
+			position: relative;
+			margin-right: 8px;
 		}
 		#currenttabtitle{
 			padding-left: 10px;
@@ -247,7 +240,6 @@
 			align-self: center;
     		opacity: 0.6;
     		height: 100%;
-    		/*border-bottom: #FF9800 5px solid;*/
 		}
 		.tabIcon{
 		  	cursor: pointer;
@@ -259,9 +251,14 @@
 		    color: white;
 		    height:100%;
 		}
+		#tools .tab{
+			display: inline;
+			padding:0;
+			opacity: 1;
+		}
 		img.tabIcon{
-			width: 30px;
-			margin-right: 0px;
+			width: 40px;
+			padding: 8px;
 		}
 		.selected{
     		opacity: 1;
@@ -277,12 +274,6 @@
 		#topBarText {
 		  flex-grow: 1;
     		text-align: center;
-		}
-		#topBarRefresh {
-		  flex-grow: 0;
-		}
-		#settings {
-		  flex-grow: 0;
 		}
 		.rotating{			
   		  animation: rotating 0.5s linear infinite;
@@ -487,10 +478,10 @@
 			<div id="tab-sms" class="tab"><div class="tabIcon">SMS</div></div>
 			<div id="tab-devices" class="tab"><div class="tabIcon">Devices</div></div>
 		</div>
-		<div id="tools">
-			<img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" />
-			<img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/>
-			<img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" />
+		<div id="tools" class="tabselement">
+			<div id="tab-refresh" class="tab"><img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" /></div>
+			<div id="tab-settings" class="tab"><img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/></div>
+			<div id="tab-popout" class="tab"><img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" /></div>
 		</div>
 	</div>
 	<div id="currenttabtitle" class="tabselement"></div>
