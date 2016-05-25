@@ -218,9 +218,12 @@
 			font-size: medium;
 		}
 		#tabscontainer{
+			height:54px;
 		}
 		#tabs {
 			flex-grow: 1;
+			position:relative;
+			height:100%;
 		}
 		#tools{			
 			margin-right: 10px;
@@ -239,18 +242,24 @@
 			margin-bottom: 3px;
 		}
 		.tab{
-			cursor: pointer; cursor: hand;
+			cursor: pointer; 
+			cursor: hand;
+			padding-left: 12px;
+			padding-right: 12px;
 			align-self: center;
     		opacity: 0.6;
+    		height: 100%;
+    		/*border-bottom: #FF9800 5px solid;*/
 		}
 		.tabIcon{
-			margin-top: 5px;
-			margin-left: 5px;
-			margin-right: 5px;
 		  	cursor: pointer;
+		  	display: flex;
+		  	flex-direction: column;
+		  	justify-content: center;
 		  	font-family: 'Roboto', sans-serif;
 		    font-weight: bold;
 		    color: white;
+		    height:100%;
 		}
 		img.tabIcon{
 			width: 30px;
@@ -258,8 +267,7 @@
 		}
 		.selected{
     		opacity: 1;
-    		-webkit-filter: drop-shadow(0px 0px 3px rgba(255, 255, 255, 1));
-    		border-bottom: white 5px solid;
+    		box-shadow: 0px -6px 0px white inset;
 		}
 		#usericon {    
 			border-radius: 50%;
@@ -478,15 +486,14 @@
 	<div id="tabscontaineroutter">
 		<div id="tabscontainer" class="tabselement">
 			<div id="tabs"  class="tabselement">
-				<div id="tab-devices" class="tab"><div class="tabIcon">Devices</div></div>
 				<div id="tab-notifications" class="tab"><div class="tabIcon">Notifications</div></div>
 				<div id="tab-sms" class="tab"><div class="tabIcon">SMS</div></div>
+				<div id="tab-devices" class="tab"><div class="tabIcon">Devices</div></div>
 			</div>
 			<div id="tools">
 				<img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" />
-				<img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" />
-				<img class="tabIcon" src="icons/keyboard.png" id="keyboardsettings"  title="Keyboard Shortcuts" />
 				<img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/>
+				<img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" />
 			</div>
 		</div>
 		<div id="currenttabtitle" class="tabselement"></div>
