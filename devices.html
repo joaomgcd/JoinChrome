@@ -218,7 +218,10 @@
 			font-size: medium;
 		}
 		#tabscontainer{
+			position: relative;
+			z-index:100;
 			height:54px;
+			box-shadow: 0px -1px 6px black;
 		}
 		#tabs {
 			flex-grow: 1;
@@ -235,11 +238,6 @@
     		font-weight: bold;
     		color: white;
 			display: none;
-		}
-		#shadow{
-			background: linear-gradient(#dddddd,rgba(255,0,0,0) );
-    		height: 5px;
-			margin-bottom: 3px;
 		}
 		.tab{
 			cursor: pointer; 
@@ -483,22 +481,19 @@
 		<img id="usericon" />
 		<div id="topBarText"><b>Check the <a id="optionslink" href="#">options</a> for keyboard shortcuts and more</b></div>
 	</div>
-	<div id="tabscontaineroutter">
-		<div id="tabscontainer" class="tabselement">
-			<div id="tabs"  class="tabselement">
-				<div id="tab-notifications" class="tab"><div class="tabIcon">Notifications</div></div>
-				<div id="tab-sms" class="tab"><div class="tabIcon">SMS</div></div>
-				<div id="tab-devices" class="tab"><div class="tabIcon">Devices</div></div>
-			</div>
-			<div id="tools">
-				<img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" />
-				<img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/>
-				<img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" />
-			</div>
+	<div id="tabscontainer" class="tabselement">
+		<div id="tabs"  class="tabselement">
+			<div id="tab-notifications" class="tab"><div class="tabIcon">Notifications</div></div>
+			<div id="tab-sms" class="tab"><div class="tabIcon">SMS</div></div>
+			<div id="tab-devices" class="tab"><div class="tabIcon">Devices</div></div>
 		</div>
-		<div id="currenttabtitle" class="tabselement"></div>
-		<div id="shadow"></div>
+		<div id="tools">
+			<img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" />
+			<img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/>
+			<img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" />
+		</div>
 	</div>
+	<div id="currenttabtitle" class="tabselement"></div>
 	<div id="devices"></div>
 	<div id="notifications"></div>
 	<div id="sms">
