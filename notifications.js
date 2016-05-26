@@ -48,8 +48,13 @@ var writeNotifications = function(){
 
     var clearNotificationsFAB = createElement(notificationsElement, "div", "clearAllNotificationButton",{"class":"fixed-action-btn"});
     var clearNotificationsLink = createElement(clearNotificationsFAB, "a", null, {"class":"btn-floating btn-large"});
-    // clearNotificationsLink.setAttribute('class', 'btn-floating btn-large');
-    // clearNotificationsFAB.appendChild(clearNotificationsLink);
+    var clearNotificationsIcon = createElement(clearNotificationsLink, "img", "clearAllNotificationButtonIcon", {"src":"icons/clear_all.png"});
+    clearNotificationsFAB.onclick = function(){           
+        var gcmNotificationClear = new back.GCMNotificationClear();
+        gcmNotificationClear.clearAll();
+        back.resetNotifications();
+        writeNotifications();
+    }
 
     for (var i = 0; i < notifications.length; i++) {
         var not = notifications[i];
