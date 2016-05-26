@@ -206,8 +206,8 @@ var ContactMessagesGetter = function(deviceId, contact){
 				setRefreshing(false);	
 				return;
 			}
-			console.log("Got sms messages info");
-			console.log(messages);
+			// console.log("Got sms messages info");
+			// console.log(messages);
 			me.messages = messages;
 			if(me.messages.smses){
 				me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
@@ -262,8 +262,8 @@ var SmsApp = function(){
 	var deviceIdFromUrl = getURLParameter("deviceId");
 	var numberFromUrl = getURLParameter("number");
 	var textFromUrl = getURLParameter("text");
-	console.log("Checking URL for params");
-	console.log(deviceIdFromUrl + ";"+numberFromUrl);
+	// console.log("Checking URL for params");
+	// console.log(deviceIdFromUrl + ";"+numberFromUrl);
 	this.deviceId = deviceIdFromUrl ? deviceIdFromUrl : localStorage.smsDeviceId;
 	me.contact = numberFromUrl ? {"number":numberFromUrl,"name":getURLParameter("name")} : (localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null);
 	this.number = null;
@@ -387,9 +387,6 @@ var SmsApp = function(){
 		me.number = number;
 		setPlaceholderText("Getting Messages for "+ name +"...");
 		var title = name;
-		// if(name != number){
-		// 	title += " (" + number + ")";
-		// }
 		setTitleText(title);
 		showTitle(true);
 		showInput(true);
@@ -409,6 +406,7 @@ var SmsApp = function(){
 	        	var sms = smses[i];
 	        	var smsMessageContainerElement = smsMessageHtml.cloneNode(true);
 				smsMessageContainerElement.sms = sms;
+				console.log(smsMessageContainerElement);
 				var triangleElement = smsMessageContainerElement.querySelector("#smsbubbletriangle");
 				var triangleElementReceived = smsMessageContainerElement.querySelector("#smsbubbletrianglereceived");
 				var smsMessageElement = smsMessageContainerElement.querySelector("#smsmessage");

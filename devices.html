@@ -313,48 +313,55 @@
 			background-color: #FF9800;
 			font-weight: bold;
 		    font-size: large;
+		    margin: 1em 1em 1em 1em;
 		    padding: 8px;
 			cursor: pointer;
 			z-index:80;
 		}
-		#smstitlecontainer.card {
-			margin-left: 0.5em;
-		}
 		#smstitlecontainer.hidden{
 			display: none;			
-		}
-		#smstitlecontainer.inpopup{
-		    margin-top: 0px;
 		}
 		#smstitle{			
     		margin-left: 8px;
 		}
 		#smssendcontainer{	    
+			margin: 0;
+			padding: 8px;
+			background-color: #F0F0F0;
+			/*box-shadow: 0px 1px 5px gray;*/
 			display: flex;
     		align-items: center;		
+    		z-index: 60;
 		}
 		#smssendcontainer.hidden{
 			display: none;			
 		}
 		#smssend {
-		    font-size: 35px;
+			display: flex;
+			flex-direction: column;
+			padding: 1px;
 		    cursor: pointer;
 		}
 		#smsinput{			
-    		margin-bottom: 0px;
-    		margin-left: 8px;
-    		height: 16px;
+			background-color: white;
+			margin: 8px;
+			padding: 0px 8px 0px 8px;
+			border: none;
+			box-shadow: none;
+    		border-radius: 4px;
 		}
 		#smscontainer{
 		    display: flex;
 			flex-direction: column;			
 		    overflow-y: scroll;
 		    height: 100%;
+		    background-color: #F0F0F0;
 		}
 		.smscontact{
-		    padding: 18px;
-		    margin-bottom: 24px;
+			box-sizing: initial;
+		    padding: 12px 16px 8px 16px;
     		cursor: pointer;
+    		background-color: white;
 		}
 		.smscontactname{
 		    font-size: medium;
@@ -362,6 +369,7 @@
 		}
 		.smstextanddate {
 		    display: flex;
+		    justify-content: space-between;
 		    font-size: small;
 		}
 		.smscontacttext{
@@ -379,15 +387,15 @@
 		}
 		.smsmessagecontainer{
 		    display: block;
-		    margin: 8px;
+		    z-index:50;
+		    margin: 8px 0px 8px 0px;
 		}
 		.smsmessage {    
-			padding: 8px;
-		    background-color: #FFE0B2;
+			padding: 12px 16px 12px 16px;
+		    background-color: white;
 		    display: flex;
 		    flex-direction: column;
 		    position: relative;
-		    //border: 1px solid aliceblue;
 		    border-radius: 4px;
 		    margin-left: 100px;
 		    font-weight: 500;
@@ -395,27 +403,26 @@
     		margin-right: 16px;
 		}
 		.smsmessage.received{	
-		    background-color: #f1f4f7;
+		    background-color: #FFE0B2;
 		    margin-right: 100px;
 		    margin-left: 16px;
 		}
 		.smsbubbletriangle{
-		    color: #FFE0B2;
+		    color: white;
 		    position: relative;
 		    font-size: xx-large;    
-		    top: -6px;
-		    right: 0px;	
+		    float: right;
+		    top: -16px;
+		    right: 6px;	
 		    text-align: end;
-		    z-index: -1000;
-		    height: 0px;
 		}
 		.smsbubbletrianglereceived{		    
-			color: #f1f4f7;
+			color: #FFE0B2;
 		    position: relative;
 		    font-size: xx-large;   
-		    top: -6px;
-		    z-index: -1000;
-		    height: 0px;
+		    float: left;
+		    left: 6px;
+		    top: -16px;
 		}
 		.smsmessagetext {
 		    font-size: medium;		    
