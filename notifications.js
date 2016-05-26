@@ -36,15 +36,21 @@ var writeNotifications = function(){
     }else{
         //document.title = notifications.length + " Notifications";
     }
-    if(notifications.length>=1){
-        var imageClearNotifications = createElement(notificationsElement,"img","clearallnotifications",{"src":"icons/clear.png"});
-        imageClearNotifications.onclick = function(){           
-            var gcmNotificationClear = new back.GCMNotificationClear();
-            gcmNotificationClear.clearAll();
-            back.resetNotifications();
-            writeNotifications();
-        }
-    }
+    // if(notifications.length>=1){
+    //     var imageClearNotifications = createElement(notificationsElement,"img","clearallnotifications",{"src":"icons/clear.png"});
+    //     imageClearNotifications.onclick = function(){           
+    //         var gcmNotificationClear = new back.GCMNotificationClear();
+    //         gcmNotificationClear.clearAll();
+    //         back.resetNotifications();
+    //         writeNotifications();
+    //     }
+    // }
+
+    var clearNotificationsFAB = createElement(notificationsElement, "div", "clearAllNotificationButton",{"class":"fixed-action-btn"});
+    var clearNotificationsLink = createElement(clearNotificationsFAB, "a", null, {"class":"btn-floating btn-large"});
+    // clearNotificationsLink.setAttribute('class', 'btn-floating btn-large');
+    // clearNotificationsFAB.appendChild(clearNotificationsLink);
+
     for (var i = 0; i < notifications.length; i++) {
         var not = notifications[i];
         var notificationElement = not.notificationElement;

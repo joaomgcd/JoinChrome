@@ -251,7 +251,9 @@ var getURLParameter = function(name,url) {
 }
 var createElement = function(parent, tag, id, attributes) {
     var el = document.createElement(tag);
-    el.setAttribute('id', id);
+    if (id!=null) {
+        el.setAttribute('id', id);
+    }
     if (attributes !== undefined) {
         for (attribute in attributes) {
             var attributeName = attribute;
