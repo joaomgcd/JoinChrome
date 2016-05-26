@@ -126,11 +126,11 @@ var writeNotifications = function(){
                     var button = not.buttons[e];
                     var buttonElement = notificationButtonHtml.cloneNode(true);
                     var buttonTextElement = buttonElement.querySelector("#text");
-                    var buttonIconElement = buttonElement.querySelector("#icon");
-                    if(!button.icon){
-                        button.icon = not.appIcon;
-                    }
-                    pushIconToDownloadIfNeeded(buttonIconElement,button.icon);
+                    // var buttonIconElement = buttonElement.querySelector("#icon");
+                    // if(!button.icon){
+                    //     button.icon = not.appIcon;
+                    // }
+                    // pushIconToDownloadIfNeeded(buttonIconElement,button.icon);
                     buttonTextElement.innerHTML = button.text;
                     buttonElement.id = button.actionId;
                     buttonsElement.appendChild(buttonElement);
@@ -142,9 +142,9 @@ var writeNotifications = function(){
                 buttonsElement.style.display = "flex";
                 var buttonElement = notificationButtonHtml.cloneNode(true);
                 var buttonTextElement = buttonElement.querySelector("#text");
-                var buttonIconElement = buttonElement.querySelector("#icon");
-                buttonTextElement.innerHTML = "Reply Directly";
-                buttonIconElement.src = "icons/reply.png"
+                // var buttonIconElement = buttonElement.querySelector("#icon");
+                buttonTextElement.innerHTML = "Reply";
+                // buttonIconElement.src = "icons/reply.png"
                 buttonElement.id = not.replyId;
                 buttonsElement.appendChild(buttonElement);
             }
