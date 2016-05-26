@@ -396,7 +396,6 @@ var SmsApp = function(){
 		showContactFind(false);
 		
 		smsInputElement.placeholder = "Send message to " + number;
-		console.log(smsInputElement);
 		smsInputElement.focus();
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
 		contactMessagesGetter.getInfo(function(contactMessages){

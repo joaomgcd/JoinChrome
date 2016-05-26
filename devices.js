@@ -145,7 +145,7 @@ topBarPopoutElement.onclick = function(){
 var onlyTabToShow = getURLParameter("tab");
 if(onlyTabToShow){
     selectTab(onlyTabToShow);
-    document.getElementById("tabscontaineroutter").style.display ="none";
+    // document.getElementById("tabscontaineroutter").style.display ="none";
 }else{
     if(localStorage.selectedTab){
         selectTab(localStorage.selectedTab);
