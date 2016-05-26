@@ -387,14 +387,16 @@ var SmsApp = function(){
 		me.number = number;
 		setPlaceholderText("Getting Messages for "+ name +"...");
 		var title = name;
-		if(name != number){
-			title += " (" + number + ")";
-		}
+		// if(name != number){
+		// 	title += " (" + number + ")";
+		// }
 		setTitleText(title);
 		showTitle(true);
 		showInput(true);
 		showContactFind(false);
 		
+		smsInputElement.placeholder = "Send message to " + number;
+		console.log(smsInputElement);
 		smsInputElement.focus();
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
 		contactMessagesGetter.getInfo(function(contactMessages){
@@ -542,7 +544,7 @@ var SmsApp = function(){
 		}
 	}
 
-	document.querySelector("#smsback").addEventListener("click",function(){
+	document.querySelector("#smstitlecontainer").addEventListener("click",function(){
 		me.writeSms(me.deviceId);
 	});
 	document.querySelector("#smssend").addEventListener("click",function(){

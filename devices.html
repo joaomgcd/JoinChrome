@@ -158,14 +158,14 @@
 		    cursor: pointer;
 		}
 		.button-container {
-		  padding: 0;
-		  margin: 0;
-		  list-style: none;
-		  display: flex;		  
-		  flex-direction: column;
-		  flex-wrap: wrap;
-		  justify-content: space-around;
-		  align-items: flex-start;
+			padding: 0;
+			margin: 0;
+			list-style: none;
+			display: flex;		  
+			flex-direction: column;
+			flex-wrap: wrap;
+			justify-content: space-around;
+			align-items: flex-start;
 		}
 		.button {
 
@@ -259,7 +259,7 @@
 		}
 		.selected{
     		opacity: 1;
-    		box-shadow: 0px -6px 0px white inset;
+    		box-shadow: 0px -4px 0px white inset;
 		}
 		#usericon {    
 			border-radius: 50%;
@@ -299,22 +299,26 @@
 		    font-family: "Roboto", sans-serif;
 		}
 		#smsback{
-			transform: rotate(180deg);
-			font-size: x-large;
-			cursor: pointer;
-    		margin-left: 8px;
+			display: flex;
+			flex-direction: column;
+		}
+		#smsback img {
+			width: 24px;
 		}
 		#smstitlecontainer{
-			font-weight: bold;
-			color: white;
-			background-color: #FF9800;
-		    font-size: large;
-		    margin-top: -8px;
-		    padding-left: 8px; 
+			position: absolute;
 		    display: flex;
     		flex-direction: row;
-    		min-height: 30px;
-			align-items: center;
+			color: white;
+			background-color: #FF9800;
+			font-weight: bold;
+		    font-size: large;
+		    padding: 8px;
+			cursor: pointer;
+			z-index:80;
+		}
+		#smstitlecontainer.card {
+			margin-left: 0.5em;
 		}
 		#smstitlecontainer.hidden{
 			display: none;			
@@ -348,11 +352,8 @@
 		    height: 100%;
 		}
 		.smscontact{
-			border-top: #dddddd 1px solid;
-		    padding-top: 8px;
-		    padding-left: 16px;
-		    padding-right: 16px;
-		    margin-bottom: 20px;
+		    padding: 18px;
+		    margin-bottom: 24px;
     		cursor: pointer;
 		}
 		.smscontactname{
@@ -367,6 +368,8 @@
 		    color: #777777;
 		    flex-grow: 1;
     		max-width: 340px;
+    		text-overflow: ellipsis;
+    		overflow: hidden;
 		}
 		.smscontactdate {
 		    color: #aaaaaa;
@@ -480,8 +483,8 @@
 	<div id="currenttabtitle" class="tabselement"></div>
 	<div id="notifications"></div>
 	<div id="sms">
-		<div id="smstitlecontainer">
-			<div id="smsback">&#10132;</div><div id="smstitle"></div>
+		<div id="smstitlecontainer" class="card">
+			<div id="smsback"><img src="icons/back.png"></div><div id="smstitle"></div>
 		</div>
 		<div class="fixed-action-btn" id="newsmsbutton">
 			<a class="btn-floating btn-large">
@@ -493,7 +496,7 @@
         </div>
 		<div id="smscontainer"></div>
 		<div id="smssendcontainer" class="input-field col s6">
-          <input placeholder="Type your message" type="text" class="validate" id="smsinput" />
+          <input placeholder="Send message" type="text" class="validate" id="smsinput" />
           <div id="smssend"><img src="icons/send.png"/></div>          
         </div>
 	</div>
