@@ -318,6 +318,9 @@
 			cursor: pointer;
 			z-index:80;
 		}
+		#smstitlecontainer:hover {
+			box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
+		}
 		#smstitlecontainer.hidden{
 			display: none;			
 		}
@@ -350,12 +353,15 @@
 			box-shadow: none;
     		border-radius: 4px;
 		}
-		#smscontainer{
+		#smscontainer {
 		    display: flex;
 			flex-direction: column;			
 		    overflow-y: scroll;
 		    height: 100%;
 		    background-color: #F0F0F0;
+		}
+		#smscontainer div.smsmessagecontainer:first-of-type {
+			margin-top:80px;
 		}
 		.smscontact{
 			box-sizing: initial;
@@ -455,14 +461,20 @@
 		#contactfindcontainer{
 			display: flex;
     		align-items: center;	
+    		margin:0;
+    		padding:16px;
+    		background-color:#F0F0F0;
 		}
 		#contactfindcontainer.hidden{
 			display: none;
 		}
-		#contactfindinput{				
-    		margin-bottom: 8px;
-    		margin-left: 8px;
-    		height: 16px;
+		#contactfindinput{		
+    		background-color: white;
+			margin: 8px 8px 8px 144px;
+			padding: 0px 8px 0px 8px;
+			border: none;
+			box-shadow: none;
+    		border-radius: 4px;
 		}
 		.btn-floating{
 			background: #FF9800 !important;
