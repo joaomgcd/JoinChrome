@@ -390,8 +390,8 @@ var downloadDriveString = function(filename,callback,callbackError){
     setRefreshing(true);
     var url = "https://www.googleapis.com/drive/v3/files?q=name+%3D+'"+encodeURIComponent(filename)+"'";
     doGetWithAuth(url,function(fileInfo){
-        console.log("Got drive file info");
-        console.log(fileInfo);
+        // console.log("Got drive file info");
+        // console.log(fileInfo);
         if(!fileInfo){
             callbackError("Couldn't get file info for " + filename);
             return;
@@ -405,7 +405,7 @@ var downloadDriveString = function(filename,callback,callbackError){
             callbackError("File ID not present for " + filename);
             return;
         }
-        console.log("Found file ID: " + fileId);
+        // console.log("Found file ID: " + fileId);
         var downloadUrl = "https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media";
         doGetWithAuth(downloadUrl,function(result){
             setRefreshing(false);

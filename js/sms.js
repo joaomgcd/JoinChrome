@@ -75,7 +75,7 @@ var ContactsGetter = function(deviceId){
 			console.log("Not processing yet. Last SMS are empty");
 			return;
 		}		
-		console.log("Contacts Getter processing now!");
+		// console.log("Contacts Getter processing now!");
 		me.initContactsIfEmpty();
 		me.lastsms.doForAll(function(lastsms){
 			var contact = me.contactsInfo.contacts.first(function(contact){
@@ -131,13 +131,13 @@ var ContactsGetter = function(deviceId){
 				setRefreshing(false);	
 				return;
 			}
-			console.log("Got lastsms info");
-			console.log(lastsms);
+			// console.log("Got lastsms info");
+			// console.log(lastsms);
 			me.lastsms = lastsms;	
 			callback();	
 		},function(error){
 			var message = "Error downloading lastsms file: " + error;
-			console.log(message);
+			// console.log(message);
 			callbackError(message);
 			setRefreshing(false);	
 		});
@@ -151,8 +151,8 @@ var ContactsGetter = function(deviceId){
 				setRefreshing(false);	
 				return;
 			}
-			console.log("Got contacts info");
-			console.log(contactsInfo);
+			// console.log("Got contacts info");
+			// console.log(contactsInfo);
 			me.contactsInfo = contactsInfo;
 			callback();					
 			
@@ -406,7 +406,6 @@ var SmsApp = function(){
 	        	var sms = smses[i];
 	        	var smsMessageContainerElement = smsMessageHtml.cloneNode(true);
 				smsMessageContainerElement.sms = sms;
-				console.log(smsMessageContainerElement);
 				var triangleElement = smsMessageContainerElement.querySelector("#smsbubbletriangle");
 				var triangleElementReceived = smsMessageContainerElement.querySelector("#smsbubbletrianglereceived");
 				var smsMessageElement = smsMessageContainerElement.querySelector("#smsmessage");
@@ -445,7 +444,7 @@ var SmsApp = function(){
 		showContactFind(true);
 		var contactsGetter = new ContactsGetter(me.deviceId);
 		contactsGetter.getInfo(function(contactsInfo){
-			console.log(contactsInfo);
+			// console.log(contactsInfo);
 			if(contactsInfo.contacts){
 				var contacts = contactsInfo.contacts;
 		    	smsContainerElement.innerHTML = "";
@@ -505,7 +504,7 @@ var SmsApp = function(){
         	sms.progress = false;
         	back.removeEventListener("smssent",sendSmsResult,false);
         	if(event.success){            
-	            console.log("SMS pushed");
+	            // console.log("SMS pushed");
 	            //back.showNotification("Join","SMS sent!");
 	        }else{
 	            var error = "Error sending SMS: " + event.errorMessage;
@@ -563,8 +562,8 @@ var sendSms = function(event){
 back.addEventListener("sendsms",sendSms,false);
 
 var smsReceived = function(event){
-	console.log("Received SMS in popup from " + event.deviceId);
-	console.log(event.sms);
+	// console.log("Received SMS in popup from " + event.deviceId);
+	// console.log(event.sms);
 	smsApp.receiveSms(event.deviceId,event.sms);
 	smsApp.refresh(true);
 }

@@ -155,7 +155,7 @@ if(onlyTabToShow){
         console.log("Showed tab " + idToShow + " by default");
     }
 }
-console.log("devices")
+// console.log("devices")
 var topBarElement = document.getElementById("topBar");
 
 var devicesElement = document.getElementById("devices");
