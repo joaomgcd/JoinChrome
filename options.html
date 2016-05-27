@@ -2,7 +2,7 @@
 <head>
 	<link rel="import" href="test.html" />
     
-	<title>Join Options</title>
+	<title>Join Settings</title>
 	<style type="text/css">
 	body{
 		background: #fafafa;
@@ -15,7 +15,7 @@
 	h3 { color: #FF7A00 }	
 	h4 { color: #A75000 }	
 	h5 { color: #FF7A00 }
-	#options{
+	#Settings{
 		display: flex;
     	flex-direction: column;
 	}
@@ -66,37 +66,42 @@
    	    display: flex;
 		justify-content: space-around;
 		margin-top: 10px;
-		width: 720px;
+		width: 40%;
 		align-self: center;
     }
     [tab]{
-		width: 720px;
+    	min-width: 40%;
+		width: 600px;
 		align-self: center;
     }
     [tab] :first-child {
-	    margin-top: 10px;
+	    /*margin-top: 10px;*/
 	}
     [showtab]{
+    	padding: 12px;
     	cursor: pointer;
     	font-size: 130%;
     	text-transform: uppercase;
 	    font-weight: bold;
-	    color: gray;
+	    opacity: 0.4;
     }
     [showtab].selected{
-    	border-bottom: orangered 3px solid;
+    	border-bottom: white 5px solid;
 	    color: white;
+	    opacity: 1;
     }
     #topbar{
     	display: flex;
 	    flex-direction: column;
         background: linear-gradient(#ffc310, #ffa300);
-	    padding: 15px;
+        padding: 18px 12px 0 12px;
+        box-shadow: 0 -1px 4px black;
     }
 	#userinfo{		
     	cursor: pointer;    	
     	display: flex;
-	    flex-grow: 1;
+    	flex-direction: row;
+    	align-self: center;
 	}
 	#advancedoption{			
     	display: flex;
@@ -113,13 +118,16 @@
 	}
 	#appinfo{
 	    display: flex;
+	    justify-content: space-between;
     	align-self: center;    
-    	width: 500px;
+    	width: 40%;
+    	padding: 12px;
     	cursor: pointer;
 	}
-	#shadow{
-		background: linear-gradient(#ffa300,rgba(255,0,0,0) );
-    	height: 10px;
+	#appiconandname {
+		display: flex;
+		flex-direction: row;
+		align-self: center;
 	}
 	#appicon{
     	width: 50px;
@@ -138,7 +146,25 @@
 	.hidden{
 		display: none;
 	}
+
+	div.optionContainer {
+		padding: 24px;
+		background-color: white;
+		margin: 16px;
+		border-radius: 4px;
+		box-shadow: 0 2px 6px -3px black;
+	}
+
+	div.optionContainer h2:first-of-type {
+		margin-top: 0;
+	}
+
+	div.optionContainer div {
+		padding: 4px;
+	}
+
 	#passwordstatus{
+		padding-top: 12px;
 		font-size: 130%;
 		font-weight: bolder;
 		color: red;
@@ -287,25 +313,24 @@
 			</div>
 		</div>
 	</div>
-  	<div id="options">
+  	<div id="Settings">
 		<!--<div id="advancedoption"><input id="toggleadvanced" type="checkbox" /><span>Advanced</span></div>-->
   		<div id="topbar">
   			<div id="appinfo">
-  				<div id="userinfo">
-			  		<img id="usericon" />
-			  		<div id="username"></div>
-		  		</div>
 		  		<span id="appiconandname">
 	  				<img id="appicon" src="icon.png" />
 					<span id="appname">Join</span>
 				</span>
+  				<div id="userinfo">
+			  		<img id="usericon" />
+			  		<div id="username"></div>
+		  		</div>
 		  	</div>		
-  			<div id="optionTabs"><div showtab="shortcuts">Shortcuts</div><div showtab="clipboard">Clipboard</div><div showtab="notifications">Notifications</div><div showtab="encryption">Encryption</div><div showtab="diagnostics">Diagnostics</div><div showtab="advanced">Advanced</div></div>
-  		</div>
-  		<div id="shadow">
+  			<div id="optionTabs"><div showtab="shortcuts">Shortcuts</div><div showtab="options">Options</div><div showtab="clipboard">Clipboard</div><div showtab="notifications">Notifications</div><div showtab="encryption">Encryption</div><div showtab="diagnostics">Diagnostics</div><div showtab="advanced">Advanced</div></div>
   		</div>
   		
-  		<div tab="shortcuts">
+  		<div tab="shortcuts" class="optionContainer">
+  			<h2>Keyboard Shortcuts</h2>
 	  		<h4>Don't forget to make shortcuts global so you can perform these from anywhere on your system and not just while Chrome is showing</h4>
 	  		<div class="shortcut" id="shortcutpopup">You can <a id="configurepopup" href="#">configure</a> a keyboard shortcut to show a popup with your devices to easily perform commands.</div>
 	  		<div class="shortcut" id="shortcutrepeat-last-command">You can <a id="configurerepeat-last-command" href="#">configure</a> a keyboard shortcut to repeat the last command performed on your devices.</div>
@@ -322,28 +347,37 @@
 		  		</div>
 	  		</div>
   		</div>
-  		<div tab="encryption">
+  		<div tab="options" class="optionContainer">
+  			<h2>Customize</h2>
+	  		<h4>Custom Colors</h4>
+	  		<h4>Time and Date Format</h4>
+  		</div>
+  		<div tab="encryption" class="optionContainer">
   			<!--<h1>IMPORTANT: It has come to my attention that <a href="http://www.bis.doc.gov/index.php/policy-guidance/encryption/identifying-encryption-items">having encryption in an app doesn't conform to US Export laws</a> which is required for an app to be on Google Play. Therefore encryption in Join will be disabled until I sort things out</h1> -->
+  			<h2>Encrypt Communication</h2>
 	  		<h4>If set, the password will encrypt your pushes before they are sent other devices. The same password must be set on receiving devices.</h4>	  		
   			<div>Encryption Password: <input type="password" id="encryptionpassword"/> <input type="button" value="Set" id="buttonsetpassword"> <input type="button" value="Reset" id="buttonresetpassword"><div id="passwordstatus">Password is not set</div></div>
   		</div>
-  		<div tab="notifications">
+  		<div tab="notifications" class="optionContainer">
+  			<h2>Chrome Notification Settings</h2>
 	  		<div><input joaoappsoption type="checkbox" id="hidenotificationtext" />Hide text content in notifications</div>
 	  		<div><input joaoappsoption type="checkbox" id="chromenotifications"/>Show standard Chrome notifications. If disabled will only show notifications when clicking the Join icon in the URL toolbar.</div>
 	  		<div><input joaoappsoption type="checkbox" id="playnotificationsound"/>Play notification sound</div>
   		</div>
-  		<div tab="clipboard">
+  		<div tab="clipboard" class="optionContainer">
+  			<h2>Clipboard Settings</h2>
 	  		<div><input joaoappsoption type="checkbox" id="autoclipboardnotification" />Show a notification when clipboard contents are automatically sent to this device</div>
 	  		<div><input joaoappsoption type="checkbox" id="autoclipboard" />Enable automatic copying of your clipboard to other devices</div>
 	  		<h4>Send to these devices:</h4>
 	  		<div id="devicesAutoClipboard"></div>
 	  	</div>
-  		<div tab="diagnostics">
+  		<div tab="diagnostics" class="optionContainer">
+  			<h2>Problems?</h2>
 	  		<h4>Test Join to see if everything's working like it should</h4>
 	  		<input type="button" value="Test" id="starttests">
 	  		<div id="tests"></div>
   		</div>
-  		<div tab="advanced" class="advanced">
+  		<div tab="advanced" class="optionContainer advanced">
   			<h2>Files</h2>
   			<div><input joaoappsoption type="checkbox" id="downloadscreenshots" />Automatically download any received files</div>
 	  		<!--<div><input joaoappsoption type="checkbox" id="downloadvideos" />Automatically download any received videos</div>-->  	
