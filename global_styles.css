@@ -209,6 +209,8 @@ td{
 #tools{			
 	position: relative;
 	margin-right: 8px;
+	display: flex;
+	align-self: center;
 }
 #currenttabtitle{
 	padding-left: 10px;
