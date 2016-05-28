@@ -52,7 +52,7 @@
 	    .androidDevice{
 	    	background-color: lightgreen;
 	    	padding: 10px;
-	    	margin: 10px;
+	    	margin: 4px;
 	    	display: inline-block;    
 	    	border: black;
 		    border-width: 1px;
@@ -70,8 +70,8 @@
 		align-self: center;
     }
     [tab]{
-    	min-width: 40%;
-		width: 600px;
+    	min-width: 600px;
+		width: 40%;
 		align-self: center;
     }
     [tab] :first-child {
@@ -80,7 +80,6 @@
     [showtab]{
     	padding: 12px;
     	cursor: pointer;
-    	font-size: 130%;
     	text-transform: uppercase;
 	    font-weight: bold;
 	    opacity: 0.4;
@@ -121,8 +120,8 @@
 	    justify-content: space-between;
     	align-self: center;    
     	width: 40%;
+    	min-width: 600px;
     	padding: 12px;
-    	cursor: pointer;
 	}
 	#appiconandname {
 		display: flex;
@@ -159,7 +158,7 @@
 		margin-top: 0;
 	}
 
-	div.optionContainer div {
+	div.optionContainer > div {
 		padding: 4px;
 	}
 
@@ -383,7 +382,7 @@
 	  		<!--<div><input joaoappsoption type="checkbox" id="downloadvideos" />Automatically download any received videos</div>-->  	
   			<h2>Notifications</h2>	  		
 	  		<div>Number of seconds a notification should show (max 25 seconds): <input joaoappsoption type="text" id="notificationseconds" /> - notifications will automatically show longer if they are higher priority. Use this setting to override that behaviour.</div>
-	  		<div>App websites: JSON object that represents Android package names and corresponding websites so that when you click on a notification it opens the website: <textarea joaoappsoption id="notificationwebsites" cols="100" rows="20"></textarea></div>
+	  		<div>App websites: JSON object that represents Android package names and corresponding websites so that when you click on a notification it opens the website: <textarea joaoappsoption id="notificationwebsites" cols="80" rows="20"></textarea></div>
 	  		<div>Notification Sound (must be a publicly accessible url of an mp3 file):<input joaoappsoption type="text" id="notificationsound" /></div>
 	  		<div>List of app packages that will not show notification popups (one per line):<textarea joaoappsoption id="notificationnopopuppackages" cols="100" rows="20"></textarea></div>
 	  		<h2>Tasker</h2>
