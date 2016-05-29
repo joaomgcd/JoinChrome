@@ -829,10 +829,10 @@ Date.prototype.customFormat = function(formatString){
     formatString = formatString.replace("#YYYY#",YYYY).replace("#YY#",YY).replace("#MMMM#",MMMM).replace("#MMM#",MMM).replace("#MM#",MM).replace("#M#",M).replace("#DDDD#",DDDD).replace("#DDD#",DDD).replace("#DD#",DD).replace("#D#",D).replace("#th#",th);
     h=(hhh=this.getHours());
 
-    if (h==0) h=24;
     hh = h;
     if (back.get12HourFormat()) {
-        if (hh>12) hh-=12;
+        if (h==0) hh=12;
+        if (h>12) hh-=12;
     } else {
         hh = h<10?('0'+h):h;
     }
