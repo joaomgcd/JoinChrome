@@ -1,9 +1,10 @@
 :root {
-  --join-orange: #FF9800;
-  --join-orange-faded: #FFE0B2;
+  --global-color: #FF9800;
+  --global-color-light: #FFB05C;
+  --global-color-faded: #FFE0B2;
 }
 a{
-	color: #FF9800;
+	color: var(--global-color);
 }
 body {
 	width: 440px;
@@ -62,7 +63,7 @@ body {
 	opacity: 1;
 }
 .device #deviceiconcontainer{
-	background-color: #FF9800;
+	background-color: var(--global-color);
 }
 .selecteddevice #deviceiconcontainer{
 }
@@ -113,7 +114,7 @@ a#link{
 	font-family: 'Roboto', sans-serif;
 }
 a#link:hover{
-	color: #FF9800;
+	color: var(--global-color);
 }
 .devicename{
     font-weight: bold;
@@ -180,7 +181,7 @@ img#clearallnotifications {
 	border-radius: 4px;
 }
 .button-link:hover{
-	background: #FF9800;
+	background: var(--global-color);
 }
 td{
 	padding: 0px !important;
@@ -191,7 +192,7 @@ td{
 }
 .tabselement{
 	display: flex;
-	background-color: #FF9800;
+	background-color: var(--global-color);
 	justify-content: flex-start;
 	font-size: medium;
 }
@@ -228,9 +229,6 @@ td{
 	align-self: center;
 	opacity: 0.6;
 	height: 100%;
-}
-.tab:hover {
-	/*box-shadow: 0 0 40px 0 white inset;*/
 }
 .tabIcon{
   	cursor: pointer;
@@ -304,7 +302,7 @@ img.tabIcon{
     display: flex;
 	flex-direction: row;
 	color: white;
-	background-color: #FF9800;
+	background-color: var(--global-color);
 	font-weight: bold;
     font-size: large;
     margin: 1em 1em 1em 1em;
@@ -315,7 +313,7 @@ img.tabIcon{
 }
 #smstitlecontainer:hover {
 	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
-	background-color: #FFAC33;
+	background-color: var(--global-color-light);
 }
 #smstitlecontainer.hidden{
 	display: none;			
@@ -410,7 +408,7 @@ img.tabIcon{
 	margin-right: 16px;
 }
 .smsmessage.received{	
-    background-color: #FFE0B2;
+    background-color: var(--global-color-faded);
     margin-right: 100px;
     margin-left: 16px;
 }
@@ -453,7 +451,7 @@ img.tabIcon{
 	height: 15px;
 }
 .btn-floating:hover {
-	background-color: #FFAC33 !important;
+	background-color: var(--global-color-light) !important;
 }
 #newsmsbuttonicon{
     transform: rotate(180deg);
@@ -480,5 +478,5 @@ img.tabIcon{
 	border-radius: 4px;
 }
 .btn-floating{
-	background: #FF9800 !important;
+	background: var(--global-color) !important;
 }
