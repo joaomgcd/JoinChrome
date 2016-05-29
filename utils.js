@@ -828,10 +828,14 @@ Date.prototype.customFormat = function(formatString){
     th=(D>=10&&D<=20)?'th':((dMod=D%10)==1)?'st':(dMod==2)?'nd':(dMod==3)?'rd':'th';
     formatString = formatString.replace("#YYYY#",YYYY).replace("#YY#",YY).replace("#MMMM#",MMMM).replace("#MMM#",MMM).replace("#MM#",MM).replace("#M#",M).replace("#DDDD#",DDDD).replace("#DDD#",DDD).replace("#DD#",DD).replace("#D#",D).replace("#th#",th);
     h=(hhh=this.getHours());
+
     if (h==0) h=24;
-    //if (h>12) h-=12;
     hh = h<10?('0'+h):h;
-    hhhh = h<10?('0'+hhh):hhh;
+    if (back.get12HourFormat()) {
+        if (hh>12) hh-=12;
+    }
+
+    // hhhh = h<10?('0'+hhh):hhh;
     AMPM=(ampm=hhh<12?'am':'pm').toUpperCase();
     mm=(m=this.getMinutes())<10?('0'+m):m;
     ss=(s=this.getSeconds())<10?('0'+s):s;
@@ -839,15 +843,19 @@ Date.prototype.customFormat = function(formatString){
 };  
 Number.prototype.formatDate = function(){
     var date = new Date(this);
-  var now = new Date();
-  if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
-    return date.customFormat("#hh#:#mm#");
-  }
-  var yesterday = new Date(now);
-  yesterday.setDate(now.getDate()-1);
-  if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
-    return "Yesterday " + date.customFormat("#hh#:#mm#");
-  }
+    var now = new Date();
+    var format = "#hh#:#mm#";
+    if (back.get12HourFormat()) {
+        format = format+" #AMPM#";
+    }
+    if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
+    return date.customFormat(format);
+    }
+    var yesterday = new Date(now);
+    yesterday.setDate(now.getDate()-1);
+    if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+    return "Yesterday " + date.customFormat(format);
+    }
     return date.customFormat("#MMM# #DD#");
 } 
 function tintImage(image, color) {
