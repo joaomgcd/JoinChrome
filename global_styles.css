@@ -382,7 +382,7 @@ img.tabIcon{
 .smscontacttext{
     color: #777777;
     flex-grow: 1;
-	max-width: 340px;
+	max-width: 320px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
@@ -437,7 +437,6 @@ img.tabIcon{
 }
 .smsmessagedate {
     margin-top: 8px;
-    font-size: small;
     color: #999999;
 	flex-grow: 1;
 }

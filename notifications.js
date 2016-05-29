@@ -93,7 +93,7 @@ var writeNotifications = function(){
                 deviceElement.style.display = "none";
             }
             if(not.color){
-                console.log("setting color to " + not.color);
+                // console.log("setting color to " + not.color);
                 //notificationElement.querySelector("#notificationleft").style.backgroundColor = not.color;
             }
             if(not.appIcon){
@@ -119,7 +119,10 @@ var writeNotifications = function(){
             }else{
                 image.style.display = "none";
             }
-            dateElement.innerHTML = new Date().customFormat("#hh#:#mm#")
+            var date_format = "#hh#:#mm#";
+            if (back.get12HourFormat()) { date_format = date_format + " #AMPM#";}
+            console.log(date_format);
+            dateElement.innerHTML = new Date().customFormat(date_format);
             titleElement.innerHTML = not.title;
             if(not.lines && not.lines.length>0){
                 var linesText = "";

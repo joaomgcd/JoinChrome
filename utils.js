@@ -830,9 +830,11 @@ Date.prototype.customFormat = function(formatString){
     h=(hhh=this.getHours());
 
     if (h==0) h=24;
-    hh = h<10?('0'+h):h;
+    hh = h;
     if (back.get12HourFormat()) {
         if (hh>12) hh-=12;
+    } else {
+        hh = h<10?('0'+h):h;
     }
 
     // hhhh = h<10?('0'+hhh):hhh;
@@ -841,20 +843,26 @@ Date.prototype.customFormat = function(formatString){
     ss=(s=this.getSeconds())<10?('0'+s):s;
     return formatString.replace("#hhhh#",hhhh).replace("#hhh#",hhh).replace("#hh#",hh).replace("#h#",h).replace("#mm#",mm).replace("#m#",m).replace("#ss#",ss).replace("#s#",s).replace("#ampm#",ampm).replace("#AMPM#",AMPM);
 };  
-Number.prototype.formatDate = function(){
+Number.prototype.formatDate = function(full){
     var date = new Date(this);
     var now = new Date();
     var format = "#hh#:#mm#";
     if (back.get12HourFormat()) {
         format = format+" #AMPM#";
     }
+
     if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
     return date.customFormat(format);
     }
+
     var yesterday = new Date(now);
     yesterday.setDate(now.getDate()-1);
     if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
     return "Yesterday " + date.customFormat(format);
+    }
+
+    if (full) {
+        return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
     }
     return date.customFormat("#MMM# #DD#");
 } 

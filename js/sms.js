@@ -348,7 +348,7 @@ var SmsApp = function(){
 			        	var contactDateElement = contactElement.querySelector("#smscontactdate");
 			        	contactNameElement.innerHTML = contact.name;
 			        	contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ contact.lastsms.text;
-			        	contactDateElement.innerHTML = contact.lastsms.date.formatDate();
+			        	contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
 			        	contactElement.addEventListener("click",function(event){
 			        		var element = event.target;
@@ -414,7 +414,7 @@ var SmsApp = function(){
 	        	var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
 
 	        	smsTextElement.innerHTML = Autolinker.link(sms.text);
-	        	smsDateElement.innerHTML = sms.date.formatDate();
+	        	smsDateElement.innerHTML = sms.date.formatDate(true);
 	        	if(sms.received){
 	        		smsMessageElement.classList.add("received");
 	        		triangleElement.style.display = "none";
