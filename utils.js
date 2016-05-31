@@ -135,13 +135,13 @@ var doPostWithAuth = back.doPostWithAuth;
 
 /*************************NOTIFICATION PAGES***********************/
 var notificationPages = {
-	"com.google.android.gm":"https://mail.google.com/mail/u/0/#search/is%3Aunread",
-	"com.joaomgcd.autoinput":"http://joaoapps.com/autoinput/",
-	"com.joaomgcd.autovoice":"http://joaoapps.com/autovoice/",
-	"com.facebook.lite":"https://www.facebook.com/notifications",
-	"com.facebook.katana":"https://www.facebook.com/notifications",
-	"com.google.android.talk":"https://hangouts.google.com/",
-	"com.whatsapp":"https://web.whatsapp.com/",
+    "com.google.android.gm":"https://mail.google.com/mail/u/0/#search/is%3Aunread",
+    "com.joaomgcd.autoinput":"http://joaoapps.com/autoinput/",
+    "com.joaomgcd.autovoice":"http://joaoapps.com/autovoice/",
+    "com.facebook.lite":"https://www.facebook.com/notifications",
+    "com.facebook.katana":"https://www.facebook.com/notifications",
+    "com.google.android.talk":"https://hangouts.google.com/",
+    "com.whatsapp":"https://web.whatsapp.com/",
     "com.google.android.youtube":"https://www.youtube.com/feed/subscriptions",
     "com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all"
 };

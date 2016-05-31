@@ -3,9 +3,16 @@ body {
 	margin: 0px;
 }
 h1 { color: #5a5a5a; }	
-h2 { color: #5a5a5a; }	
+h2 {
+  color: #5a5a5a; 
+  font-size: 1.25rem;
+}	
 h3 { color: #FF7A00; }	
-h4 { color: #A75000; }	
+h4 {
+  color: #A75000; 
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}	
 h5 { color: #FF7A00; }
 #Settings {
   display: flex;
@@ -27,10 +34,6 @@ h5 { color: #FF7A00; }
 .color-primary-2 { color: #FF8F27 }
 .color-primary-3 { color: #D56600 }
 .color-primary-4 { color: #A75000 }
-.shortcut {
-	padding: 10px;
-	font-size: 130%;
-}
 [advanced]::before {
   content: 'ADVANCED: ';
   font-size: 200%;
@@ -42,7 +45,6 @@ h5 { color: #FF7A00; }
 }
 .androidDevice {
 	background-color: lightgreen;
-	padding: 10px;
 	margin: 4px;
 	display: inline-block;    
 	border: black;
@@ -50,7 +52,8 @@ h5 { color: #FF7A00; }
   border-style: solid;
 }
 .androidDevice img {
-	width: 100px;
+  margin: 4px;
+	width: 64px;
 	display: block;
 }
 #optionTabs {
@@ -152,6 +155,25 @@ div.optionContainer h2:first-of-type {
 div.optionContainer > div {
 	padding: 4px;
 }
+ul#configure_list {
+  font-size: 1.2em;
+  list-style-position: inside;
+  margin: 8px 0 8px 0;
+  padding: 4px;
+}
+textarea#notificationwebsites {
+  border: none;
+  border-bottom: solid 1px gray;
+  min-height: 10rem;
+  opacity: 0.6;
+  resize: vertical;
+  width: 100%;
+}
+textarea#notificationwebsites:focus {
+  outline: none;
+  opacity: 1;
+  border-bottom: solid 1px #FF9800;
+}
 label.selection {
   display: flex;
   flex-direction: row-reverse;
@@ -177,6 +199,53 @@ label.selection .selection_indicator {
 label.selection input:checked ~.selection_indicator {
   opacity: 0.5;
   background: url('icons/checkbox.png') 0px 0px/100% 100%;
+}
+input[type='button'] {
+  background-color: white;
+  border-radius: 2px;
+  border: 0;
+  font-size: 0.8rem;
+  outline: 0;
+  padding: 8px 16px 8px 16px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+input[type='button']#configure_keyboard_shortcuts {
+  box-shadow: 0px 2px 6px -1px gray;
+}
+input[type='button']#starttests {
+  background-color: #E0E0E0;
+}
+input[type='button']:hover {
+  box-shadow: 0px 2px 12px -2px gray !important;
+  color: #FF9800 !important;
+}
+input[type='button']:active {
+  background-color: #FF9800 !important;
+  color: white !important;
+}
+input[type='text'], input[type='password'] {
+  background: none;
+  border: none;
+  border-bottom: solid 1px gray;
+  margin: 4px;  
+  opacity: 0.6;
+  outline: none;
+  padding: 4px;
+}
+input[type='text']:focus, input[type='password']:focus {
+  opacity: 1;
+  border-bottom: solid 1px #FF9800;
+}
+select {
+  border: 0;
+  outline: none;
+  margin: 4px;
+  padding: 4px;
+  box-shadow: 0px 1px 8px -2px gray;
+}
+select:focus {
+  outline: none;
 }
 #passwordstatus {
 	padding-top: 12px;

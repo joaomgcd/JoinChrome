@@ -148,7 +148,7 @@ var manageTabs = function(){
     }
   };
 }
-var deviceAutoClipboardHtml = "<div class='DEVICE_CLASS'><img id='DEVICE_ID_icon' class='deviceicon' deviceId='DEVICE_ID' src='DEVICE_ICON'/><input type='checkbox' id='DEVICE_ID"+ chrome.extension.getBackgroundPage().deviceSufix+"'/><b>DEVICE_NAME</b></div>"
+var deviceAutoClipboardHtml = "<div class='DEVICE_CLASS'><label class='selection'><b>DEVICE_NAME</b><input type='checkbox' id='DEVICE_ID"+ chrome.extension.getBackgroundPage().deviceSufix+"'/><div class='selection_indicator'></div><img id='DEVICE_ID_icon' class='deviceicon' deviceId='DEVICE_ID' src='DEVICE_ICON'/></div>"
 var requestingMic = false;
 var updatePasswordStatus = function(){
     var passwordStatus = document.getElementById("passwordstatus");
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
       element.style.display = "none";
     };
     addOptionListeners();
-    chrome.commands.getAll(function(commands) {
+    /*chrome.commands.getAll(function(commands) {
       for (var commandKey in commands) {
         var command = commands[commandKey];
         if(command.shortcut != ""){
@@ -253,7 +253,11 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
       }
-    });
+    });*/
+    var configureButton = document.getElementById("configure_keyboard_shortcuts");
+    configureButton.onclick = function() {
+      openTab("chrome://extensions/configureCommands");
+    }
     var selectFavoriteCommand = document.getElementById("select_favourite_command");
     var favoriteCommandText = document.getElementById("text_favourite_command");
     var favoriteCommandTextArea = document.getElementById("favouritecommandtextarea");
