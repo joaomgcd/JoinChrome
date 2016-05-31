@@ -1,275 +1,261 @@
 :root {
-  --global-color: #FF9800;
-  --global-color-light: #FFB05C;
-  --global-color-faded: #FFE0B2;
-  --global-color-gray: #F0F0F0;
+	--global-color: #FF9800;
+	--global-color-light: #FFB05C;
+	--global-color-faded: #FFE0B2;
+	--global-color-gray: #F0F0F0;
 }
-a{
+a {
 	color: var(--global-color);
 }
 body {
 	width: 440px;
 }
-#tabsplaceholder{
-	text-align: center;
+#tabsplaceholder {
 	overflow: hidden;
+	text-align: center;
 }
-.devicecommands{
+.devicecommands {
     display: flex;
     flex-direction: column;
-    width: 100%;
     height: 510px;
+    width: 100%;
 }
-
-.devicecommandsleft{
-    display: flex;
-    flex-direction: column;
+.devicecommandsleft {
     background-color: white; 
-    width: 100%;
+    display: flex;
+    flex-direction: column;
     height: 510px;
+    width: 100%;
 }
-.commands{
-	border-top: #cccccc 1px solid;
-	overflow-y: auto;
+.commands {
 	flex: 1;
+	overflow-y: auto;
 }
-#deviceiconcontainer{
+#deviceiconcontainer {
 	border-radius: 100%;
+    display: flex;
     height: 50px;
     width: 50px;
-    display: flex;
 }
-.deviceicon{
-    height: 30px;
+.deviceicon {
     display: block;
+    height: 30px;
     margin: auto;
 }
-.device{
-	display: flex;
-	margin-top: 5px;
-	flex-direction: column;
+.device {
 	align-items: center;
-    width: 70px;
-	opacity: 0.4;
 	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	margin-top: 5px;
+	opacity: 0.4;
     transition: all 0.3s ease;
+    width: 70px;
 }
 .device:hover {
 	opacity: 0.8;
 }
-.devicecommandsleft .device{
-}
-.selecteddevice{
+.selecteddevice {
 	opacity: 1;
 }
-.device #deviceiconcontainer{
+.device #deviceiconcontainer {
 	background-color: var(--global-color);
 }
-.selecteddevice #deviceiconcontainer{
-}
-.devicecommandsleft .selecteddevice{
-}
-.devicecommands .selecteddevice::after{
+.devicecommands .selecteddevice::after {
+	background: antiquewhite;
 	content: ' ';
-	position: absolute;
 	height: 100%;
-	width: 2px;
+	position: absolute;
 	right: -2px;
 	top: 0;
-	background: antiquewhite;
+	width: 2px;
 }
-.devicecommandsleft .selecteddevice::before{
-	
-}
-.devicebutton{
+.devicebutton {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
     font-weight: bold;
     margin-top: 5px;
-    display: flex;
-    align-items: center;
     padding: 8px;
     width: 100%;
-    cursor: pointer;
 }
-.devicebutton.disabled{
+.devicebutton.disabled {
 	display: none;
 }
-.devicebutton:hover{
+.devicebutton:hover {
 	background: #eeeeee;
 }
-#devicebuttondrag{
+#devicebuttondrag {
 	visibility: hidden;
 }
-.devicebutton:hover #devicebuttondrag{
+.devicebutton:hover #devicebuttondrag {
 	visibility: visible;
 }
-#devicebuttonimage{
-	width: 24px;
+#devicebuttonimage {
 	height: 24px;
 	margin-right: 32px;
+	width: 24px;
 }
-a#link{
+a#link {
 	color: #757575;
+	font-family: 'Roboto', sans-serif;
     font-size: large;
     font-weight: 400;
-	font-family: 'Roboto', sans-serif;
 }
-a#link:hover{
+a#link:hover {
 	color: var(--global-color);
 }
-.devicename{
+.devicename {
+	font-family: 'Roboto', sans-serif;
+	overflow: hidden;
+	text-overflow: ellipsis; 	
     font-weight: bold;
     width: 69px;   
     word-break: break-word;
-	overflow: hidden;
-	text-overflow: ellipsis; 	
-	font-family: 'Roboto', sans-serif;
 }
-#devices{
-}
-#devicelist{
-    text-align: center;
+#devicelist {
 	display: flex;
-	padding: 6px;
 	flex-wrap: wrap;
 	justify-content: flex-start;
+	padding: 6px;
+    box-shadow: 0 -2px 6px black;
+    text-align: center;
 }
-#notifications{
-	display: flex;
+#notifications {
 	align-items: center;
-	padding: 8px;
+	display: flex;
 	flex-direction: column;
-    overflow-y: scroll;
-    height: 510px;
+	padding: 8px;
     background-color: var(--global-color-gray);
+    height: 510px;
+    overflow-y: scroll;
 }
 img#clearallnotifications {
     align-self: flex-end;
-    margin-right: 8px;
     cursor: pointer;
+    margin-right: 8px;
 }
 .button-container {
-	padding: 0;
-	margin: 0;
-	list-style: none;
+	align-items: flex-start;
 	display: flex;		  
 	flex-direction: column;
 	flex-wrap: wrap;
 	justify-content: space-around;
-	align-items: flex-start;
+	list-style: none;
+	margin: 0;
+	padding: 0;
 }
 .button {
-
-  padding: 5px;
-  width: 130px !important;
-  height: 20px;
-  margin-top: 5px;
-  margin-right: 5px;
-  
-  line-height: 20px;
-  color: white;
-  font-weight: bold;
-  text-align: center;
+	color: white;
+	font-weight: bold;
+	height: 20px;
+	line-height: 20px;
+	margin-right: 5px;
+	margin-top: 5px;
+	padding: 5px;
+	text-align: center;
+	width: 130px !important;
 }
-.button-link{
-	width: 190px !important;
-	height: 30px !important;
-	line-height: 30px !important;
-	padding: 0px;
-	margin: 5px;
-	font-family: 'Roboto', sans-serif;
+.button-link {
 	background: #424242;
 	border-radius: 4px;
+	font-family: 'Roboto', sans-serif;
+	height: 30px !important;
+	line-height: 30px !important;
+	margin: 5px;
+	padding: 0px;
+	width: 190px !important;
 }
-.button-link:hover{
+.button-link:hover {
 	background: var(--global-color);
 }
-td{
+td {
 	padding: 0px !important;
 	text-align: center !important;
 }
 #topbar {
-  display: none;
+ 	display: none;
 }
-.tabselement{
-	display: flex;
+.tabselement {
 	background-color: var(--global-color);
-	justify-content: flex-start;
+	display: flex;
 	font-size: medium;
+	justify-content: flex-start;
 }
-#tabscontainer{
+#tabscontainer {
+	box-shadow: 0px -1px 6px black;
+	height:54px;
 	position: relative;
 	z-index:100;
-	height:54px;
-	box-shadow: 0px -1px 6px black;
 }
 #tabs {
 	flex-grow: 1;
-	position:relative;
 	height:100%;
+	position:relative;
 }
-#tools{			
-	position: relative;
-	margin-right: 8px;
-	display: flex;
+#tools {			
 	align-self: center;
+	display: flex;
+	margin-right: 8px;
+	position: relative;
 }
-#currenttabtitle{
-	padding-left: 10px;
-	padding-bottom: 3px;
-	font-family: 'Roboto', sans-serif;
-	font-weight: bold;
+#currenttabtitle {
 	color: white;
 	display: none;
+	font-family: 'Roboto', sans-serif;
+	font-weight: bold;
+	padding-bottom: 3px;
+	padding-left: 10px;
 }
 .tab {
-	cursor: pointer; 
+	align-self: center;
 	cursor: hand;
+	cursor: pointer; 
+	height: 100%;
+	opacity: 0.6;
 	padding-left: 12px;
 	padding-right: 12px;
-	align-self: center;
-	opacity: 0.6;
-	height: 100%;
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
 	background-color: var(--global-color-light);
 }
-.tabIcon{
+.tabIcon {
   	cursor: pointer;
   	display: flex;
   	flex-direction: column;
-  	justify-content: center;
   	font-family: 'Roboto', sans-serif;
-    font-weight: bold;
+  	justify-content: center;
     color: white;
+    font-weight: bold;
     height:100%;
 }
-#tools .tab{
+#tools .tab {
 	display: inline;
+	opacity: 1;
 	padding:0;
-	opacity: 1;
 }
-img.tabIcon{
-	width: 40px;
+img.tabIcon {
 	padding: 8px;
+	width: 40px;
 }
-.selected{
-	opacity: 1;
+.selected {
 	box-shadow: 0px -4px 0px white inset;
+	opacity: 1;
 }
 #usericon {    
 	border-radius: 50%;
-	width: 30px;
+	cursor: pointer;
 	height: 30px;
 	margin: 2px;
-	cursor: pointer;
+	width: 30px;
 }
 #topBarText {
-  flex-grow: 1;
 	text-align: center;
+	flex-grow: 1;
 }
-.rotating{			
-	  animation: rotating 0.5s linear infinite;
+.rotating {			
+	animation: rotating 0.5s linear infinite;
 }
 @keyframes rotating {
   from {
@@ -288,52 +274,52 @@ img.tabIcon{
   }
 }
 
-#sms{
-    height: 510px;
-    display: flex;
+#sms {
 	flex-direction: column;	
+    display: flex;
     font-family: "Roboto", sans-serif;
+    height: 510px;
 }
-#smsback{
+#smsback {
 	display: flex;
 	flex-direction: column;
 }
 #smsback img {
 	width: 24px;
 }
-#smstitlecontainer{
-	position: absolute;
-    display: flex;
-	flex-direction: row;
-	color: white;
+#smstitlecontainer {
 	background-color: var(--global-color);
+	color: white;
+	cursor: pointer;
+	flex-direction: row;
 	font-weight: bold;
+	position: absolute;
+	transition: all 0.3s ease;
+	z-index:80;
+    display: flex;
     font-size: large;
     margin: 1em 1em 1em 1em;
     padding: 8px;
-	cursor: pointer;
-	z-index:80;
-	transition: all 0.3s ease;
 }
 #smstitlecontainer:hover {
-	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
 	background-color: var(--global-color-light);
+	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
 }
-#smstitlecontainer.hidden{
+#smstitlecontainer.hidden {
 	display: none;			
 }
-#smstitle{			
+#smstitle {			
 	margin-left: 8px;
 }
-#smssendcontainer{	    
-	margin: 0;
-	padding: 8px;
+#smssendcontainer {	    
+	align-items: center;		
 	background-color: var(--global-color-gray);
 	display: flex;
-	align-items: center;		
+	margin: 0;
+	padding: 8px;
 	z-index: 60;
 }
-#smssendcontainer.hidden{
+#smssendcontainer.hidden {
 	display: none;			
 }
 #smssend {
@@ -342,7 +328,7 @@ img.tabIcon{
 	padding: 1px;
     cursor: pointer;
 }
-#smsinput{			
+#smsinput {			
 	background-color: white;
 	border-radius: 4px;
 	border: none;
@@ -358,139 +344,139 @@ img.tabIcon{
 #smsinput::-webkit-resizer {
 	background: url("icons/resize_handle.png") right bottom/50% 50% no-repeat;
 }
-#smsinput:focus{
+#smsinput:focus {
 	outline: none;
 }
 #smscontainer {
-    display: flex;
 	flex-direction: column;			
-    overflow-y: scroll;
-    height: 100%;
     background-color: var(--global-color-gray);
+    display: flex;
+    height: 100%;
+    overflow-y: scroll;
 }
 #smscontainer div.smsmessagecontainer:first-of-type {
 	margin-top:80px;
 }
-.smscontact{
-	box-sizing: initial;
-    padding: 12px 16px 12px 16px;
-	cursor: pointer;
+.smscontact {
 	background-color: white;
-	z-index:20;
+	box-sizing: initial;
+	cursor: pointer;
 	transition: all 0.1s ease;
+	z-index:20;
+    padding: 12px 16px 12px 16px;
 }
 .smscontact:hover {
 	background-color: var(--global-color-gray);
 }
-.smscontactname{
-    font-size: medium;
+.smscontactname {
 	font-weight: bold;
+    font-size: medium;
 }
 .smstextanddate {
     display: flex;
-    justify-content: space-between;
     font-size: small;
+    justify-content: space-between;
 }
-.smscontacttext{
+.smscontacttext {
+	max-width: 320px;
+	overflow: hidden;
+	text-overflow: ellipsis;
     color: #777777;
     flex-grow: 1;
-	max-width: 320px;
-	text-overflow: ellipsis;
-	overflow: hidden;
 }
 .smscontactdate {
-    color: #aaaaaa;
+	align-self: flex-end;
 	margin-left: 8px;
 	text-align: end;
-	align-self: flex-end;
+    color: #aaaaaa;
 }
-.smsmessagecontainer{
+.smsmessagecontainer {
     display: block;
-    z-index:50;
     margin: 8px 0px 8px 0px;
+    z-index:50;
 }
 .smsmessage {    
+	margin-right: 16px;
 	padding: 12px 16px 12px 16px;
     background-color: white;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
-    position: relative;
-    border-radius: 4px;
-    margin-left: 100px;
-    font-weight: 500;
     font-family: "Roboto", sans-serif;
-	margin-right: 16px;
-}
-.smsmessage.received{	
-    background-color: var(--global-color-faded);
-    margin-right: 100px;
-    margin-left: 16px;
-}
-.smsbubbletriangle{
-    color: white;
+    font-weight: 500;
+    margin-left: 100px;
     position: relative;
-    font-size: xx-large;    
+}
+.smsmessage.received {	
+    background-color: var(--global-color-faded);
+    margin-left: 16px;
+    margin-right: 100px;
+}
+.smsbubbletriangle {
+    color: white;
     float: right;
-    top: -16px;
+    font-size: xx-large;    
+    position: relative;
     right: 6px;	
     text-align: end;
+    top: -16px;
 }
-.smsbubbletrianglereceived{		    
+.smsbubbletrianglereceived {		    
 	color: #FFE0B2;
-    position: relative;
-    font-size: xx-large;   
     float: left;
+    font-size: xx-large;   
     left: 6px;
+    position: relative;
     top: -16px;
 }
 .smsmessagetext {
-    font-size: medium;		    
 	word-wrap: break-word;
+    font-size: medium;		    
 }
 .smsmessagedate {
-    margin-top: 8px;
-    color: #999999;
 	flex-grow: 1;
+    color: #999999;
+    margin-top: 8px;
 }
 #smsmessagebottom {
+    align-items: baseline;
     display: flex;
     flex-direction: row;
-    align-items: baseline;
 }
-#smsmessageprogress.hidden{
+#smsmessageprogress.hidden {
 	display: none;
 }
-#smsmessageprogress img{
-	width: 15px;
+#smsmessageprogress img {
 	height: 15px;
+	width: 15px;
 }
 .btn-floating:hover {
 	background-color: var(--global-color-light) !important;
 }
-#newsmsbuttonicon{
+#newsmsbuttonicon {
     transform: rotate(180deg);
 }
-#newsmsbutton.hidden{
+#newsmsbutton.hidden {
 	display: none;
 }
-#contactfindcontainer{
-	display: flex;
+#contactfindcontainer {
 	align-items: center;	
+	background-color: var(--global-color-gray);
+	display: flex;
 	margin:0;
 	padding:16px;
-	background-color: var(--global-color-gray);
 }
-#contactfindcontainer.hidden{
+#contactfindcontainer.hidden {
 	display: none;
 }
-#contactfindinput{		
+#contactfindinput {		
 	background-color: white;
-	margin: 8px 8px 8px 144px;
-	padding: 0px 8px 0px 8px;
+	border-radius: 4px;
 	border: none;
 	box-shadow: none;
-	border-radius: 4px;
+	margin: 8px 8px 8px 144px;
+	padding: 0px 8px 0px 8px;
 }
-.btn-floating{
+.btn-floating {
 	background: var(--global-color) !important;
 }
