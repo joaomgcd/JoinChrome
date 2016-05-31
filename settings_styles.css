@@ -169,6 +169,7 @@ label.selection input {
 }
 label.selection .selection_indicator {
   margin: 4px;
+  min-width: 16px;
   width: 16px;
   height: 16px;
   background: url('icons/checkbox_blank.png') 0px 0px/100% 100%;
