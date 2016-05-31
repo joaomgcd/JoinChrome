@@ -345,11 +345,19 @@ img.tabIcon{
 }
 #smsinput{			
 	background-color: white;
-	margin: 8px;
-	padding: 0px 8px 0px 8px;
+	border-radius: 4px;
 	border: none;
 	box-shadow: none;
-	border-radius: 4px;
+	font-size: 1rem;
+	height: 3rem;
+	margin: 8px;
+	max-height: 5rem;
+	overflow: auto;
+	padding: 8px;
+	resize: vertical;
+}
+#smsinput:focus{
+	outline: none;
 }
 #smscontainer {
     display: flex;
