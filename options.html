@@ -58,7 +58,10 @@
   		<div tab="options" class="optionContainer">
   			<h2>Customize</h2>
 	  		<h4>Time and Date Format</h4>
-	  		<div><input joaoappsoption type="checkbox" id="12hrformat" />Use 12 hour (AM/PM) time format</div>
+	  		<label class="selection">Use 12 hour (AM/PM) time format
+	  			<input joaoappsoption type="checkbox" id="12hrformat" />
+	  			<div class="selection_indicator"></div>
+	  		</label>
   		</div>
   		<div tab="encryption" class="optionContainer">
   			<!--<h1>IMPORTANT: It has come to my attention that <a href="http://www.bis.doc.gov/index.php/policy-guidance/encryption/identifying-encryption-items">having encryption in an app doesn't conform to US Export laws</a> which is required for an app to be on Google Play. Therefore encryption in Join will be disabled until I sort things out</h1> -->
@@ -89,8 +92,14 @@
   		</div> -->
   		<div tab="clipboard" class="optionContainer">
   			<h2>Clipboard Settings</h2>
-	  		<div><input joaoappsoption type="checkbox" id="autoclipboardnotification" />Show a notification when clipboard contents are automatically sent to this device</div>
-	  		<div><input joaoappsoption type="checkbox" id="autoclipboard" />Enable automatic copying of your clipboard to other devices</div>
+	  		<label class="selection">Show a notification when clipboard contents are automatically sent to this device
+	  			<input joaoappsoption type="checkbox" id="autoclipboardnotification" />
+	  			<div class="selection_indicator"></div>
+  			</label>
+	  		<label class="selection">Enable automatic copying of your clipboard to other devices
+	  			<input joaoappsoption type="checkbox" id="autoclipboard" />
+	  			<div class="selection_indicator"></div>
+	  		</label>
 	  		<h4>Send to these devices:</h4>
 	  		<div id="devicesAutoClipboard"></div>
 	  	</div>
@@ -102,21 +111,32 @@
   		</div>
   		<div tab="advanced" class="optionContainer advanced">
   			<h2>Files</h2>
-  			<div><input joaoappsoption type="checkbox" id="downloadscreenshots" />Automatically download any received files</div>
-	  		<!--<div><input joaoappsoption type="checkbox" id="downloadvideos" />Automatically download any received videos</div>-->  	
+  			<label class="selection">Automatically download any received files
+  				<input joaoappsoption type="checkbox" id="downloadscreenshots" />
+  				<div class="selection_indicator"></div>
+			</label>
+	  		<!--<label class="selection">Automatically download any received videos
+	  			<input joaoappsoption type="checkbox" id="downloadvideos" />
+	  			<div class="selection_indicator"></div>
+	  		</label>-->  	
   			<h2>Notifications</h2>	  		
 	  		<div>Number of seconds a notification should show (max 25 seconds): <input joaoappsoption type="text" id="notificationseconds" /> - notifications will automatically show longer if they are higher priority. Use this setting to override that behaviour.</div>
 	  		<div>App websites: JSON object that represents Android package names and corresponding websites so that when you click on a notification it opens the website: <textarea joaoappsoption id="notificationwebsites" cols="80" rows="20"></textarea></div>
 	  		<div>Notification Sound (must be a publicly accessible url of an mp3 file):<input joaoappsoption type="text" id="notificationsound" /></div>
 	  		<div>List of app packages that will not show notification popups (one per line):<textarea joaoappsoption id="notificationnopopuppackages" cols="100" rows="20"></textarea></div>
 	  		<h2>Tasker</h2>
-	  		<div><input joaoappsoption type="checkbox" id="prefixtaskercommands"/>Add the "jointextpush=:=" prefix to Tasker commands so that the Join AutoApps condition automatically supports sent commands</div>	  		
+	  		<label class="selection">Add the "jointextpush=:=" prefix to Tasker commands so that the Join AutoApps condition automatically supports sent commands
+	  			<input joaoappsoption type="checkbox" id="prefixtaskercommands"/>
+	  			<div class="selection_indicator"></div>
+	  		</label>
 	  		<h2>EventGhost</h2>
 	  		<h4>If set, will redirect received Tasker Commands to the AutoRemote plugin in EventGhost in the specified port</h4>
 	  		<div>EventGhost Port: <input joaoappsoption type="text" id="eventghostport"/></div>
 	  		<h2>General</h2>
-	  		<div>Alternative popup icon: <input joaoappsoption type="checkbox" id="alternativeicon"/></div>
-	  	</div>
+			<label class="selection">Alternative popup icon
+	  			<input joaoappsoption type="checkbox" id="alternativeicon"/>
+	  			<div class="selection_indicator"></div>
+	  		</label>
   	</div>
 
 </body>

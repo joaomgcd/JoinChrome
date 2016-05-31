@@ -46,7 +46,7 @@ var ChromeNotification = function(notificationFromGcm){
 			}
 			var text = me.text;
 			if(back.getHideNotificationText()){
-				text = "...content hidden...";
+				text = "Content hidden";
 			}
 	    	var options = {
 		        "type":"basic",
