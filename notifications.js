@@ -121,7 +121,6 @@ var writeNotifications = function(){
             }
             var date_format = "#hh#:#mm#";
             if (back.get12HourFormat()) { date_format = date_format + " #AMPM#";}
-            console.log(date_format);
             dateElement.innerHTML = new Date().customFormat(date_format);
             titleElement.innerHTML = not.title;
             if(not.lines && not.lines.length>0){

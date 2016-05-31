@@ -229,6 +229,10 @@ td{
 	align-self: center;
 	opacity: 0.6;
 	height: 100%;
+	transition: all 0.3s ease;
+}
+.tab:not(.selected):hover {
+	background-color: var(--global-color-light);
 }
 .tabIcon{
   	cursor: pointer;

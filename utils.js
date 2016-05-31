@@ -827,7 +827,7 @@ Date.prototype.customFormat = function(formatString){
     DDD = (DDDD=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][this.getDay()]).substring(0,3);
     th=(D>=10&&D<=20)?'th':((dMod=D%10)==1)?'st':(dMod==2)?'nd':(dMod==3)?'rd':'th';
     formatString = formatString.replace("#YYYY#",YYYY).replace("#YY#",YY).replace("#MMMM#",MMMM).replace("#MMM#",MMM).replace("#MM#",MM).replace("#M#",M).replace("#DDDD#",DDDD).replace("#DDD#",DDD).replace("#DD#",DD).replace("#D#",D).replace("#th#",th);
-    h=(hhh=this.getHours());
+    h=this.getHours();
 
     hh = h;
     if (back.get12HourFormat()) {
@@ -837,7 +837,6 @@ Date.prototype.customFormat = function(formatString){
         hh = h<10?('0'+h):h;
     }
 
-    // hhhh = h<10?('0'+hhh):hhh;
     AMPM=(ampm=hhh<12?'am':'pm').toUpperCase();
     mm=(m=this.getMinutes())<10?('0'+m):m;
     ss=(s=this.getSeconds())<10?('0'+s):s;
