@@ -356,6 +356,9 @@ img.tabIcon{
 	padding: 8px;
 	resize: vertical;
 }
+#smsinput::-webkit-resizer {
+	background: url("icons/resize_handle.png") right bottom/50% 50% no-repeat;
+}
 #smsinput:focus{
 	outline: none;
 }
