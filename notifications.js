@@ -169,7 +169,7 @@ var writeNotifications = function(){
         if(not.persistent){
             closeButton.style.display = "none";
         }else{
-            closeButton.style.display = "block";
+            // closeButton.style.display = "block";
             closeButton.onclick =  function(event){
                 var not = event.currentTarget.notification;
                 console.log("Cancelling: ");
