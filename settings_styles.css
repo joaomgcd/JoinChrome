@@ -1,5 +1,5 @@
 body {
-	background: #fafafa;
+  background: #fafafa;
 	margin: 0px;
 }
 h1 { color: #5a5a5a; }	
@@ -8,19 +8,19 @@ h3 { color: #FF7A00; }
 h4 { color: #A75000; }	
 h5 { color: #FF7A00; }
 #Settings {
-	display: flex;
-	flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 #nodevices {
 	background-color: red;    
-    font-size: large;
-    font-weight: bolder;
+  font-size: large;
+  font-weight: bolder;
 }	
 #username {
-   	color: white;
-    align-self: center;
-    font-weight: bold;
-    margin-left: 10px;
+ 	color: white;
+  align-self: center;
+  font-weight: bold;
+  margin-left: 10px;
 }
 .color-primary-0 { color: #FF7A00 }	/* Main Primary color */
 .color-primary-1 { color: #FFA756 }
@@ -32,9 +32,9 @@ h5 { color: #FF7A00; }
 	font-size: 130%;
 }
 [advanced]::before {
-    content: 'ADVANCED: ';
-    font-size: 200%;
-    font-weight: bold;
+  content: 'ADVANCED: ';
+  font-size: 200%;
+  font-weight: bold;
 }
 [advanced] {
 	background-color: lightcoral;
@@ -46,18 +46,17 @@ h5 { color: #FF7A00; }
 	margin: 4px;
 	display: inline-block;    
 	border: black;
-    border-width: 1px;
-    border-style: solid;
+  border-width: 1px;
+  border-style: solid;
 }
 .androidDevice img {
 	width: 100px;
 	display: block;
 }
 #optionTabs {
-    display: flex;
+  display: flex;
 	justify-content: space-around;
 	margin-top: 10px;
-	width: 40%;
 	align-self: center;
 }
 [tab] {
@@ -72,20 +71,24 @@ h5 { color: #FF7A00; }
 	padding: 12px;
 	cursor: pointer;
 	text-transform: uppercase;
-    font-weight: bold;
-    opacity: 0.4;
+  font-weight: bold;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+}
+[showtab]:not(.selected):hover {
+  background-color: white;
 }
 [showtab].selected {
-	border-bottom: white 5px solid;
-    color: white;
-    opacity: 1;
+  box-shadow: 0px -4px 0px white inset;
+  color: white;
+  opacity: 1;
 }
 #topbar {
 	display: flex;
-    flex-direction: column;
-    background-color: #FF9800;
-    padding: 18px 12px 0 12px;
-    box-shadow: 0 -1px 4px black;
+  flex-direction: column;
+  background-color: #FF9800;
+  padding: 18px 12px 0 12px;
+  box-shadow: 0 -1px 4px black;
 }
 #userinfo {		
 	cursor: pointer;    	
@@ -96,8 +99,8 @@ h5 { color: #FF7A00; }
 #advancedoption {			
 	display: flex;
 	position:absolute;
-    flex-direction: row;    
-    align-items: center;
+  flex-direction: row;    
+  align-items: center;
 	right: 15px;
 }
 #usericon {
@@ -107,8 +110,8 @@ h5 { color: #FF7A00; }
 	margin-left: 10px;
 }
 #appinfo {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 	align-self: center;    
 	width: 40%;
 	min-width: 600px;
@@ -124,11 +127,11 @@ h5 { color: #FF7A00; }
 	height: 50px;
 }
 #appname {
-    font-size: xx-large;
-    color: white;
-    font-weight: bolder;
-    margin-left: 20px;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-size: xx-large;
+  color: white;
+  font-weight: bolder;
+  margin-left: 20px;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 #toggleadvanced {
 	height: 30px;
@@ -149,6 +152,31 @@ div.optionContainer h2:first-of-type {
 div.optionContainer > div {
 	padding: 4px;
 }
+label.selection {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 1.2em;
+  padding: 4px;
+  cursor: pointer;
+  position: relative;
+}
+label.selection input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+label.selection .selection_indicator {
+  margin: 4px;
+  width: 16px;
+  height: 16px;
+  background: url('icons/checkbox_blank.png') 0px 0px/100% 100%;
+}
+label.selection input:checked ~.selection_indicator {
+  opacity: 0.5;
+  background: url('icons/checkbox.png') 0px 0px/100% 100%;
+}
 #passwordstatus {
 	padding-top: 12px;
 	font-size: 130%;
@@ -163,7 +191,7 @@ div.optionContainer > div {
 #overlay {    
 	background-color: rgba(0,0,0,0.3);
 	position: fixed;
-    color: white;
+  color: white;
 	width: 100%;
 	height: 100%;
 	display: none;

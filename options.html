@@ -57,7 +57,6 @@
   		</div>
   		<div tab="options" class="optionContainer">
   			<h2>Customize</h2>
-	  		<h4>Custom Colors</h4>
 	  		<h4>Time and Date Format</h4>
 	  		<div><input joaoappsoption type="checkbox" id="12hrformat" />Use 12 hour (AM/PM) time format</div>
   		</div>
@@ -69,10 +68,25 @@
   		</div>
   		<div tab="notifications" class="optionContainer">
   			<h2>Chrome Notification Settings</h2>
-	  		<div><input joaoappsoption type="checkbox" id="hidenotificationtext" />Hide text content in notifications</div>
-	  		<div><input joaoappsoption type="checkbox" id="chromenotifications"/>Show standard Chrome notifications. If disabled will only show notifications when clicking the Join icon in the URL toolbar.</div>
-	  		<div><input joaoappsoption type="checkbox" id="playnotificationsound"/>Play notification sound</div>
+	  		<label class="selection">Hide text content in notifications
+	  			<input joaoappsoption type="checkbox" id="hidenotificationtext" />
+	  			<div class="selection_indicator"></div>
+	  		</label>
+	  		<label class="selection">Show standard Chrome notification popup
+	  			<input joaoappsoption type="checkbox" id="chromenotifications" />
+	  			<div class="selection_indicator"></div>
+	  		</label>
+	  		<label class="selection">Play notification sound
+	  			<input joaoappsoption type="checkbox" id="playnotificationsound" />
+	  			<div class="selection_indicator"></div>
+	  		</label>
   		</div>
+  		<!-- <div tab="notifications" class="optionContainer">
+  			<h2>Chrome Notification Settings</h2>
+	  		<div><input joaoappsoption type="checkbox" id="hidenotificationtext" />Hide text content in notifications</div>
+	  		<div><input joaoappsoption type="checkbox" id="chromenotifications"/>Show standard Chrome notification popup</div>
+	  		<div><input joaoappsoption type="checkbox" id="playnotificationsound"/>Play notification sound</div>
+  		</div> -->
   		<div tab="clipboard" class="optionContainer">
   			<h2>Clipboard Settings</h2>
 	  		<div><input joaoappsoption type="checkbox" id="autoclipboardnotification" />Show a notification when clipboard contents are automatically sent to this device</div>
