@@ -108,9 +108,9 @@ a#link:hover {
 .devicename {
 	font-family: 'Roboto', sans-serif;
 	overflow: hidden;
-	text-overflow: ellipsis; 	
+	text-overflow: ellipsis;
     font-weight: bold;
-    width: 69px;   
+    width: 69px;
     word-break: break-word;
 }
 #devicelist {
@@ -137,7 +137,7 @@ img#clearallnotifications {
 }
 .button-container {
 	align-items: flex-start;
-	display: flex;		  
+	display: flex;
 	flex-direction: column;
 	flex-wrap: wrap;
 	justify-content: space-around;
@@ -193,7 +193,7 @@ td {
 	height:100%;
 	position:relative;
 }
-#tools {			
+#tools {
 	align-self: center;
 	display: flex;
 	margin-right: 8px;
@@ -210,7 +210,7 @@ td {
 .tab {
 	align-self: center;
 	cursor: hand;
-	cursor: pointer; 
+	cursor: pointer;
 	height: 100%;
 	opacity: 0.6;
 	padding-left: 12px;
@@ -243,7 +243,7 @@ img.tabIcon {
 	box-shadow: 0px -4px 0px white inset;
 	opacity: 1;
 }
-#usericon {    
+#usericon {
 	border-radius: 50%;
 	cursor: pointer;
 	height: 30px;
@@ -254,7 +254,7 @@ img.tabIcon {
 	text-align: center;
 	flex-grow: 1;
 }
-.rotating {			
+.rotating {
 	animation: rotating 0.5s linear infinite;
 }
 @keyframes rotating {
@@ -275,7 +275,7 @@ img.tabIcon {
 }
 
 #sms {
-	flex-direction: column;	
+	flex-direction: column;
     display: flex;
     font-family: "Roboto", sans-serif;
     height: 510px;
@@ -306,13 +306,13 @@ img.tabIcon {
 	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
 }
 #smstitlecontainer.hidden {
-	display: none;			
+	display: none;
 }
-#smstitle {			
+#smstitle {
 	margin-left: 8px;
 }
-#smssendcontainer {	    
-	align-items: center;		
+#smssendcontainer {
+	align-items: center;
 	background-color: var(--global-color-gray);
 	display: flex;
 	margin: 0;
@@ -320,7 +320,7 @@ img.tabIcon {
 	z-index: 60;
 }
 #smssendcontainer.hidden {
-	display: none;			
+	display: none;
 }
 #smssend {
 	display: flex;
@@ -328,7 +328,7 @@ img.tabIcon {
 	padding: 1px;
     cursor: pointer;
 }
-#smsinput {			
+#smsinput {
 	background-color: white;
 	border-radius: 4px;
 	border: none;
@@ -339,7 +339,7 @@ img.tabIcon {
 	max-height: 5rem;
 	overflow: auto;
 	padding: 8px;
-	resize: vertical;
+	resize: none;
 }
 #smsinput::-webkit-resizer {
 	background: url("icons/resize_handle.png") right bottom/50% 50% no-repeat;
@@ -348,7 +348,7 @@ img.tabIcon {
 	outline: none;
 }
 #smscontainer {
-	flex-direction: column;			
+	flex-direction: column;
     background-color: var(--global-color-gray);
     display: flex;
     height: 100%;
@@ -395,7 +395,7 @@ img.tabIcon {
     margin: 8px 0px 8px 0px;
     z-index:50;
 }
-.smsmessage {    
+.smsmessage {
 	margin-right: 16px;
 	padding: 12px 16px 12px 16px;
     background-color: white;
@@ -407,7 +407,7 @@ img.tabIcon {
     margin-left: 100px;
     position: relative;
 }
-.smsmessage.received {	
+.smsmessage.received {
     background-color: var(--global-color-faded);
     margin-left: 16px;
     margin-right: 100px;
@@ -415,23 +415,23 @@ img.tabIcon {
 .smsbubbletriangle {
     color: white;
     float: right;
-    font-size: xx-large;    
+    font-size: xx-large;
     position: relative;
-    right: 6px;	
+    right: 6px;
     text-align: end;
     top: -16px;
 }
-.smsbubbletrianglereceived {		    
+.smsbubbletrianglereceived {
 	color: #FFE0B2;
     float: left;
-    font-size: xx-large;   
+    font-size: xx-large;
     left: 6px;
     position: relative;
     top: -16px;
 }
 .smsmessagetext {
 	word-wrap: break-word;
-    font-size: medium;		    
+    font-size: medium;
 }
 .smsmessagedate {
 	flex-grow: 1;
@@ -460,7 +460,7 @@ img.tabIcon {
 	display: none;
 }
 #contactfindcontainer {
-	align-items: center;	
+	align-items: center;
 	background-color: var(--global-color-gray);
 	display: flex;
 	margin:0;
@@ -469,7 +469,7 @@ img.tabIcon {
 #contactfindcontainer.hidden {
 	display: none;
 }
-#contactfindinput {		
+#contactfindinput {
 	background-color: white;
 	border-radius: 4px;
 	border: none;
