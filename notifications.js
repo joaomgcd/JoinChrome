@@ -48,7 +48,7 @@ var writeNotifications = function(){
 
     var clearNotificationsFAB = createElement(notificationsElement, "div", "clearAllNotificationButton",{"class":"fixed-action-btn"});
     var clearNotificationsLink = createElement(clearNotificationsFAB, "a", null, {"class":"btn-floating btn-large"});
-    var clearNotificationsIcon = createElement(clearNotificationsLink, "img", "clearAllNotificationButtonIcon", {"src":"icons/clear_all.png"});
+    var clearNotificationsIcon = createElement(clearNotificationsLink, "div", "clearAllNotificationButtonIcon");
     clearNotificationsFAB.onclick = function(){           
         var gcmNotificationClear = new back.GCMNotificationClear();
         gcmNotificationClear.clearAll();

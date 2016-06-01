@@ -131,11 +131,6 @@ a#link:hover {
     height: 510px;
     overflow-y: scroll;
 }
-img#clearallnotifications {
-    align-self: flex-end;
-    cursor: pointer;
-    margin-right: 8px;
-}
 .button-container {
 	align-items: flex-start;
 	display: flex;
@@ -456,7 +451,9 @@ img.tabIcon {
 	background-color: var(--global-color-light) !important;
 }
 #newsmsbuttonicon {
-    transform: rotate(180deg);
+    height: 100%;
+    width: 100%;
+    background: url('icons/compose.png') center/50% 50% no-repeat;
 }
 #newsmsbutton.hidden {
 	display: none;

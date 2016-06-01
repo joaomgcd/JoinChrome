@@ -149,8 +149,7 @@
 	display: flex;
 }
 #clearAllNotificationButtonIcon {
-	left: 1px;
-	position: relative;
-	top: -1px;
-	vertical-align: middle;
+	height: 100%;
+    width: 100%;
+    background: url('icons/clear_all.png') center/60% 60% no-repeat;
 }
