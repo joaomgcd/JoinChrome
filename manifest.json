@@ -1,0 +1,78 @@
+{
+    "name": "Join by joaoapps",
+    "short_name": "Join",
+    "description": "Bring your devices together",
+    "version": "1.0.18",
+    "permissions": [
+        "identity",
+        "identity.email",
+        "background",
+        "gcm",
+        "storage",
+        "webRequest",
+        "webRequestBlocking",
+        "notifications",
+        "tabs",
+        "clipboardRead",
+        "clipboardWrite",
+        "https://localhost:8080/",
+        "http://localhost/",
+        "https://joinjoaomgcd.appspot.com/",
+        "https://accounts.google.com/o/oauth2/v2/auth/",
+        "contextMenus",
+        "geolocation",
+        "activeTab"
+    ],
+    "icons": {
+        "16": "small.png",
+        "48": "medium.png",
+        "128": "big.png"
+    },
+    "browser_action": {
+        "default_icon": "icon.png",
+        "default_popup": "devices.html"
+    },
+    "web_accessible_resources": [
+        "medium.png"
+    ],
+    "background": {
+        "page": "join.html"
+    },
+    "options_page": "options.html",
+  "commands": {
+    "popup": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K"
+      },
+      "description": "Show devices popup to perform commands",
+      "global": true
+    },
+    "repeat-last-command": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L"
+      },
+      "description": "Repeat last command",
+      "global": true
+    },
+    "favorite-command": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P"
+      },
+      "description": "Perform Favorite Command",
+      "global": true
+    }
+  }, 
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsfKrN+vAk/h3UX6prKsJFJi++pcCk3Aw2+L23//tAubEa3ZXM6oLHSRf0E/O7Bk2z/nYVN0enIkJ+D88UMKfGeeVDftuhDTIHRqIn6xSRgrqiOXxiLo7w9AdSHgu7dVkizxuFSVr0rq6HB4gqoeSazZS7V1jYBKZ4ZBtpn32efj9r13YT/C0gwNT7k/hnFd8y2lyahqSDG+hcB+i15naHjMxDgo7sr3xFE4jn46N+QXTfPOV7NntnSKJEE4LEdUFNoSkSniO41Z6AWajgw58JZwFigyLlV7xEA/PIIkRMpX9RIQ3LWbyk5q7rUM+eYvc+WKqIZQSlH76dQTWFPSY+wIDAQAB",    
+    "oauth2": {
+        "client_id": "596310809542-5tfd4b5u90jmh0r664mdl73cnct5m0ea.apps.googleusercontent.com",
+        "client_id_web": "596310809542-c2bg952rtmf05el5kouqlcf0ajqnfpdl.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/drive.appfolder",
+            "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/drive.file"
+        ]
+    },
+    "manifest_version": 2
+}

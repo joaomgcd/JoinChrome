@@ -1,0 +1,157 @@
+<html>
+<head>
+<style type="text/css">
+	.notification{
+	  //display:flex;
+	  flex-direction: column;
+	  box-shadow: 5px 5px 5px grey;
+	  background-color: white;
+	  width: 400px;
+  	  position: relative;  	  
+      align-self: center;
+	}
+	#closebutton{
+	  position: absolute;
+	  height: 13px;
+	  top: 5px;
+	  right: 5px;
+	  cursor: pointer; cursor: hand;
+	}
+	.notificationBody{
+	  display:flex;
+	  background-color: white;
+	  margin-bottom: 10px;
+	  margin-top: 5px;
+      margin-right: 11px;
+	}
+	.notificationright{
+	  display:flex;
+	  flex-direction: column;
+	  flex-grow: 1;
+	  margin-top: 16px;
+	  width: 300px;
+	}
+	.notificationtitle{
+	  margin-bottom:8px;
+	  font-weight: bold;
+	  font-size: 160%;
+	  font-family: 'Roboto', sans-serif;
+	  flex-grow: 1;
+	}
+	.notificationtext{
+	  font-size: 130%;
+	   word-wrap: break-word;
+       width: 300px;
+	   font-family: 'Roboto', sans-serif;
+	  margin-bottom:16px;
+	  color: #757575;
+	}
+	#date{
+	   font-family: 'Roboto', sans-serif;
+	  color: #757575;
+	  font-size: 110%;
+	}
+	.notificationleft{
+		position: relative;
+	   -moz-border-radius: 50px; 
+	   -webkit-border-radius: 50px; 
+	   border-radius: 50px;
+	   display: flex;
+	   flex-direction: column;
+       align-items: center;
+       margin-left: 8px;
+       margin-top: 12px;
+       margin-bottom: 12px;
+       width: 72px;
+	}
+	.notificationicon{
+	  width: 48px;
+	  height: 48px;
+      border-radius: 50%;
+	}
+	.notificationiconapp{ 
+	   position: absolute;
+	    bottom: 5px;
+	    right: -5px;
+	    width: 30px;
+	}
+	.notificationimage{
+	  width: 300px;
+	  border-top: 1px solid #e6e6e6;
+	  border-bottom: 1px solid #e6e6e6;
+	  margin-top: 10px;
+	}
+	.notificationbuttons{
+	  display:flex;
+	  flex-direction: row;
+	  border-top: 1px solid #e6e6e6;
+	  padding-bottom: 10px;
+	  margin-left:8px;
+      margin-right: 8px;
+	  flex-wrap: wrap;
+	  justify-content: space-between;
+	}
+	.notificationbutton{
+	  display:flex;
+	  cursor: pointer; cursor: hand;
+	  margin-left:8px;
+	  margin-right:8px;
+	  margin-top: 8px;
+	}
+	.buttonicon{
+	  width:24px;
+	  height:24px;
+	}
+	.buttontext{
+	  flex-grow: 1;
+	  margin-left: 10px;
+	  align-self: center;
+      font-family: 'Roboto', sans-serif;
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 130%;
+      color: #616161;
+	}
+	#appname{
+	   align-self: center;
+		margin-right: 8px;
+	}
+	.notificationdevice{
+		margin-left: 8px;
+	}
+	#notificationTop{
+	   display: flex;
+	   margin: 5px;
+	   font-family: 'Roboto', sans-serif;
+	}
+	#iconcontainer{
+		align-self: flex-start;
+	}
+	#textanddate{
+		display: flex;
+	}
+</style>
+</head>
+<body>
+	<div id="notification" class="notification card">
+      <img src="icons/close.png" id="closebutton"/>
+      <div id="notificationTop"><div id="appname">App Name</div><div>-</div><div class="notificationdevice" id="device">Nexus 6</div></div>
+      <div class="notificationBody">
+        <div id="notificationleft" class="notificationleft">
+          <div id="iconcontainer"><img class="notificationicon" id="icon" src="icon.png" /></div>
+          <img class="notificationiconapp" id="iconapp" src="icon.png" />
+      		
+        </div>
+        <div id="notificationright" class="notificationright">
+          <div id="textanddate"><div class="notificationtitle" id="title">Title</div><div id="date"></div></div>
+          <div class="notificationtext" id="text">Text</div>
+        </div>
+      </div>
+      <div>
+        <img class="notificationimage" id="image"/>
+      </div>
+      <div class="notificationbuttons" id="buttons">
+      </div>
+    </div>
+</body>
+</html>

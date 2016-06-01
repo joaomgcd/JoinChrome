@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Join</title>
+	<script src="utils.js"></script>
+	<script src="js/devicecommands.js"></script>
+	<link rel="import" href="components/device-commands.html" />
+	<link rel="import" href="components/device.html" />
+	<link rel="import" href="components/device-button.html" />
+	<link rel="import" href="components/device-buttons.html" />
+	<link rel="import" href="notifications.html" />
+	<link rel="import" href="components/sms.html" />
+    <link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
+	<style type="text/css">
+		
+		:root {
+		  --join-orange: #FF9800;
+		  --join-orange-faded: #FFE0B2;
+		}
+		a{
+			color: #FF9800;
+		}
+		 .devicesbody{
+            width: 440px;
+        }
+		.notificationsbody{
+			width: 440px;
+
+		}
+		.smsbody{
+			width: 440px;
+
+		}
+		#tabsplaceholder{
+			text-align: center;
+			overflow: hidden;
+		}
+        .devicecommands{
+            display: flex;
+            flex-direction: column;
+            background-color: white;    
+            width: 100%;
+            height: 550px;
+        }
+
+        .devicecommandsleft{
+            display: flex;
+            flex-direction: column;
+            background-color: white; 
+            width: 100%;
+            height: 550px;
+        }
+        .commands{
+			border-top: #cccccc 1px solid;
+    		overflow-y: auto;
+    		flex: 1;
+        }
+        #deviceiconcontainer{
+    		border-radius: 100%;
+            height: 50px;
+            width: 50px;
+            display: flex;
+        }
+        .deviceicon{
+            height: 30px;
+            display: block;
+            margin: auto;
+        }
+        .device{
+        	display: flex;
+        	margin-top: 5px;
+    		flex-direction: column;
+    		align-items: center;
+		    width: 70px;
+    		opacity: 0.4;
+			cursor: pointer;
+        }
+        .devicecommandsleft .device{
+        }
+        .selecteddevice{
+    		opacity: 1;
+        }
+        .device #deviceiconcontainer{
+    		background-color: #FF9800;
+        }
+        .selecteddevice #deviceiconcontainer{
+        }
+        .devicecommandsleft .selecteddevice{
+        }
+        .devicecommands .selecteddevice::after{
+        	content: ' ';
+			position: absolute;
+			height: 100%;
+			width: 2px;
+			right: -2px;
+			top: 0;
+			background: antiquewhite;
+        }
+        .devicecommandsleft .selecteddevice::before{
+        	
+        }
+        .devicebutton{
+            font-weight: bold;
+            margin-top: 5px;
+		    display: flex;
+		    align-items: center;
+		    padding: 8px;
+		    width: 100%;
+		    cursor: pointer;
+        }
+        .devicebutton.disabled{
+        	display: none;
+        }
+        .devicebutton:hover{
+        	background: #eeeeee;
+        }
+        #devicebuttondrag{
+        	visibility: hidden;
+        }
+        .devicebutton:hover #devicebuttondrag{
+        	visibility: visible;
+        }
+		#devicebuttonimage{
+			width: 24px;
+			height: 24px;
+			margin-right: 32px;
+		}
+        a#link{
+        	color: #757575;
+		    font-size: large;
+		    font-weight: 400;
+    		font-family: 'Roboto', sans-serif;
+        }
+        a#link:hover{
+        	color: #FF9800;
+        }
+        .devicename{
+            font-weight: bold;
+            width: 69px;   
+	        word-break: break-word;
+			overflow: hidden;
+			text-overflow: ellipsis; 	
+    		font-family: 'Roboto', sans-serif;
+        }
+        #devices{
+            /*text-align: center;
+        	display: flex;
+    		flex-wrap: wrap;
+    		justify-content: flex-start;*/
+        }
+        #devicelist{
+            text-align: center;
+        	display: flex;
+    		flex-wrap: wrap;
+    		justify-content: flex-start;
+        }
+		#notifications{
+			display: flex;
+			align-items: center;
+			//justify-content: space-around;
+			margin-bottom: 10px;
+    		flex-direction: column;
+            overflow-y: scroll;
+            height: 510px;
+		}
+		img#clearallnotifications {
+		    align-self: flex-end;
+		    margin-right: 8px;
+		    cursor: pointer;
+		}
+		.button-container {
+		  padding: 0;
+		  margin: 0;
+		  list-style: none;
+		  display: flex;		  
+		  flex-direction: column;
+		  flex-wrap: wrap;
+		  justify-content: space-around;
+		  align-items: flex-start;
+		}
+		.button {
+
+		  padding: 5px;
+		  width: 130px !important;
+		  height: 20px;
+		  margin-top: 5px;
+		  margin-right: 5px;
+		  
+		  line-height: 20px;
+		  color: white;
+		  font-weight: bold;
+		  text-align: center;
+		}
+		.button-link{
+			width: 190px !important;
+			height: 30px !important;
+			line-height: 30px !important;
+			padding: 0px;
+			margin: 5px;
+    		font-family: 'Roboto', sans-serif;
+    		background: #424242;
+    		border-radius: 4px;
+		}
+		.button-link:hover{
+    		background: #FF9800;
+		}
+		td{
+			padding: 0px !important;
+			text-align: center !important;
+		}
+		#topbar {
+		  display: none;
+		}
+		.tabselement{
+			display: flex;
+			background-color: #FF9800;
+			justify-content: flex-start;
+			font-size: medium;
+		}
+		#tabscontainer{
+		}
+		#tabs {
+			flex-grow: 1;
+		}
+		#tools{			
+			margin-right: 10px;
+		}
+		#currenttabtitle{
+			padding-left: 10px;
+			padding-bottom: 3px;
+    		font-family: 'Roboto', sans-serif;
+    		font-weight: bold;
+    		color: white;
+			display: none;
+		}
+		#shadow{
+			background: linear-gradient(#dddddd,rgba(255,0,0,0) );
+    		height: 5px;
+			margin-bottom: 3px;
+		}
+		.tab{
+			cursor: pointer; cursor: hand;
+			align-self: center;
+    		opacity: 0.6;
+		}
+		.tabIcon{
+			margin-top: 5px;
+			margin-left: 5px;
+			margin-right: 5px;
+		  	cursor: pointer;
+		  	font-family: 'Roboto', sans-serif;
+		    font-weight: bold;
+		    color: white;
+		}
+		img.tabIcon{
+			width: 30px;
+			margin-right: 0px;
+		}
+		.selected{
+    		opacity: 1;
+    		-webkit-filter: drop-shadow(0px 0px 3px rgba(255, 255, 255, 1));
+    		border-bottom: white 5px solid;
+		}
+		#usericon {    
+			border-radius: 50%;
+    		width: 30px;
+    		height: 30px;
+    		margin: 2px;
+    		cursor: pointer;
+		}
+		#topBarText {
+		  flex-grow: 1;
+    		text-align: center;
+		}
+		#topBarRefresh {
+		  flex-grow: 0;
+		}
+		#settings {
+		  flex-grow: 0;
+		}
+		.rotating{			
+  		  animation: rotating 0.5s linear infinite;
+		}
+		@keyframes rotating {
+		  from {
+		    -ms-transform: rotate(0deg);
+		    -moz-transform: rotate(0deg);
+		    -webkit-transform: rotate(0deg);
+		    -o-transform: rotate(0deg);
+		    transform: rotate(0deg);
+		  }
+		  to {
+		    -ms-transform: rotate(360deg);
+		    -moz-transform: rotate(360deg);
+		    -webkit-transform: rotate(360deg);
+		    -o-transform: rotate(360deg);
+		    transform: rotate(360deg);
+		  }
+		}
+
+		#sms{
+		    height: 510px;
+		    display: flex;
+			flex-direction: column;	
+		    font-family: "Roboto", sans-serif;
+		}
+		#smsback{
+			transform: rotate(180deg);
+			font-size: x-large;
+			cursor: pointer;
+    		margin-left: 8px;
+		}
+		#smstitlecontainer{
+			font-weight: bold;
+			color: white;
+			background-color: #FF9800;
+		    font-size: large;
+		    margin-top: -8px;
+		    padding-left: 8px; 
+		    display: flex;
+    		flex-direction: row;
+    		min-height: 30px;
+			align-items: center;
+		}
+		#smstitlecontainer.hidden{
+			display: none;			
+		}
+		#smstitlecontainer.inpopup{
+		    margin-top: 0px;
+		}
+		#smstitle{			
+    		margin-left: 8px;
+		}
+		#smssendcontainer{	    
+			display: flex;
+    		align-items: center;		
+		}
+		#smssendcontainer.hidden{
+			display: none;			
+		}
+		#smssend {
+		    font-size: 35px;
+		    cursor: pointer;
+		}
+		#smsinput{			
+    		margin-bottom: 0px;
+    		margin-left: 8px;
+    		height: 16px;
+		}
+		#smscontainer{
+		    display: flex;
+			flex-direction: column;			
+		    overflow-y: scroll;
+		    height: 100%;
+		}
+		.smscontact{
+			border-top: #dddddd 1px solid;
+		    padding-top: 8px;
+		    padding-left: 16px;
+		    padding-right: 16px;
+		    margin-bottom: 20px;
+    		cursor: pointer;
+		}
+		.smscontactname{
+		    font-size: medium;
+			font-weight: bold;
+		}
+		.smstextanddate {
+		    display: flex;
+		    font-size: small;
+		}
+		.smscontacttext{
+		    color: #777777;
+		    flex-grow: 1;
+    		max-width: 340px;
+		}
+		.smscontactdate {
+		    color: #aaaaaa;
+    		margin-left: 8px;
+    		text-align: end;
+    		align-self: flex-end;
+		}
+		.smsmessagecontainer{
+		    display: block;
+		    margin: 8px;
+		}
+		.smsmessage {    
+			padding: 8px;
+		    background-color: #FFE0B2;
+		    display: flex;
+		    flex-direction: column;
+		    position: relative;
+		    //border: 1px solid aliceblue;
+		    border-radius: 4px;
+		    margin-left: 100px;
+		    font-weight: 500;
+		    font-family: "Roboto", sans-serif;
+    		margin-right: 16px;
+		}
+		.smsmessage.received{	
+		    background-color: #f1f4f7;
+		    margin-right: 100px;
+		    margin-left: 16px;
+		}
+		.smsbubbletriangle{
+		    color: #FFE0B2;
+		    position: relative;
+		    font-size: xx-large;    
+		    top: -6px;
+		    right: 0px;	
+		    text-align: end;
+		    z-index: -1000;
+		    height: 0px;
+		}
+		.smsbubbletrianglereceived{		    
+			color: #f1f4f7;
+		    position: relative;
+		    font-size: xx-large;   
+		    top: -6px;
+		    z-index: -1000;
+		    height: 0px;
+		}
+		.smsmessagetext {
+		    font-size: medium;		    
+    		word-wrap: break-word;
+		}
+		.smsmessagedate {
+		    margin-top: 8px;
+		    font-size: small;
+		    color: #999999;
+    		flex-grow: 1;
+		}
+		#smsmessagebottom {
+		    display: flex;
+		    flex-direction: row;
+		    align-items: baseline;
+		}
+		#smsmessageprogress.hidden{
+			display: none;
+		}
+		#smsmessageprogress img{
+			width: 15px;
+			height: 15px;
+		}
+		#newsmsbuttonicon{
+		    transform: rotate(180deg);
+		}
+		#newsmsbutton{
+			bottom: 24px;
+			right: 48px;
+		}
+		#newsmsbutton.hidden{
+			display: none;
+		}
+		#contactfindcontainer{
+			display: flex;
+    		align-items: center;	
+		}
+		#contactfindcontainer.hidden{
+			display: none;
+		}
+		#contactfindinput{				
+    		margin-bottom: 8px;
+    		margin-left: 8px;
+    		height: 16px;
+		}
+		.btn-floating{
+			background: #FF9800 !important;
+		}
+		
+	</style>
+</head>
+<body>
+	<div id="topbar">
+		<img id="usericon" />
+		<div id="topBarText"><b>Check the <a id="optionslink" href="#">options</a> for keyboard shortcuts and more</b></div>
+	</div>
+	<div id="tabscontaineroutter">
+		<div id="tabscontainer" class="tabselement">
+			<div id="tabs"  class="tabselement">
+				<div id="tab-devices" class="tab"><div class="tabIcon">Devices</div></div>
+				<div id="tab-notifications" class="tab"><div class="tabIcon">Notifications</div></div>
+				<div id="tab-sms" class="tab"><div class="tabIcon">SMS</div></div>
+			</div>
+			<div id="tools">
+				<img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" />
+				<img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" />
+				<img class="tabIcon" src="icons/keyboard.png" id="keyboardsettings"  title="Keyboard Shortcuts" />
+				<img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/>
+			</div>
+		</div>
+		<div id="currenttabtitle" class="tabselement"></div>
+		<div id="shadow"></div>
+	</div>
+	<div id="devices"></div>
+	<div id="notifications"></div>
+	<div id="sms">
+		<div id="smstitlecontainer">
+			<div id="smsback">&#10132;</div><div id="smstitle"></div>
+		</div>
+		<div class="fixed-action-btn" id="newsmsbutton">
+			<a class="btn-floating btn-large">
+				<i class="large material-icons" id="newsmsbuttonicon">&#10000;</i>
+			</a>	    
+		</div>
+		<div id="contactfindcontainer" class="input-field col s6">
+          <input placeholder="Search for contact" type="text" class="validate" id="contactfindinput" />       
+        </div>
+		<div id="smscontainer"></div>
+		<div id="smssendcontainer" class="input-field col s6">
+          <input placeholder="Type your message" type="text" class="validate" id="smsinput" />
+          <div id="smssend"><img src="icons/send.png"/></div>          
+        </div>
+	</div>
+
+    <input type="file" id="uploadfile" style="display:none;" multiple/>
+  	<script type="text/javascript" src="materialize/js/jquery-2.1.1.min.js"></script>
+  	<script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+	<script src="js/deviceui.js"></script>
+    <script src="devices.js"></script>
+	<script src="notifications.js"></script>
+	<script src="js/Autolinker.min.js"></script>
+	<script src="js/sms.js"></script>
+</body>
+</html>

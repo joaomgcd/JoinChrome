@@ -1,0 +1,366 @@
+<html>
+<head>
+	<link rel="import" href="test.html" />
+    
+	<title>Join Options</title>
+	<style type="text/css">
+	body{
+		background: #fafafa;
+		margin:0px;
+	}
+	h1 { color: #5a5a5a }	
+	h2 {
+	 color: #5a5a5a;
+	}	
+	h3 { color: #FF7A00 }	
+	h4 { color: #A75000 }	
+	h5 { color: #FF7A00 }
+	#options{
+		display: flex;
+    	flex-direction: column;
+	}
+	#nodevices{
+		background-color: red;    
+	    font-weight: bolder;
+	    font-size: large;
+	}	
+	#username{
+	    margin-left: 10px;
+	    align-self: center;
+	    font-weight: bold;
+	   	color: white;
+	}
+	.color-primary-0 { color: #FF7A00 }	/* Main Primary color */
+	.color-primary-1 { color: #FFA756 }
+	.color-primary-2 { color: #FF8F27 }
+	.color-primary-3 { color: #D56600 }
+	.color-primary-4 { color: #A75000 }
+
+	.shortcut{
+		padding: 10px;
+		font-size: 130%;
+	}
+	[advanced]::before {
+	    content: 'ADVANCED: ';
+	    font-size: 200%;
+	    font-weight: bold;
+	}
+	[advanced]{
+		background-color: lightcoral;
+		padding: 10px;
+	}
+	    .androidDevice{
+	    	background-color: lightgreen;
+	    	padding: 10px;
+	    	margin: 10px;
+	    	display: inline-block;    
+	    	border: black;
+		    border-width: 1px;
+		    border-style: solid;
+	    }
+	    .androidDevice img{
+	    	width: 100px;
+	    	display: block;
+	    }
+    #optionTabs{
+   	    display: flex;
+		justify-content: space-around;
+		margin-top: 10px;
+		width: 720px;
+		align-self: center;
+    }
+    [tab]{
+		width: 720px;
+		align-self: center;
+    }
+    [tab] :first-child {
+	    margin-top: 10px;
+	}
+    [showtab]{
+    	cursor: pointer;
+    	font-size: 130%;
+    	text-transform: uppercase;
+	    font-weight: bold;
+	    color: gray;
+    }
+    [showtab].selected{
+    	border-bottom: orangered 3px solid;
+	    color: white;
+    }
+    #topbar{
+    	display: flex;
+	    flex-direction: column;
+        background: linear-gradient(#ffc310, #ffa300);
+	    padding: 15px;
+    }
+	#userinfo{		
+    	cursor: pointer;    	
+    	display: flex;
+	    flex-grow: 1;
+	}
+	#advancedoption{			
+    	display: flex;
+    	position:absolute;
+	    flex-direction: row;    
+	    align-items: center;
+    	right: 15px;
+	}
+	#usericon{
+		border-radius: 50%;
+    	width: 50px;
+    	height: 50px;
+    	margin-left: 10px;
+	}
+	#appinfo{
+	    display: flex;
+    	align-self: center;    
+    	width: 500px;
+    	cursor: pointer;
+	}
+	#shadow{
+		background: linear-gradient(#ffa300,rgba(255,0,0,0) );
+    	height: 10px;
+	}
+	#appicon{
+    	width: 50px;
+    	height: 50px;
+	}
+	#appname{
+	    font-size: xx-large;
+	    color: white;
+	    font-weight: bolder;
+	    margin-left: 20px;
+	    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+	}
+	#toggleadvanced{
+    	height: 30px;
+	}
+	.hidden{
+		display: none;
+	}
+	#passwordstatus{
+		font-size: 130%;
+		font-weight: bolder;
+		color: red;
+	}
+	#passwordstatus.set{
+		font-size: 130%;
+		font-weight: bolder;
+		color: green;
+	}
+	#overlay{    
+		background-color: rgba(0,0,0,0.3);
+    	position: fixed;
+	    color: white;
+		width: 100%;
+    	height: 100%;
+    	display: none;
+    	align-items: center;
+	}
+	#overlay.showing{ 
+    	display: flex;
+	}
+	#overlaycontent{
+		text-align: center;
+		font-size: 300%;
+		font-weight: bolder;
+		flex-grow: 1;
+	}
+	.advanced div {
+	    margin-bottom: 20px;
+	}
+	    .sk-cube-grid {
+		  width: 40px;
+		  height: 40px;
+		  margin: 50px;
+		}
+
+		.sk-cube-grid .sk-cube {
+		  width: 33%;
+		  height: 33%;
+		  background-color: #333;
+		  float: left;
+		  -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+		          animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out; 
+		}
+		.sk-cube-grid .sk-cube1 {
+		  -webkit-animation-delay: 0.2s;
+		          animation-delay: 0.2s; }
+		.sk-cube-grid .sk-cube2 {
+		  -webkit-animation-delay: 0.3s;
+		          animation-delay: 0.3s; }
+		.sk-cube-grid .sk-cube3 {
+		  -webkit-animation-delay: 0.4s;
+		          animation-delay: 0.4s; }
+		.sk-cube-grid .sk-cube4 {
+		  -webkit-animation-delay: 0.1s;
+		          animation-delay: 0.1s; }
+		.sk-cube-grid .sk-cube5 {
+		  -webkit-animation-delay: 0.2s;
+		          animation-delay: 0.2s; }
+		.sk-cube-grid .sk-cube6 {
+		  -webkit-animation-delay: 0.3s;
+		          animation-delay: 0.3s; }
+		.sk-cube-grid .sk-cube7 {
+		  -webkit-animation-delay: 0s;
+		          animation-delay: 0s; }
+		.sk-cube-grid .sk-cube8 {
+		  -webkit-animation-delay: 0.1s;
+		          animation-delay: 0.1s; }
+		.sk-cube-grid .sk-cube9 {
+		  -webkit-animation-delay: 0.2s;
+		          animation-delay: 0.2s; }
+
+		@-webkit-keyframes sk-cubeGridScaleDelay {
+		  0%, 70%, 100% {
+		    -webkit-transform: scale3D(1, 1, 1);
+		            transform: scale3D(1, 1, 1);
+		  } 35% {
+		    -webkit-transform: scale3D(0, 0, 1);
+		            transform: scale3D(0, 0, 1); 
+		  }
+		}
+
+		@keyframes sk-cubeGridScaleDelay {
+		  0%, 70%, 100% {
+		    -webkit-transform: scale3D(1, 1, 1);
+		            transform: scale3D(1, 1, 1);
+		  } 35% {
+		    -webkit-transform: scale3D(0, 0, 1);
+		            transform: scale3D(0, 0, 1);
+		  } 
+		}
+		
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% { 
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% { 
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
+}
+    </style>  
+<script src="js/aes.js"></script>
+<script src="js/pbkdf2.js"></script>
+<script src="options.js"></script>
+<script src="utils.js"></script>
+<script src="tests.js"></script>
+<script src="js/devicecommands.js"></script>
+
+</head>
+<body>
+	<div id="overlay">
+		<div id="overlaycontent">
+			Generating key...
+			<div class="spinner">
+			  <div class="bounce1"></div>
+			  <div class="bounce2"></div>
+			  <div class="bounce3"></div>
+			</div>
+		</div>
+	</div>
+  	<div id="options">
+		<!--<div id="advancedoption"><input id="toggleadvanced" type="checkbox" /><span>Advanced</span></div>-->
+  		<div id="topbar">
+  			<div id="appinfo">
+  				<div id="userinfo">
+			  		<img id="usericon" />
+			  		<div id="username"></div>
+		  		</div>
+		  		<span id="appiconandname">
+	  				<img id="appicon" src="icon.png" />
+					<span id="appname">Join</span>
+				</span>
+		  	</div>		
+  			<div id="optionTabs"><div showtab="shortcuts">Shortcuts</div><div showtab="clipboard">Clipboard</div><div showtab="notifications">Notifications</div><div showtab="encryption">Encryption</div><div showtab="diagnostics">Diagnostics</div><div showtab="advanced">Advanced</div></div>
+  		</div>
+  		<div id="shadow">
+  		</div>
+  		
+  		<div tab="shortcuts">
+	  		<h4>Don't forget to make shortcuts global so you can perform these from anywhere on your system and not just while Chrome is showing</h4>
+	  		<div class="shortcut" id="shortcutpopup">You can <a id="configurepopup" href="#">configure</a> a keyboard shortcut to show a popup with your devices to easily perform commands.</div>
+	  		<div class="shortcut" id="shortcutrepeat-last-command">You can <a id="configurerepeat-last-command" href="#">configure</a> a keyboard shortcut to repeat the last command performed on your devices.</div>
+	  		<div class="shortcut" id="shortcutfavorite-command">You can <a id="configurefavorite-command" href="#">configure</a> a keyboard shortcut to perform your Favorite Command chosen below.</div>
+	  		<h2>Favorite Command</h2>
+	  		<h4>Set your favorite command to be executed with the "Favorite Command" shortcut</h4>
+	  		<div>Do this on my
+		  		<select joaoappsoption id="select_favourite_command_device" ></select>
+		  		:
+		  		<select joaoappsoption id="select_favourite_command" ></select>
+		  		<div id="favouritecommandtextarea">
+		  		with this text:
+		  		<input joaoappsoption type="text" id="text_favourite_command" placeholder="Leave blank to set text when sending" size="40" />
+		  		</div>
+	  		</div>
+  		</div>
+  		<div tab="encryption">
+  			<!--<h1>IMPORTANT: It has come to my attention that <a href="http://www.bis.doc.gov/index.php/policy-guidance/encryption/identifying-encryption-items">having encryption in an app doesn't conform to US Export laws</a> which is required for an app to be on Google Play. Therefore encryption in Join will be disabled until I sort things out</h1> -->
+	  		<h4>If set, the password will encrypt your pushes before they are sent other devices. The same password must be set on receiving devices.</h4>	  		
+  			<div>Encryption Password: <input type="password" id="encryptionpassword"/> <input type="button" value="Set" id="buttonsetpassword"> <input type="button" value="Reset" id="buttonresetpassword"><div id="passwordstatus">Password is not set</div></div>
+  		</div>
+  		<div tab="notifications">
+	  		<div><input joaoappsoption type="checkbox" id="hidenotificationtext" />Hide text content in notifications</div>
+	  		<div><input joaoappsoption type="checkbox" id="chromenotifications"/>Show standard Chrome notifications. If disabled will only show notifications when clicking the Join icon in the URL toolbar.</div>
+	  		<div><input joaoappsoption type="checkbox" id="playnotificationsound"/>Play notification sound</div>
+  		</div>
+  		<div tab="clipboard">
+	  		<div><input joaoappsoption type="checkbox" id="autoclipboardnotification" />Show a notification when clipboard contents are automatically sent to this device</div>
+	  		<div><input joaoappsoption type="checkbox" id="autoclipboard" />Enable automatic copying of your clipboard to other devices</div>
+	  		<h4>Send to these devices:</h4>
+	  		<div id="devicesAutoClipboard"></div>
+	  	</div>
+  		<div tab="diagnostics">
+	  		<h4>Test Join to see if everything's working like it should</h4>
+	  		<input type="button" value="Test" id="starttests">
+	  		<div id="tests"></div>
+  		</div>
+  		<div tab="advanced" class="advanced">
+  			<h2>Files</h2>
+  			<div><input joaoappsoption type="checkbox" id="downloadscreenshots" />Automatically download any received files</div>
+	  		<!--<div><input joaoappsoption type="checkbox" id="downloadvideos" />Automatically download any received videos</div>-->  	
+  			<h2>Notifications</h2>	  		
+	  		<div>Number of seconds a notification should show (max 25 seconds): <input joaoappsoption type="text" id="notificationseconds" /> - notifications will automatically show longer if they are higher priority. Use this setting to override that behaviour.</div>
+	  		<div>App websites: JSON object that represents Android package names and corresponding websites so that when you click on a notification it opens the website: <textarea joaoappsoption id="notificationwebsites" cols="100" rows="20"></textarea></div>
+	  		<div>Notification Sound (must be a publicly accessible url of an mp3 file):<input joaoappsoption type="text" id="notificationsound" /></div>
+	  		<div>List of app packages that will not show notification popups (one per line):<textarea joaoappsoption id="notificationnopopuppackages" cols="100" rows="20"></textarea></div>
+	  		<h2>Tasker</h2>
+	  		<div><input joaoappsoption type="checkbox" id="prefixtaskercommands"/>Add the "jointextpush=:=" prefix to Tasker commands so that the Join AutoApps condition automatically supports sent commands</div>	  		
+	  		<h2>EventGhost</h2>
+	  		<h4>If set, will redirect received Tasker Commands to the AutoRemote plugin in EventGhost in the specified port</h4>
+	  		<div>EventGhost Port: <input joaoappsoption type="text" id="eventghostport"/></div>
+	  		<h2>General</h2>
+	  		<div>Alternative popup icon: <input joaoappsoption type="checkbox" id="alternativeicon"/></div>
+	  	</div>
+  	</div>
+
+</body>
+</html>
