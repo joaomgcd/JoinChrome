@@ -148,7 +148,7 @@ var manageTabs = function(){
     }
   };
 }
-var deviceAutoClipboardHtml = "<div class='DEVICE_CLASS'><label class='selection'><b>DEVICE_NAME</b><input type='checkbox' id='DEVICE_ID"+ chrome.extension.getBackgroundPage().deviceSufix+"'/><div class='selection_indicator'></div><img id='DEVICE_ID_icon' class='deviceicon' deviceId='DEVICE_ID' src='DEVICE_ICON'/></div>"
+var deviceAutoClipboardHtml = "<label class='device_selection'><input type='checkbox' id='DEVICE_ID"+ chrome.extension.getBackgroundPage().deviceSufix+"'/><div class='DEVICE_CLASS'><span>DEVICE_NAME</span><img id='DEVICE_ID_icon' class='deviceicon' deviceId='DEVICE_ID' src='DEVICE_ICON'/></div></label>"
 var requestingMic = false;
 var updatePasswordStatus = function(){
     var passwordStatus = document.getElementById("passwordstatus");
@@ -265,9 +265,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var devices = getDevices();
     var htmlDevicesAutoClipboard = "";
     for (var i = 0; i < devices.length; i++) {
-      var device = devices[i];
-      htmlDevicesAutoClipboard = htmlDevicesAutoClipboard + replaceAll(replaceAll(replaceAll(replaceAll(deviceAutoClipboardHtml,"DEVICE_NAME",device.deviceName),"DEVICE_ICON","icons/"+deviceImages[""+device.deviceType](device)),"DEVICE_CLASS","androidDevice"),"DEVICE_ID",device.deviceId);
-      selectFavoriteCommandDevices.options.add(new Option(device.deviceName, device.deviceId));
+        var device = devices[i];
+        htmlDevicesAutoClipboard = htmlDevicesAutoClipboard + replaceAll(replaceAll(replaceAll(replaceAll(deviceAutoClipboardHtml,"DEVICE_NAME",device.deviceName),"DEVICE_ICON","icons/"+deviceImages[""+device.deviceType](device)),"DEVICE_CLASS","clipboardDevice"),"DEVICE_ID",device.deviceId);
+        selectFavoriteCommandDevices.options.add(new Option(device.deviceName, device.deviceId));
     }
     selectFavoriteCommandDevices.addEventListener("change", function(event){
       setFavoriteCommandOptions();
