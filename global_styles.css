@@ -9,6 +9,7 @@ a {
 }
 body {
 	width: 440px;
+	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 }
 #tabsplaceholder {
 	overflow: hidden;

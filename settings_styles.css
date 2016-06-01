@@ -3,6 +3,7 @@
 }
 body {
   background: #fafafa;
+  -webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	margin: 0px;
 }
 h1 { color: #5a5a5a; }	
