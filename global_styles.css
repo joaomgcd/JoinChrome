@@ -348,9 +348,7 @@ img.tabIcon {
 	outline: none;
 }
 #smscontainer {
-	flex-direction: column;
     background-color: var(--global-color-gray);
-    display: flex;
     height: 100%;
     overflow-y: scroll;
 }
@@ -401,7 +399,7 @@ img.tabIcon {
 	padding: 12px 16px 12px 16px;
     background-color: white;
     border-radius: 4px;
-    width: 70%;
+    width: 75%;
     display: flex;
     position: relative;
     margin-left: auto;
@@ -415,8 +413,16 @@ img.tabIcon {
     margin-left: 0;
     margin-right: auto;
 }
+.smsbubbletriangle {
+	position: relative;
+	right: 4px;
+}
 .smsbubbletriangle polygon {
     fill: white;
+}
+.smsbubbletrianglereceived {
+	position: relative;
+	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
 	fill: var(--global-color-faded);
