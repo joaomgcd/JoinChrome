@@ -76,7 +76,6 @@ body {
     cursor: pointer;
     display: flex;
     font-weight: bold;
-    margin-top: 5px;
     padding: 8px;
     width: 100%;
 }
@@ -92,10 +91,14 @@ body {
 .devicebutton:hover #devicebuttondrag {
 	visibility: visible;
 }
+#devicebuttondrag {
+	margin-left: auto;
+	opacity: 0.5;
+}
 #devicebuttonimage {
 	height: 24px;
-	margin-right: 32px;
 	width: 24px;
+	margin: 4px 24px 4px 16px;
 }
 a#link {
 	color: #757575;
