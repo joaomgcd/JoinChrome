@@ -281,7 +281,7 @@ var getDeviceFileIdFromUrl = function(fileUrl){
     if(fileUrl.indexOf("drive.google.com/file/d")<0){
         return null;
     }
-    var match = fileUrl.match(/[a-zA-Z0-9]{20,}/);
+    var match = fileUrl.match(/[^/\\.\\?&=]{20,}/);
     if(!match || match.length==0){
         return null;
     }

@@ -1618,3 +1618,4 @@ var handleAutoClipboard = function(){
 }
 handleAutoClipboard();
 
+console.log("ID: " + getDeviceFileIdFromUrl("https://drive.google.com/file/d/open?id=0B-_PbYzcOQrGbV9td1MwbUVaU00"));
