@@ -392,7 +392,8 @@ img.tabIcon {
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
-    margin: 8px;
+    margin-top: 18px;
+    margin-bottom: 6px;
     z-index:50;
 }
 .smsmessage {
