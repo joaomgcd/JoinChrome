@@ -391,43 +391,35 @@ img.tabIcon {
     color: #aaaaaa;
 }
 .smsmessagecontainer {
-    display: block;
-    margin: 8px 0px 8px 0px;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+    margin: 8px;
     z-index:50;
 }
 .smsmessage {
-	margin-right: 16px;
 	padding: 12px 16px 12px 16px;
     background-color: white;
     border-radius: 4px;
+    width: 70%;
     display: flex;
+    position: relative;
+    margin-left: auto;
+    margin-right: 0;
     flex-direction: column;
     font-family: "Roboto", sans-serif;
     font-weight: 500;
-    margin-left: 100px;
-    position: relative;
 }
 .smsmessage.received {
     background-color: var(--global-color-faded);
-    margin-left: 16px;
-    margin-right: 100px;
+    margin-left: 0;
+    margin-right: auto;
 }
-.smsbubbletriangle {
-    color: white;
-    float: right;
-    font-size: xx-large;
-    position: relative;
-    right: 6px;
-    text-align: end;
-    top: -16px;
+.smsbubbletriangle polygon {
+    fill: white;
 }
-.smsbubbletrianglereceived {
-	color: #FFE0B2;
-    float: left;
-    font-size: xx-large;
-    left: 6px;
-    position: relative;
-    top: -16px;
+.smsbubbletrianglereceived polygon {
+	fill: var(--global-color-faded);
 }
 .smsmessagetext {
 	word-wrap: break-word;
