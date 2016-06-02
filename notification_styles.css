@@ -1,5 +1,6 @@
 #notification.card {
-	margin: 0.5em 1em 0.5em 1em !important;
+	width: 95%;
+	margin: 0.5rem !important;
 	cursor: default;
 	overflow: visible !important;
 }
@@ -12,7 +13,7 @@
 	padding: 8px;
 	background-color: white;
 	box-sizing: initial;
-	  position: relative;  	  
+	position: relative;  	  
 	align-self: center;
 }
 #closebutton{
@@ -32,14 +33,13 @@
 .notificationBody{
 	display:flex;
 	background-color: white;
-	margin-top: 5px;
+	margin: 8px 0px 8px 0px;
 }
 .notificationright{
 	display:flex;
 	flex-direction: column;
 	flex-grow: 1;
-	margin-top: 12px;
-	width: 300px;
+	margin: 8px;
 }
 .notificationtitle{
 	font-weight: bold;
@@ -50,26 +50,23 @@
 .notificationtext{
 	font-size: 130%;
 	word-wrap: break-word;
-	width: 300px;
 	font-family: 'Roboto', sans-serif;
-	margin-bottom:16px;
 	color: #757575;
 }
 #date{
+	display: flex;
+	align-items: center;
 	font-family: 'Roboto', sans-serif;
 	color: #757575;
+	margin-left: auto;
 	font-size: 110%;
-	text-align: end;
 }
 .notificationleft{
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	margin-left: 8px;
-	margin-top: 12px;
-	margin-bottom: 12px;
-	width: 72px;
+	margin: 8px;
 }
 .notificationicon{
 	width: 48px;
@@ -83,7 +80,6 @@
 	width: 30px;
 }
 .notificationimage{
-	width: 300px;
 	border-top: 1px solid #e6e6e6;
 	border-bottom: 1px solid #e6e6e6;
 	margin-top: 10px;
@@ -141,9 +137,6 @@
 	color: gray;
 	display: flex;
 	font-family: 'Roboto', sans-serif;
-}
-#iconcontainer{
-	align-self: flex-start;
 }
 #textanddate{
 	display: flex;
