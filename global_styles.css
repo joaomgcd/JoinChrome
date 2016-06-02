@@ -8,6 +8,7 @@ a {
 	color: var(--global-color);
 }
 body {
+	width: 410px;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 }
 #tabsplaceholder {
@@ -190,7 +191,6 @@ td {
 	flex-grow: 1;
 	height:100%;
 	position:relative;
-	margin-right: 40px;
 }
 #tools {
 	align-self: center;
