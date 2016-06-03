@@ -11,7 +11,7 @@ var getDevices = function(){
     return chrome.extension.getBackgroundPage().devices;
 }
 var refreshDevices = function(callback){
-    return chrome.extension.getBackgroundPage().refreshDevices(function(){        
+    return chrome.extension.getBackgroundPage().refreshDevices(function(){
         writeDevices();
         if(callback){
             callback();
@@ -103,8 +103,24 @@ var selectTab = function(idToShow){
         }
    }
     localStorage.selectedTab = idToShow;
-    document.body.className = idToShow +"body";
-    
+    document.body.className = idToShow + "body";
+
+    function getUrlParameter(sParam) {
+        var sPageURL = window.location.search.substring(1);
+        var sURLVariables = sPageURL.split('&');
+        for (var i = 0; i < sURLVariables.length; i++) {
+            var sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] == sParam) {
+                return sParameterName[1];
+            }
+        }
+    }
+    var isPopup;
+    isPopup = getUrlParameter('popup') === '1';
+    if (isPopup) {
+        $('body').toggleClass('popout', isPopup)
+    }
+
 }
 var refreshTabVisibility = function(){
     var smsTab = document.getElementById("tab-sms");
@@ -181,7 +197,7 @@ var setRefreshing = function(refreshing){
     if(refreshing){
         refreshElement.classList.add("rotating");
     }else{
-        refreshElement.classList.remove("rotating");        
+        refreshElement.classList.remove("rotating");
     }
 }
 back.fileInput = document.getElementById("uploadfile");
