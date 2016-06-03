@@ -103,7 +103,23 @@ var selectTab = function(idToShow){
         }
    }
     localStorage.selectedTab = idToShow;
-    document.body.className = idToShow +"body";
+    document.body.className = idToShow + "body";
+
+    function getUrlParameter(sParam) {
+        var sPageURL = window.location.search.substring(1);
+        var sURLVariables = sPageURL.split('&');
+        for (var i = 0; i < sURLVariables.length; i++) {
+            var sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] == sParam) {
+                return sParameterName[1];
+            }
+        }
+    }
+    var isPopup;
+    isPopup = getUrlParameter('popup') === '1';
+    if (isPopup) {
+        $('body').toggleClass('popout', isPopup)
+    }
 
 }
 var refreshTabVisibility = function(){

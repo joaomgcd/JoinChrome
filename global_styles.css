@@ -11,6 +11,10 @@ body {
 	width: 410px;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 }
+body.popout {
+  width: 100%;
+  height: 100%;
+}
 #tabsplaceholder {
 	overflow: hidden;
 	text-align: center;
@@ -22,7 +26,7 @@ body {
     width: 100%;
 }
 .devicecommandsleft {
-    background-color: white; 
+    background-color: white;
     display: flex;
     flex-direction: column;
     height: 510px;
