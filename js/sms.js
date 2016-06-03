@@ -249,11 +249,12 @@ var SmsApp = function(){
 	var newSmsButton = document.getElementById("newsmsbutton");
 	smsInputElement.addEventListener("keydown",function(e){
 		if(e.keyCode == 13 && !e.shiftKey){
+			e.preventDefault();
 			me.sendSms();
 		}
 	});
 	newSmsButton.addEventListener("click",function(e){
-		console.log("new SMS");
+		// console.log("new SMS");
 		me.writeContactList(contactFindInputElement.value);
 	});
 	contactFindInputElement.addEventListener("input",function(e){		
@@ -377,7 +378,6 @@ var SmsApp = function(){
 		},true, local);
 	}
 
-
 	me.writeContactMessages = function(deviceId, contact, local){
 		me.deviceId = deviceId;
 		me.contact = contact;
@@ -436,7 +436,6 @@ var SmsApp = function(){
 		},function(sms){
 			return sms.date;
 		},false,local);
-
 	}
 	me.writeContactList = function(filter){
 		setTitleText("Contacts");
@@ -521,7 +520,6 @@ var SmsApp = function(){
         back.addEventListener("smssent",sendSmsResult,false);
         push.send(me.deviceId);
         //back.showNotification("Join","SMS pushed. Waiting for response...");
-
 		sms.date = Date.now();
 		sms.received = false;
 		me.addSms(me.deviceId,sms);

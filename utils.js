@@ -380,7 +380,6 @@ var doGetBase64 = function(url, callback) {
         xhr.send();
 	});
         
-    
 }
 var downloadDriveString = function(filename,callback,callbackError){
     var localFile = localStorage[filename];
