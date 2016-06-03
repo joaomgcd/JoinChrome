@@ -11,7 +11,7 @@ var getDevices = function(){
     return chrome.extension.getBackgroundPage().devices;
 }
 var refreshDevices = function(callback){
-    return chrome.extension.getBackgroundPage().refreshDevices(function(){        
+    return chrome.extension.getBackgroundPage().refreshDevices(function(){
         writeDevices();
         if(callback){
             callback();
@@ -104,7 +104,7 @@ var selectTab = function(idToShow){
    }
     localStorage.selectedTab = idToShow;
     document.body.className = idToShow +"body";
-    
+
 }
 var refreshTabVisibility = function(){
     var smsTab = document.getElementById("tab-sms");
@@ -181,7 +181,7 @@ var setRefreshing = function(refreshing){
     if(refreshing){
         refreshElement.classList.add("rotating");
     }else{
-        refreshElement.classList.remove("rotating");        
+        refreshElement.classList.remove("rotating");
     }
 }
 back.fileInput = document.getElementById("uploadfile");
