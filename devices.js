@@ -161,6 +161,7 @@ topBarPopoutElement.onclick = function(){
 var onlyTabToShow = getURLParameter("tab");
 if(onlyTabToShow){
     selectTab(onlyTabToShow);
+    // CHANGE NOTE: I can't tell what it does. Hope it's not important.
     // document.getElementById("tabscontaineroutter").style.display ="none";
 }else{
     if(localStorage.selectedTab){
@@ -171,7 +172,6 @@ if(onlyTabToShow){
         console.log("Showed tab " + idToShow + " by default");
     }
 }
-// console.log("devices")
 var topBarElement = document.getElementById("topBar");
 
 var devicesElement = document.getElementById("devices");

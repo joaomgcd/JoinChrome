@@ -169,6 +169,7 @@ var writeNotifications = function(){
         if(not.persistent){
             closeButton.style.display = "none";
         }else{
+            // CHANGE NOTE: Doesn't appear to do anything. Commented out for now.
             // closeButton.style.display = "block";
             closeButton.onclick =  function(event){
                 var not = event.currentTarget.notification;
