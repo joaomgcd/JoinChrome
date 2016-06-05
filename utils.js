@@ -832,10 +832,11 @@ Date.prototype.customFormat = function(formatString){
     if (back.get12HourFormat()) {
         if (h==0) hh=12;
         if (h>12) hh-=12;
+        AMPM=(h<12)?'AM':'PM';
     } else {
         hh = h<10?('0'+h):h;
+        AMPM = "";
     }
-    AMPM=(ampm=h<12?'AM':'PM');
     mm=(m=this.getMinutes())<10?('0'+m):m;
     ss=(s=this.getSeconds())<10?('0'+s):s;
     return formatString.replace("#hhhh#",hhhh).replace("#hhh#",hhh).replace("#hh#",hh).replace("#h#",h).replace("#mm#",mm).replace("#m#",m).replace("#ss#",ss).replace("#s#",s).replace("#ampm#",ampm).replace("#AMPM#",AMPM);
