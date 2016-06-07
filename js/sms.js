@@ -75,7 +75,7 @@ var ContactsGetter = function(deviceId){
 			console.log("Not processing yet. Last SMS are empty");
 			return;
 		}		
-		console.log("Contacts Getter processing now!");
+		// console.log("Contacts Getter processing now!");
 		me.initContactsIfEmpty();
 		me.lastsms.doForAll(function(lastsms){
 			var contact = me.contactsInfo.contacts.first(function(contact){
@@ -131,13 +131,13 @@ var ContactsGetter = function(deviceId){
 				setRefreshing(false);	
 				return;
 			}
-			console.log("Got lastsms info");
-			console.log(lastsms);
+			// console.log("Got lastsms info");
+			// console.log(lastsms);
 			me.lastsms = lastsms;	
 			callback();	
 		},function(error){
 			var message = "Error downloading lastsms file: " + error;
-			console.log(message);
+			// console.log(message);
 			callbackError(message);
 			setRefreshing(false);	
 		});
@@ -151,8 +151,8 @@ var ContactsGetter = function(deviceId){
 				setRefreshing(false);	
 				return;
 			}
-			console.log("Got contacts info");
-			console.log(contactsInfo);
+			// console.log("Got contacts info");
+			// console.log(contactsInfo);
 			me.contactsInfo = contactsInfo;
 			callback();					
 			
@@ -206,8 +206,8 @@ var ContactMessagesGetter = function(deviceId, contact){
 				setRefreshing(false);	
 				return;
 			}
-			console.log("Got sms messages info");
-			console.log(messages);
+			// console.log("Got sms messages info");
+			// console.log(messages);
 			me.messages = messages;
 			if(me.messages.smses){
 				me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
@@ -249,11 +249,12 @@ var SmsApp = function(){
 	var newSmsButton = document.getElementById("newsmsbutton");
 	smsInputElement.addEventListener("keydown",function(e){
 		if(e.keyCode == 13 && !e.shiftKey){
+			e.preventDefault();
 			me.sendSms();
 		}
 	});
 	newSmsButton.addEventListener("click",function(e){
-		console.log("new SMS");
+		// console.log("new SMS");
 		me.writeContactList(contactFindInputElement.value);
 	});
 	contactFindInputElement.addEventListener("input",function(e){		
@@ -262,8 +263,8 @@ var SmsApp = function(){
 	var deviceIdFromUrl = getURLParameter("deviceId");
 	var numberFromUrl = getURLParameter("number");
 	var textFromUrl = getURLParameter("text");
-	console.log("Checking URL for params");
-	console.log(deviceIdFromUrl + ";"+numberFromUrl);
+	// console.log("Checking URL for params");
+	// console.log(deviceIdFromUrl + ";"+numberFromUrl);
 	this.deviceId = deviceIdFromUrl ? deviceIdFromUrl : localStorage.smsDeviceId;
 	me.contact = numberFromUrl ? {"number":numberFromUrl,"name":getURLParameter("name")} : (localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null);
 	this.number = null;
@@ -348,7 +349,7 @@ var SmsApp = function(){
 			        	var contactDateElement = contactElement.querySelector("#smscontactdate");
 			        	contactNameElement.innerHTML = contact.name;
 			        	contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ contact.lastsms.text;
-			        	contactDateElement.innerHTML = contact.lastsms.date.formatDate();
+			        	contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
 			        	contactElement.addEventListener("click",function(event){
 			        		var element = event.target;
@@ -377,7 +378,6 @@ var SmsApp = function(){
 		},true, local);
 	}
 
-
 	me.writeContactMessages = function(deviceId, contact, local){
 		me.deviceId = deviceId;
 		me.contact = contact;
@@ -387,14 +387,12 @@ var SmsApp = function(){
 		me.number = number;
 		setPlaceholderText("Getting Messages for "+ name +"...");
 		var title = name;
-		if(name != number){
-			title += " (" + number + ")";
-		}
 		setTitleText(title);
 		showTitle(true);
 		showInput(true);
 		showContactFind(false);
 		
+		smsInputElement.placeholder = "Send message to " + number;
 		smsInputElement.focus();
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
 		contactMessagesGetter.getInfo(function(contactMessages){
@@ -416,7 +414,7 @@ var SmsApp = function(){
 	        	var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
 
 	        	smsTextElement.innerHTML = Autolinker.link(sms.text);
-	        	smsDateElement.innerHTML = sms.date.formatDate();
+	        	smsDateElement.innerHTML = sms.date.formatDate(true);
 	        	if(sms.received){
 	        		smsMessageElement.classList.add("received");
 	        		triangleElement.style.display = "none";
@@ -438,7 +436,6 @@ var SmsApp = function(){
 		},function(sms){
 			return sms.date;
 		},false,local);
-
 	}
 	me.writeContactList = function(filter){
 		setTitleText("Contacts");
@@ -446,7 +443,7 @@ var SmsApp = function(){
 		showContactFind(true);
 		var contactsGetter = new ContactsGetter(me.deviceId);
 		contactsGetter.getInfo(function(contactsInfo){
-			console.log(contactsInfo);
+			// console.log(contactsInfo);
 			if(contactsInfo.contacts){
 				var contacts = contactsInfo.contacts;
 		    	smsContainerElement.innerHTML = "";
@@ -506,7 +503,7 @@ var SmsApp = function(){
         	sms.progress = false;
         	back.removeEventListener("smssent",sendSmsResult,false);
         	if(event.success){            
-	            console.log("SMS pushed");
+	            // console.log("SMS pushed");
 	            //back.showNotification("Join","SMS sent!");
 	        }else{
 	            var error = "Error sending SMS: " + event.errorMessage;
@@ -523,7 +520,6 @@ var SmsApp = function(){
         back.addEventListener("smssent",sendSmsResult,false);
         push.send(me.deviceId);
         //back.showNotification("Join","SMS pushed. Waiting for response...");
-
 		sms.date = Date.now();
 		sms.received = false;
 		me.addSms(me.deviceId,sms);
@@ -542,7 +538,7 @@ var SmsApp = function(){
 		}
 	}
 
-	document.querySelector("#smsback").addEventListener("click",function(){
+	document.querySelector("#smstitlecontainer").addEventListener("click",function(){
 		me.writeSms(me.deviceId);
 	});
 	document.querySelector("#smssend").addEventListener("click",function(){
@@ -564,8 +560,8 @@ var sendSms = function(event){
 back.addEventListener("sendsms",sendSms,false);
 
 var smsReceived = function(event){
-	console.log("Received SMS in popup from " + event.deviceId);
-	console.log(event.sms);
+	// console.log("Received SMS in popup from " + event.deviceId);
+	// console.log(event.sms);
 	smsApp.receiveSms(event.deviceId,event.sms);
 	smsApp.refresh(true);
 }

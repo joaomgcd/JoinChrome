@@ -5,14 +5,22 @@
 </head>
 <body> 
 <div class='smsmessagecontainer' id="smsmessagecontainer">
-	<div class='smsbubbletrianglereceived' id="smsbubbletrianglereceived">&#9701;</div>
-	<div class='smsbubbletriangle' id="smsbubbletriangle">&#9700;</div>
+	<div class='smsbubbletrianglereceived' id="smsbubbletrianglereceived">
+		<svg height="16px" width="16px">
+			<polygon points="0,0 16,0, 16,16"/>
+		</svg>
+	</div>
 	<div class='smsmessage' id="smsmessage">
 	    <div class='smsmessagetext' id="smsmessagetext">MESSAGE_TEXT</div>
 	    <div class='smsmessagebottom' id="smsmessagebottom">
 	    	<div class='smsmessagedate' id="smsmessagedate">MESSAGE_DATE</div>
 	    	<div class='smsmessageprogress' id="smsmessageprogress"><img class="smsloader" src="../icons/loading.gif"></img></div>
 		</div>
+	</div>
+	<div class='smsbubbletriangle' id="smsbubbletriangle">
+		<svg height="16px" width="16px">
+			<polygon points="0,0 0,16 16,0"/>
+		</svg>
 	</div>
 </div>
 </body>

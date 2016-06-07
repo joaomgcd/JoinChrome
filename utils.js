@@ -135,13 +135,13 @@ var doPostWithAuth = back.doPostWithAuth;
 
 /*************************NOTIFICATION PAGES***********************/
 var notificationPages = {
-	"com.google.android.gm":"https://mail.google.com/mail/u/0/#search/is%3Aunread",
-	"com.joaomgcd.autoinput":"http://joaoapps.com/autoinput/",
-	"com.joaomgcd.autovoice":"http://joaoapps.com/autovoice/",
-	"com.facebook.lite":"https://www.facebook.com/notifications",
-	"com.facebook.katana":"https://www.facebook.com/notifications",
-	"com.google.android.talk":"https://hangouts.google.com/",
-	"com.whatsapp":"https://web.whatsapp.com/",
+    "com.google.android.gm":"https://mail.google.com/mail/u/0/#search/is%3Aunread",
+    "com.joaomgcd.autoinput":"http://joaoapps.com/autoinput/",
+    "com.joaomgcd.autovoice":"http://joaoapps.com/autovoice/",
+    "com.facebook.lite":"https://www.facebook.com/notifications",
+    "com.facebook.katana":"https://www.facebook.com/notifications",
+    "com.google.android.talk":"https://hangouts.google.com/",
+    "com.whatsapp":"https://web.whatsapp.com/",
     "com.google.android.youtube":"https://www.youtube.com/feed/subscriptions",
     "com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all"
 };
@@ -251,7 +251,9 @@ var getURLParameter = function(name,url) {
 }
 var createElement = function(parent, tag, id, attributes) {
     var el = document.createElement(tag);
-    el.setAttribute('id', id);
+    if (id!=null) {
+        el.setAttribute('id', id);
+    }
     if (attributes !== undefined) {
         for (attribute in attributes) {
             var attributeName = attribute;
@@ -378,7 +380,6 @@ var doGetBase64 = function(url, callback) {
         xhr.send();
 	});
         
-    
 }
 var downloadDriveString = function(filename,callback,callbackError){
     var localFile = localStorage[filename];
@@ -388,8 +389,8 @@ var downloadDriveString = function(filename,callback,callbackError){
     setRefreshing(true);
     var url = "https://www.googleapis.com/drive/v3/files?q=name+%3D+'"+encodeURIComponent(filename)+"'";
     doGetWithAuth(url,function(fileInfo){
-        console.log("Got drive file info");
-        console.log(fileInfo);
+        // console.log("Got drive file info");
+        // console.log(fileInfo);
         if(!fileInfo){
             callbackError("Couldn't get file info for " + filename);
             return;
@@ -403,7 +404,7 @@ var downloadDriveString = function(filename,callback,callbackError){
             callbackError("File ID not present for " + filename);
             return;
         }
-        console.log("Found file ID: " + fileId);
+        // console.log("Found file ID: " + fileId);
         var downloadUrl = "https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media";
         doGetWithAuth(downloadUrl,function(result){
             setRefreshing(false);
@@ -825,27 +826,42 @@ Date.prototype.customFormat = function(formatString){
     DDD = (DDDD=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][this.getDay()]).substring(0,3);
     th=(D>=10&&D<=20)?'th':((dMod=D%10)==1)?'st':(dMod==2)?'nd':(dMod==3)?'rd':'th';
     formatString = formatString.replace("#YYYY#",YYYY).replace("#YY#",YY).replace("#MMMM#",MMMM).replace("#MMM#",MMM).replace("#MM#",MM).replace("#M#",M).replace("#DDDD#",DDDD).replace("#DDD#",DDD).replace("#DD#",DD).replace("#D#",D).replace("#th#",th);
-    h=(hhh=this.getHours());
-    if (h==0) h=24;
-    //if (h>12) h-=12;
-    hh = h<10?('0'+h):h;
-    hhhh = h<10?('0'+hhh):hhh;
-    AMPM=(ampm=hhh<12?'am':'pm').toUpperCase();
+    // CHANGE NOTE: There appeared to be a lot of unused material. I cleaned up some of the code. We can restore it later if it was needed.
+    h=this.getHours();
+    hh = h;
+    if (back.get12HourFormat()) {
+        if (h==0) hh=12;
+        if (h>12) hh-=12;
+        AMPM=(h<12)?'AM':'PM';
+    } else {
+        hh = h<10?('0'+h):h;
+        AMPM = "";
+    }
     mm=(m=this.getMinutes())<10?('0'+m):m;
     ss=(s=this.getSeconds())<10?('0'+s):s;
     return formatString.replace("#hhhh#",hhhh).replace("#hhh#",hhh).replace("#hh#",hh).replace("#h#",h).replace("#mm#",mm).replace("#m#",m).replace("#ss#",ss).replace("#s#",s).replace("#ampm#",ampm).replace("#AMPM#",AMPM);
 };  
-Number.prototype.formatDate = function(){
+Number.prototype.formatDate = function(full){
     var date = new Date(this);
-  var now = new Date();
-  if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
-    return date.customFormat("#hh#:#mm#");
-  }
-  var yesterday = new Date(now);
-  yesterday.setDate(now.getDate()-1);
-  if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
-    return "Yesterday " + date.customFormat("#hh#:#mm#");
-  }
+    var now = new Date();
+    var format = "#hh#:#mm#";
+    if (back.get12HourFormat()) {
+        format = format+" #AMPM#";
+    }
+
+    if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
+    return date.customFormat(format);
+    }
+
+    var yesterday = new Date(now);
+    yesterday.setDate(now.getDate()-1);
+    if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+    return "Yesterday " + date.customFormat(format);
+    }
+
+    if (full) {
+        return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
+    }
     return date.customFormat("#MMM# #DD#");
 } 
 function tintImage(image, color) {

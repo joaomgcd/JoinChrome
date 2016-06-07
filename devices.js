@@ -11,7 +11,7 @@ var getDevices = function(){
     return chrome.extension.getBackgroundPage().devices;
 }
 var refreshDevices = function(callback){
-    return chrome.extension.getBackgroundPage().refreshDevices(function(){        
+    return chrome.extension.getBackgroundPage().refreshDevices(function(){
         writeDevices();
         if(callback){
             callback();
@@ -103,8 +103,24 @@ var selectTab = function(idToShow){
         }
    }
     localStorage.selectedTab = idToShow;
-    document.body.className = idToShow +"body";
-    
+    document.body.className = idToShow + "body";
+
+    function getUrlParameter(sParam) {
+        var sPageURL = window.location.search.substring(1);
+        var sURLVariables = sPageURL.split('&');
+        for (var i = 0; i < sURLVariables.length; i++) {
+            var sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] == sParam) {
+                return sParameterName[1];
+            }
+        }
+    }
+    var isPopup;
+    isPopup = getUrlParameter('popup') === '1';
+    if (isPopup) {
+        $('body').toggleClass('popout', isPopup)
+    }
+
 }
 var refreshTabVisibility = function(){
     var smsTab = document.getElementById("tab-sms");
@@ -134,13 +150,9 @@ addEventListener("unload", function (event) {
     back.dispatch("popupunloaded");
 }, true);
 var settingsElement = document.getElementById("settings");
-var keyboardSettingsElement = document.getElementById("keyboardsettings");
 var topBarPopoutElement = document.getElementById("topBarPopout");
 settingsElement.onclick = function(){
     openTab(OPTIONS_URL);
-}
-keyboardSettingsElement.onclick=function(){
-    openTab("chrome://extensions/configureCommands");
 }
 topBarPopoutElement.onclick = function(){
     back.createPushClipboardWindow(localStorage.selectedTab);
@@ -149,7 +161,8 @@ topBarPopoutElement.onclick = function(){
 var onlyTabToShow = getURLParameter("tab");
 if(onlyTabToShow){
     selectTab(onlyTabToShow);
-    document.getElementById("tabscontaineroutter").style.display ="none";
+    // CHANGE NOTE: I can't tell what it does. Hope it's not important.
+    // document.getElementById("tabscontaineroutter").style.display ="none";
 }else{
     if(localStorage.selectedTab){
         selectTab(localStorage.selectedTab);
@@ -159,7 +172,6 @@ if(onlyTabToShow){
         console.log("Showed tab " + idToShow + " by default");
     }
 }
-console.log("devices")
 var topBarElement = document.getElementById("topBar");
 
 var devicesElement = document.getElementById("devices");
@@ -185,7 +197,7 @@ var setRefreshing = function(refreshing){
     if(refreshing){
         refreshElement.classList.add("rotating");
     }else{
-        refreshElement.classList.remove("rotating");        
+        refreshElement.classList.remove("rotating");
     }
 }
 back.fileInput = document.getElementById("uploadfile");

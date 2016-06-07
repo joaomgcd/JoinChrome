@@ -36,15 +36,26 @@ var writeNotifications = function(){
     }else{
         //document.title = notifications.length + " Notifications";
     }
-    if(notifications.length>=1){
-        var imageClearNotifications = createElement(notificationsElement,"img","clearallnotifications",{"src":"icons/clear.png"});
-        imageClearNotifications.onclick = function(){           
-            var gcmNotificationClear = new back.GCMNotificationClear();
-            gcmNotificationClear.clearAll();
-            back.resetNotifications();
-            writeNotifications();
-        }
+    // if(notifications.length>=1){
+    //     var imageClearNotifications = createElement(notificationsElement,"img","clearallnotifications",{"src":"icons/clear.png"});
+    //     imageClearNotifications.onclick = function(){           
+    //         var gcmNotificationClear = new back.GCMNotificationClear();
+    //         gcmNotificationClear.clearAll();
+    //         back.resetNotifications();
+    //         writeNotifications();
+    //     }
+    // }
+
+    var clearNotificationsFAB = createElement(notificationsElement, "div", "clearAllNotificationButton",{"class":"fixed-action-btn"});
+    var clearNotificationsLink = createElement(clearNotificationsFAB, "a", null, {"class":"btn-floating btn-large"});
+    var clearNotificationsIcon = createElement(clearNotificationsLink, "div", "clearAllNotificationButtonIcon");
+    clearNotificationsFAB.onclick = function(){           
+        var gcmNotificationClear = new back.GCMNotificationClear();
+        gcmNotificationClear.clearAll();
+        back.resetNotifications();
+        writeNotifications();
     }
+
     for (var i = 0; i < notifications.length; i++) {
         var not = notifications[i];
         var notificationElement = not.notificationElement;
@@ -82,7 +93,7 @@ var writeNotifications = function(){
                 deviceElement.style.display = "none";
             }
             if(not.color){
-                console.log("setting color to " + not.color);
+                // console.log("setting color to " + not.color);
                 //notificationElement.querySelector("#notificationleft").style.backgroundColor = not.color;
             }
             if(not.appIcon){
@@ -108,7 +119,9 @@ var writeNotifications = function(){
             }else{
                 image.style.display = "none";
             }
-            dateElement.innerHTML = new Date().customFormat("#hh#:#mm#")
+            var date_format = "#hh#:#mm#";
+            if (back.get12HourFormat()) { date_format = date_format + " #AMPM#";}
+            dateElement.innerHTML = new Date().customFormat(date_format);
             titleElement.innerHTML = not.title;
             if(not.lines && not.lines.length>0){
                 var linesText = "";
@@ -126,11 +139,11 @@ var writeNotifications = function(){
                     var button = not.buttons[e];
                     var buttonElement = notificationButtonHtml.cloneNode(true);
                     var buttonTextElement = buttonElement.querySelector("#text");
-                    var buttonIconElement = buttonElement.querySelector("#icon");
-                    if(!button.icon){
-                        button.icon = not.appIcon;
-                    }
-                    pushIconToDownloadIfNeeded(buttonIconElement,button.icon);
+                    // var buttonIconElement = buttonElement.querySelector("#icon");
+                    // if(!button.icon){
+                    //     button.icon = not.appIcon;
+                    // }
+                    // pushIconToDownloadIfNeeded(buttonIconElement,button.icon);
                     buttonTextElement.innerHTML = button.text;
                     buttonElement.id = button.actionId;
                     buttonsElement.appendChild(buttonElement);
@@ -142,9 +155,9 @@ var writeNotifications = function(){
                 buttonsElement.style.display = "flex";
                 var buttonElement = notificationButtonHtml.cloneNode(true);
                 var buttonTextElement = buttonElement.querySelector("#text");
-                var buttonIconElement = buttonElement.querySelector("#icon");
-                buttonTextElement.innerHTML = "Reply Directly";
-                buttonIconElement.src = "icons/reply.png"
+                // var buttonIconElement = buttonElement.querySelector("#icon");
+                buttonTextElement.innerHTML = "Join Reply";
+                // buttonIconElement.src = "icons/reply.png"
                 buttonElement.id = not.replyId;
                 buttonsElement.appendChild(buttonElement);
             }
@@ -156,7 +169,8 @@ var writeNotifications = function(){
         if(not.persistent){
             closeButton.style.display = "none";
         }else{
-            closeButton.style.display = "block";
+            // CHANGE NOTE: Doesn't appear to do anything. Commented out for now.
+            // closeButton.style.display = "block";
             closeButton.onclick =  function(event){
                 var not = event.currentTarget.notification;
                 console.log("Cancelling: ");

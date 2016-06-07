@@ -1,0 +1,487 @@
+:root {
+	--global-color: #FF9800;
+	--global-color-light: #FFB05C;
+	--global-color-faded: #FFE0B2;
+	--global-color-gray: #F0F0F0;
+}
+a {
+	color: var(--global-color);
+}
+body {
+	width: 410px;
+	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
+}
+body.popout {
+  width: 100%;
+  height: 100%;
+}
+#tabsplaceholder {
+	overflow: hidden;
+	text-align: center;
+}
+.devicecommands {
+    display: flex;
+    flex-direction: column;
+    height: 510px;
+    width: 100%;
+}
+.devicecommandsleft {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    height: 510px;
+    width: 100%;
+}
+.commands {
+	flex: 1;
+	overflow-y: auto;
+}
+#deviceiconcontainer {
+	border-radius: 100%;
+    display: flex;
+    height: 50px;
+    width: 50px;
+}
+.deviceicon {
+    display: block;
+    height: 30px;
+    margin: auto;
+}
+.device {
+	align-items: center;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	margin-top: 5px;
+	opacity: 0.4;
+    transition: all 0.3s ease;
+    width: 70px;
+}
+.device:hover {
+	opacity: 0.8;
+}
+.selecteddevice {
+	opacity: 1;
+}
+.device #deviceiconcontainer {
+	background-color: var(--global-color);
+}
+.devicecommands .selecteddevice::after {
+	background: antiquewhite;
+	content: ' ';
+	height: 100%;
+	position: absolute;
+	right: -2px;
+	top: 0;
+	width: 2px;
+}
+.devicebutton {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    font-weight: bold;
+    padding: 8px;
+    width: 100%;
+}
+.devicebutton.disabled {
+	display: none;
+}
+.devicebutton:hover {
+	background: #eeeeee;
+}
+#devicebuttondrag {
+	visibility: hidden;
+}
+.devicebutton:hover #devicebuttondrag {
+	visibility: visible;
+}
+#devicebuttondrag {
+	margin-left: auto;
+	opacity: 0.5;
+}
+#devicebuttonimage {
+	height: 24px;
+	width: 24px;
+	margin: 4px 24px 4px 16px;
+}
+a#link {
+	color: #757575;
+	font-family: 'Roboto', sans-serif;
+    font-size: large;
+    font-weight: 400;
+}
+a#link:hover {
+	color: var(--global-color);
+}
+.devicename {
+	font-family: 'Roboto', sans-serif;
+	overflow: hidden;
+	text-overflow: ellipsis;
+    font-weight: bold;
+    width: 69px;
+    word-break: break-word;
+}
+#devicelist {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	padding: 6px;
+    box-shadow: 0 -2px 6px black;
+    text-align: center;
+}
+#notifications {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	padding: 8px;
+    background-color: var(--global-color-gray);
+    height: 510px;
+    overflow-y: scroll;
+}
+.button-container {
+	align-items: flex-start;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.button {
+	color: white;
+	font-weight: bold;
+	height: 20px;
+	line-height: 20px;
+	margin-right: 5px;
+	margin-top: 5px;
+	padding: 5px;
+	text-align: center;
+	width: 130px !important;
+}
+.button-link {
+	background: #424242;
+	border-radius: 4px;
+	font-family: 'Roboto', sans-serif;
+	height: 30px !important;
+	line-height: 30px !important;
+	margin: 5px;
+	padding: 0px;
+	width: 190px !important;
+}
+.button-link:hover {
+	background: var(--global-color);
+}
+td {
+	padding: 0px !important;
+	text-align: center !important;
+}
+#topbar {
+ 	display: none;
+}
+.tabselement {
+	background-color: var(--global-color);
+	display: flex;
+	font-size: medium;
+	justify-content: flex-start;
+}
+#tabscontainer {
+	box-shadow: 0px -1px 6px black;
+	height:54px;
+	position: relative;
+	z-index:100;
+}
+#tabs {
+	flex-grow: 1;
+	height:100%;
+	position:relative;
+}
+#tools {
+	align-self: center;
+	display: flex;
+	margin-right: 8px;
+	position: relative;
+}
+#currenttabtitle {
+	color: white;
+	display: none;
+	font-family: 'Roboto', sans-serif;
+	font-weight: bold;
+	padding-bottom: 3px;
+	padding-left: 10px;
+}
+.tab {
+	align-self: center;
+	cursor: hand;
+	cursor: pointer;
+	height: 100%;
+	opacity: 0.6;
+	padding-left: 12px;
+	padding-right: 12px;
+	transition: all 0.3s ease;
+}
+.tab:not(.selected):hover {
+	background-color: var(--global-color-light);
+}
+.tabIcon {
+  	cursor: pointer;
+  	display: flex;
+  	flex-direction: column;
+  	font-family: 'Roboto', sans-serif;
+  	justify-content: center;
+    color: white;
+    font-weight: bold;
+    height:100%;
+}
+#tools .tab {
+	display: inline;
+	opacity: 1;
+	padding:0;
+}
+img.tabIcon {
+	padding: 8px;
+	width: 40px;
+}
+.selected {
+	box-shadow: 0px -4px 0px white inset;
+	opacity: 1;
+}
+#usericon {
+	border-radius: 50%;
+	cursor: pointer;
+	height: 30px;
+	margin: 2px;
+	width: 30px;
+}
+#topBarText {
+	text-align: center;
+	flex-grow: 1;
+}
+.rotating {
+	animation: rotating 0.5s linear infinite;
+}
+@keyframes rotating {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+#sms {
+	flex-direction: column;
+    display: flex;
+    font-family: "Roboto", sans-serif;
+    height: 510px;
+}
+#smsback {
+	display: flex;
+	flex-direction: column;
+}
+#smsback img {
+	width: 24px;
+}
+#smstitlecontainer {
+	background-color: var(--global-color);
+	color: white;
+	cursor: pointer;
+	flex-direction: row;
+	font-weight: bold;
+	position: absolute;
+	transition: all 0.3s ease;
+	z-index:80;
+    display: flex;
+    font-size: large;
+    margin: 1em 1em 1em 1em;
+    padding: 8px;
+}
+#smstitlecontainer:hover {
+	background-color: var(--global-color-light);
+	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
+}
+#smstitlecontainer.hidden {
+	display: none;
+}
+#smstitle {
+	margin-left: 8px;
+}
+#smssendcontainer {
+	align-items: center;
+	background-color: var(--global-color-gray);
+	display: flex;
+	margin: 0;
+	padding: 8px;
+	z-index: 60;
+}
+#smssendcontainer.hidden {
+	display: none;
+}
+#smssend {
+	display: flex;
+	flex-direction: column;
+	padding: 1px;
+    cursor: pointer;
+}
+#smsinput {
+	background-color: white;
+	border-radius: 4px;
+	border: none;
+	box-shadow: none;
+	font-size: 1rem;
+	min-height: 1.5rem;
+	height: 1.5rem;
+	max-height: 5rem;
+	overflow: auto;
+	margin: 8px;
+	padding: 8px;
+	resize: none;
+}
+#smsinput::-webkit-resizer {
+	background: url("icons/resize_handle.png") right bottom/50% 50% no-repeat;
+}
+#smsinput:focus {
+	outline: none;
+}
+#smscontainer {
+    background-color: var(--global-color-gray);
+    height: 100%;
+    overflow-y: scroll;
+}
+#smscontainer div.smsmessagecontainer:first-of-type {
+	margin-top:80px;
+}
+.smscontact {
+	background-color: white;
+	box-sizing: initial;
+	cursor: pointer;
+	transition: all 0.1s ease;
+	z-index:20;
+    padding: 12px 16px 12px 16px;
+}
+.smscontact:hover {
+	background-color: var(--global-color-gray);
+}
+.smscontactname {
+	font-weight: bold;
+    font-size: medium;
+}
+.smstextanddate {
+    display: flex;
+    font-size: small;
+    justify-content: space-between;
+}
+.smscontacttext {
+	max-width: 320px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+    color: #777777;
+    flex-grow: 1;
+}
+.smscontactdate {
+	align-self: flex-end;
+	margin-left: 8px;
+	text-align: end;
+    color: #aaaaaa;
+}
+.smsmessagecontainer {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    z-index:50;
+}
+.smsmessage {
+	padding: 12px 16px 12px 16px;
+    background-color: white;
+    border-radius: 4px;
+    width: 75%;
+    display: flex;
+    position: relative;
+    margin-left: auto;
+    margin-right: 0;
+    flex-direction: column;
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+}
+.smsmessage.received {
+    background-color: var(--global-color-faded);
+    margin-left: 0;
+    margin-right: auto;
+}
+.smsbubbletriangle {
+	position: relative;
+	right: 4px;
+}
+.smsbubbletriangle polygon {
+    fill: white;
+}
+.smsbubbletrianglereceived {
+	position: relative;
+	left: 4px;
+}
+.smsbubbletrianglereceived polygon {
+	fill: var(--global-color-faded);
+}
+.smsmessagetext {
+	word-wrap: break-word;
+    font-size: medium;
+}
+.smsmessagedate {
+	flex-grow: 1;
+    color: #999999;
+    margin-top: 8px;
+}
+#smsmessagebottom {
+    align-items: baseline;
+    display: flex;
+    flex-direction: row;
+}
+#smsmessageprogress.hidden {
+	display: none;
+}
+#smsmessageprogress img {
+	height: 15px;
+	width: 15px;
+}
+.btn-floating:hover {
+	background-color: var(--global-color-light) !important;
+}
+#newsmsbuttonicon {
+    height: 100%;
+    width: 100%;
+    background: url('icons/compose.png') center/50% 50% no-repeat;
+}
+#newsmsbutton.hidden {
+	display: none;
+}
+#contactfindcontainer {
+	align-items: center;
+	background-color: var(--global-color-gray);
+	display: flex;
+	margin:0;
+	padding:16px;
+}
+#contactfindcontainer.hidden {
+	display: none;
+}
+#contactfindinput {
+	background-color: white;
+	border-radius: 4px;
+	border: none;
+	box-shadow: none;
+	margin: 8px 8px 8px 144px;
+	padding: 0px 8px 0px 8px;
+}
+.btn-floating {
+	background: var(--global-color) !important;
+}
