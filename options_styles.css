@@ -119,7 +119,7 @@ h5 { color: #FF7A00; }
 	cursor: pointer;
 	text-transform: uppercase;
   font-weight: bold;
-  opacity: 0.4;
+  opacity: 0.7;
   transition: all 0.3s ease;
 }
 [showtab]:not(.selected):hover {
@@ -256,6 +256,19 @@ input[type='button'] {
 }
 input[type='button']#resetcolorbutton, input[type='button']#configure_keyboard_shortcuts, input[type='button']#starttests {
   box-shadow: 0px 2px 6px -1px gray;
+}
+.shortcut{
+     list-style-type: none;
+}
+.shortcutline{
+  display: flex;
+  list-style-type: asterisks;
+}
+.shortcutdescription{
+  flex-grow: 1;
+}
+.configuredshortcut{
+  font-weight: bold;
 }
 input[type='button']:hover {
   box-shadow: 0px 2px 12px -2px gray !important;

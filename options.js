@@ -233,13 +233,12 @@ document.addEventListener('DOMContentLoaded', function() {
       element.style.display = "none";
     };
     addOptionListeners();
-    /*chrome.commands.getAll(function(commands) {
+    chrome.commands.getAll(function(commands) {
       for (var commandKey in commands) {
         var command = commands[commandKey];
         if(command.shortcut != ""){
           var commandElement = document.getElementById("shortcut"+command.name);
           if(commandElement){
-            commandElement.innerHTML = "<a id='configure"+command.name+"' href='#'>"+command.shortcut + "</a>: <b>" + command.description + "</b>";
           }
         }
       }
@@ -253,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
       }
-    });*/
+    });
     var configureButton = document.getElementById("configure_keyboard_shortcuts");
     configureButton.onclick = function() {
       openTab("chrome://extensions/configureCommands");
