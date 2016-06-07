@@ -1322,7 +1322,7 @@ var setDevices = function(devicesToSet){
         }
         localStorage["devices"] = JSON.stringify(devices);
     }
-    updatemenu();
+    contextMenu.update(devices);
 }
 function directCopy(str,setLastClipboard){
     if(!str){
@@ -1358,222 +1358,7 @@ function doForDevices(action) {
         action(device);
     }
 }
-var createMenuFromFuncs = function(funcs) {
-    for (var j = 0; j < funcs.length; j++) {
-        var func = funcs[j];
-        var device = func.device;
-        var deviceName = device.deviceName;
-        var title = func.command + " " + func.context;
-        if (func.dontSendText) {
-            title = func.command;
-        }
-        if (func.sendSelectedFile) {
-            title += " with selected file"
-        }
-        if (func.customtext != null && func.customtext != "") {
-            title = func.customtext;
-        }
-        chrome.contextMenus.create({
-            "title": title,
-            "contexts": [func.context],
-            "onclick": func.func,
-            "parentId": device.deviceId
-        });
-    }
-}
-function sendClipboardMenu(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.clipboard = info.selectionText;
-        push.send(device.deviceId);
-    };
 
-}
-function notificationSelection(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.title = "Note to self";
-        push.text = info.selectionText;
-        push.send(device.deviceId);
-    };
-
-}
-function sendPageUrlMenu(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.url = info.pageUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function writePage(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.clipboard = info.pageUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function notificationPage(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.title = "Saved Page";
-        push.text = tab.title;
-        push.url = info.pageUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function sendLinkUrlMenu(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.url = info.linkUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function sendSrcUrlMenu(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.url = info.srcUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function sendWallpaperMenu(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.wallpaper = info.srcUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function writeLink(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.clipboard = info.linkUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function notificationLink(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.title = "Link from" + tab.title;
-        push.text = info.linkUrl
-        push.url = info.linkUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function taskerCommandLink(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();        
-        var prefix = prompt("Enter Tasker command prefix.\n\nSent command will be 'prefix=:=url'");
-        if(!prefix){
-            return;
-        }
-        push.text = prefix + "=:=" + info.linkUrl;
-        push.send(device.deviceId);
-    };
-
-}
-function openLinkFile(device, option) {
-    return function(info, tab) {
-        var push = new GCMPush();
-        push.files = [info.linkUrl];
-        push.send(device.deviceId);
-    };
-
-}
-function openLinkImage(device, option) {
-    return function(info, tab) {
-       var push = new GCMPush();
-        push.text = tab.title;
-        push.files = [info.srcUrl];
-        push.send(device.deviceId);
-    };
-
-}
-
-function updatemenu() {    
-    chrome.contextMenus.removeAll();
-    var contexts = ["page", "selection", "link", "editable", "image", "video", "audio"];
-    var contextFuncs = [{
-        "context": "page"
-    }, {
-        "context": "selection"
-    }, {
-        "context": "link"
-    }, {
-        "context": "editable"
-    }, {
-        "context": "image"
-    }, {
-        "context": "video"
-    }, {
-        "context": "audio"
-    }];
-    var funcs = [];
-    doForDevices(function(device){
-        chrome.contextMenus.create({
-            "id": device.deviceId,
-            "title": device.deviceName,
-            "contexts": ["all"]
-        });
-    });
-    for (var i = 0; i < contexts.length; i++) {
-        var context = contexts[i];
-        doForDevices(function(device){
-            var funcsForContext = [];
-            var commandNames = [];
-            var dontSendText = [];
-            var func = null;
-            var commandName = "Open";
-            var deviceId = device.deviceId;
-            if (context == "page") {
-                func = sendPageUrlMenu(device);
-                funcsForContext.push({"func":writePage(device),"commandName":"Paste page","dontSendText":true});
-                funcsForContext.push({"func":notificationPage(device),"commandName":"Create notification with page","dontSendText":true});
-            }else if (context == "link") {
-                func = sendLinkUrlMenu(device);
-                funcsForContext.push({"func":writeLink(device),"commandName":"Paste link","dontSendText":true});
-                funcsForContext.push({"func":notificationLink(device),"commandName":"Create notification with link","dontSendText":true});
-                funcsForContext.push({"func":openLinkFile(device),"commandName":"Download link","dontSendText":true});
-                funcsForContext.push({"func":taskerCommandLink(device),"commandName":"Tasker command with link","dontSendText":true});
-            }else if (context == "selection") {
-                commandName = "Paste"
-                func = sendClipboardMenu(device);
-                funcsForContext.push({"func":notificationSelection(device),"commandName":"Create Notification with text","dontSendText":true});
-            }else if (context == "image") {
-               func = sendSrcUrlMenu(device);
-               funcsForContext.push({"func":sendWallpaperMenu(device),"commandName":"Set image as wallpaper","dontSendText":true});
-               funcsForContext.push({"func":openLinkImage(device),"commandName":"Download image","dontSendText":true});
-            }else if (context == "video") {
-                func = sendSrcUrlMenu(device);
-            }else if (context == "audio") {
-                func = sendSrcUrlMenu(device);
-            }
-            if (func) {
-                funcsForContext.push({"func":func,"commandName":commandName});
-            }
-            for (var i = 0; i < funcsForContext.length; i++) {
-                var func = funcsForContext[i];
-                func = {
-                    "func": func.func,
-                    "command": func.commandName,
-                    "dontSendText": func.dontSendText
-                };
-                func.device = device;
-                func.context = context;
-                func.name = device.name;
-                funcs.push(func);
-            };
-        });
-    }
-    createMenuFromFuncs(funcs);
-}  
-updatemenu();
 var lastClipboard = null;
 var autoCheckClipboard = getAutoClipboard();
 var checkClipboardRecursive = function(){
@@ -1618,4 +1403,8 @@ var handleAutoClipboard = function(){
 }
 handleAutoClipboard();
 
-console.log("ID: " + getDeviceFileIdFromUrl("https://drive.google.com/file/d/open?id=0B-_PbYzcOQrGbV9td1MwbUVaU00"));
+
+
+
+contextMenu.update(devices);
+

@@ -1,53 +1,63 @@
 
-var doDirectGCMRequest = function(regId, gcmString, gcmType, gcmParams, callback, callbackError){
-    var req = new XMLHttpRequest();
-    req.open("POST", "https://gcm-http.googleapis.com/gcm/send", true);
-    req.setRequestHeader("Authorization", "key=AIzaSyDvDS_KGPYTBrCG7tppCyq9P3_iVju9UkA");
-    req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-    req.onload = function() {
-        console.log("POST status: " + this.status);
-        var result = {};
-        if(this.status != 200){
-            if (callbackError != null) {
-                callbackError(this.responseText);
-            }
-            return;
-        }
-        if(this.responseText){
-            result = JSON.parse(this.responseText)
-        }
-        if (callback != null) {                
-            callback(result);
-        }
-    }
-    req.onerror = function(e) {
-        if (callbackError != null) {
-            callbackError(e.currentTarget);
-        }
-    }
-    if(typeof regId == "string"){
-        regId = [regId];
-    }
-    var content = {
-        "data": {
-            "json": gcmString,
-            "type": gcmType
-        },
-        "registration_ids": regId
-    }
-    if(gcmParams){
-        for(var prop in gcmParams){
-            content[prop] = gcmParams[prop];
-        }
-    }
-    content[GCM_PARAM_PRIORITY] = GCM_MESSAGE_PRIORITY_HIGH;
-    content[GCM_PARAM_DELAY_WHILE_IDLE] = false;
-    var contentString = JSON.stringify(content);
-    req.send(contentString);
-}
+var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationFunc){
 
-var DeviceIdsAndDirectDevices = function(deviceIds){
+	var GCM_PARAM_TIME_TO_LIVE = "time_to_live";
+	var GCM_PARAM_PRIORITY = "priority";
+	var GCM_MESSAGE_PRIORITY_HIGH = "high";
+	var GCM_PARAM_DELAY_WHILE_IDLE = "delay_while_idle";
+	var doDirectGCMRequest = function(regId, gcmString, gcmType, gcmParams, callback, callbackError){
+	    var req = new XMLHttpRequest();
+	    req.open("POST", "https://gcm-http.googleapis.com/gcm/send", true);
+	    req.setRequestHeader("Authorization", "key=AIzaSyDvDS_KGPYTBrCG7tppCyq9P3_iVju9UkA");
+	    req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+	    req.onload = function() {
+	        console.log("POST status: " + this.status);
+	        var result = {};
+	        if(this.status != 200){
+	            if (callbackError != null) {
+	                callbackError(this.responseText);
+	            }
+	            return;
+	        }
+	        if(this.responseText){
+	            result = JSON.parse(this.responseText)
+	        }
+	        if (callback != null) {                
+	            callback(result);
+	        }
+	    }
+	    req.onerror = function(e) {
+	        if (callbackError != null) {
+	            callbackError(e.currentTarget);
+	        }
+	    }
+	    if(typeof regId == "string"){
+	        regId = [regId];
+	    }
+	    var content = {
+	        "data": {
+	            "json": gcmString,
+	            "type": gcmType
+	        },
+	        "registration_ids": regId
+	    }
+	    if(gcmParams){
+	        for(var prop in gcmParams){
+	            content[prop] = gcmParams[prop];
+	        }
+	    }
+	    content[GCM_PARAM_PRIORITY] = GCM_MESSAGE_PRIORITY_HIGH;
+	    content[GCM_PARAM_DELAY_WHILE_IDLE] = false;
+	    var contentString = JSON.stringify(content);
+	    req.send(contentString);
+	};
 	var me = this;
+	if(!allDevices){
+		allDevices = devices;
+	}
+	if(!showNotificationFunc){
+		showNotificationFunc = showNotification;
+	}
 	if(typeof deviceIds == "string"){
 		deviceIds = deviceIds.split(",");
 	}
@@ -58,7 +68,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds){
 	this.convertGroupToDeviceIds = function(device){
 		var devicesResult = [];
 		if(device.deviceId.indexOf("group." == 0)){
-			var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(devices, device.deviceId);
+			var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(allDevices, device.deviceId);
 			if(devicesForGroup && devicesForGroup.length > 0){
 				for (var i = 0; i < devicesForGroup.length; i++) {
 					var deviceForGroup = devicesForGroup[i];
@@ -72,7 +82,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds){
 		}
 		return devicesResult;
 	}
-	var devicesForId = devices.where(function(device){
+	var devicesForId = allDevices.where(function(device){
 		return deviceIds.indexOf(device.deviceId) >= 0;
 	});
 	if(devicesForId.length == 0){
@@ -105,8 +115,8 @@ var DeviceIdsAndDirectDevices = function(deviceIds){
 	}
 	this.send = function(sendThroughServer, gcm, gcmParams,callback, callbackError){
 		if(!gcm){
-			return;
 			me.callCallback(callbackError,"No message to push");
+			return;
 		}
 		var serverDevices = me.serverDevices;
 		var directDevices = me.directDevices;
@@ -138,10 +148,10 @@ var DeviceIdsAndDirectDevices = function(deviceIds){
 	        	var title = "Direct GCM error";
 	            console.log(title);
 	            console.log(error);
-            	showNotification(title, error);
+            	showNotificationFunc(title, "Error: " + error.responseText);
             	
 				if(serverDevices.length == 0){
-					me.callCallback(callbackError,error);
+					me.callCallback(callbackError,error.toString());
 				}
 	        });
 		}
@@ -156,7 +166,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds){
         	if(result.registration_id){
         		device.regId2 = result.registration_id;
         		console.log("RegId2 changed for " + device.deviceName);
-        		setDevices(devices);
+        		setDevices(allDevices);
         	}
         }else{
         	var error = result.error;
@@ -168,7 +178,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds){
     			errorMessage = "Unknown Error";
     		}
     		console.log(errorMessage);
-    		showNotification("Error Direct Send", errorMessage);
+    		showNotificationFunc("Error Direct Send", errorMessage);
         }
 	}
 }
