@@ -9,6 +9,7 @@ a {
 }
 body {
 	width: 410px;
+  font-family: "Roboto", sans-serif;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 }
 body.popout {
@@ -106,7 +107,6 @@ body.popout {
 }
 a#link {
 	color: #757575;
-	font-family: 'Roboto', sans-serif;
     font-size: large;
     font-weight: 400;
 }
@@ -114,7 +114,6 @@ a#link:hover {
 	color: var(--global-color);
 }
 .devicename {
-	font-family: 'Roboto', sans-serif;
 	overflow: hidden;
 	text-overflow: ellipsis;
     font-weight: bold;
@@ -162,7 +161,6 @@ a#link:hover {
 .button-link {
 	background: #424242;
 	border-radius: 4px;
-	font-family: 'Roboto', sans-serif;
 	height: 30px !important;
 	line-height: 30px !important;
 	margin: 5px;
@@ -205,7 +203,6 @@ td {
 #currenttabtitle {
 	color: white;
 	display: none;
-	font-family: 'Roboto', sans-serif;
 	font-weight: bold;
 	padding-bottom: 3px;
 	padding-left: 10px;
@@ -227,7 +224,6 @@ td {
   	cursor: pointer;
   	display: flex;
   	flex-direction: column;
-  	font-family: 'Roboto', sans-serif;
   	justify-content: center;
     color: white;
     font-weight: bold;
@@ -280,7 +276,6 @@ img.tabIcon {
 #sms {
 	flex-direction: column;
     display: flex;
-    font-family: "Roboto", sans-serif;
     height: 510px;
 }
 #smsback {
@@ -410,7 +405,6 @@ img.tabIcon {
     margin-left: auto;
     margin-right: 0;
     flex-direction: column;
-    font-family: "Roboto", sans-serif;
     font-weight: 500;
 }
 .smsmessage.received {
