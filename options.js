@@ -239,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if(command.shortcut != ""){
           var commandElement = document.getElementById("shortcut"+command.name);
           if(commandElement){
+            commandElement.innerHTML = "<div class='shortcutline'><span class='shortcutdescription'>" + command.description + "</span> <div class='configuredshortcut'>"+command.shortcut + "</div></div>";
           }
         }
       }
