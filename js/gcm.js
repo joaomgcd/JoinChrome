@@ -468,7 +468,9 @@ var GCMNotification = function(){
                     if(!message){
                         message = "Performed action remotely.";
                     }
-                    showNotification("Join",message);
+                    if(back.getShowInfoNotifications()){
+                        showNotification("Join",message);
+                    }
                   }else{
                     console.log("Sent notification action error: " + result.errorMessage);
                     showNotification("Join","Error performing action: " + result.errorMessage);

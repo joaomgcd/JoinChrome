@@ -701,6 +701,9 @@ var getPlayNotificationSound = function(){
 var getAlternativePopupIcon = function(){
     return getOptionValue("checkbox","alternativeicon");
 }
+var getShowInfoNotifications = function(){
+    return getOptionValue("checkbox","showinfonotifications");
+}
 var getEventghostPort = function(){
     return getOptionValue("text","eventghostport");
 }
@@ -731,7 +734,8 @@ var defaultValues = {
     "notificationnopopuppackages":"com.google.android.music",
     "prefixtaskercommands":false,
     "hidenotificationtext": false,
-    "playnotificationsound": true
+    "playnotificationsound": true,
+    "showinfonotifications": true
 };
 /******************************************************************************/
 
