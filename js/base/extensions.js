@@ -1,3 +1,7 @@
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
 Array.prototype.removeIf = function(callback) {
     var removed = 0;
     var i = 0;
@@ -133,6 +137,9 @@ Array.prototype.doForChain = function(func, callbackFinal) {
   doAll(callbackFinal);
 };
 Object.prototype.applyProps = function(objToApply){
+    if(!objToApply){
+        return;
+    }
     for(var prop in objToApply){
       var value = objToApply[prop];
         if(value.toClass() != "[object Function]"){
