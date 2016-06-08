@@ -165,7 +165,7 @@ var getNotificationPage = function(notification){
 }
 var openNotificationPage = function(notification){
 	copyUserNotificationPages();
-    var appPage = getNotificationPage(notification); 
+    var appPage = getNotificationPage(notification);
     if(appPage){
     	openTab(appPage);
     }
@@ -195,7 +195,7 @@ var getFolderId = function(callback,path,parentId){
             query += " and '"+parentId+"' in parents";
         }
         query = encodeURIComponent(query);
-        doGetWithAuth("https://www.googleapis.com/drive/v3/files?q="+query,function(result){ 
+        doGetWithAuth("https://www.googleapis.com/drive/v3/files?q="+query,function(result){
             if(!result || !result.files || result.files.length == 0){
                 var createOptions = {"name":name,"mimeType":"application/vnd.google-apps.folder"};
                 if(parentId){
@@ -204,14 +204,14 @@ var getFolderId = function(callback,path,parentId){
                 doPostWithAuth("https://www.googleapis.com/drive/v3/files",createOptions,function(createResult){
                     callback(createResult.id);
                 },function(error){
-                    console.log("Error: " + error);   
+                    console.log("Error: " + error);
                 })
                 return;
             }else{
                 callback(result.files[0].id);
             }
         },function(error){
-            console.log("Error: " + error);   
+            console.log("Error: " + error);
         });
     }
     if(path.indexOf("/")>=0){
@@ -259,7 +259,7 @@ var createElement = function(parent, tag, id, attributes) {
             var attributeName = attribute;
             var attributeValue = attributes[attribute];
             //no caso do IE tem que se usar a propriedade "className" senão o estilo não é aplicado. Também são usadas regras CSS específicas para IE porque este não suporta animações
-            if (attributeName == "class" && !document.createEvent) { //IE                   
+            if (attributeName == "class" && !document.createEvent) { //IE
                 el.className = attributeValue + "IE";
             } else { //Non-IE
                 el.setAttribute(attribute, attributeValue);
@@ -290,7 +290,7 @@ var getDeviceFileIdFromUrl = function(fileUrl){
     return match[0];
 }
 var showPopup = function(url, height, width){
-	chrome.windows.create({"focused":false, url: url, type: 'detached_panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height});  
+	chrome.windows.create({"focused":false, url: url, type: 'detached_panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height});
 }
 var jump = function(h){
   if(!h){
@@ -298,7 +298,7 @@ var jump = function(h){
   }
     var url = window.location.href;               //Save down the URL without hash.
     location.href = "#"+h;                 //Go to the target element.
-};  
+};
 /***********************************************************/
 /*************************BASE64***********************/
 
@@ -358,7 +358,7 @@ var doGetBase64 = function(url, callback) {
     if (url == null || url == "") {
         callback(null);
         return;
-    } 
+    }
     if(url.indexOf("http") < 0){
     	callback(url);
     	return;
@@ -379,7 +379,7 @@ var doGetBase64 = function(url, callback) {
         };
         xhr.send();
 	});
-        
+
 }
 var downloadDriveString = function(filename,callback,callbackError){
     var localFile = localStorage[filename];
@@ -395,12 +395,12 @@ var downloadDriveString = function(filename,callback,callbackError){
             callbackError("Couldn't get file info for " + filename);
             return;
         }
-        if(!fileInfo.files || fileInfo.files.length == 0){            
+        if(!fileInfo.files || fileInfo.files.length == 0){
             callbackError("File doesn't exist on your google drive: " + filename);
             return;
         }
         var fileId = fileInfo.files[0].id;
-        if(!fileId){   
+        if(!fileId){
             callbackError("File ID not present for " + filename);
             return;
         }
@@ -420,7 +420,7 @@ var doGetBase64Image = function(url, callback) {
  	if (url == null || url == "") {
         callback(null);
         return;
-    } 
+    }
     if(url.indexOf("http") < 0){
     	callback(url);
     	return;
@@ -564,7 +564,7 @@ Array.prototype.doForAllAsync = function(func, callbackFinal, shouldProcessItem,
 	        results.push(null);
 	        doAll(callback);
     	}
-      
+
     }
   };
   doAll(callbackFinal);
@@ -583,8 +583,8 @@ Array.prototype.doForChain = function(func, callbackFinal) {
             preivousResult = result;
             doAll(callback);
         });
-        
-      
+
+
     }
   };
   doAll(callbackFinal);
@@ -601,23 +601,23 @@ var encrypt = function(text, password){
     }
     if(!password){
         return text;
-    }  
+    }
     var isString = (typeof text) == "string";
     var isArray = Object.prototype.toString.call(text);
     if(isString){
         return encryptString(text,password);
     }else if(isArray){
         return encryptArray(text,password);
-    }   
+    }
 }
-var encryptArray = function(texts, password){ 
+var encryptArray = function(texts, password){
     //return texts;  //HERE UNTIL I'M REGISTERED
     if(!password){
         password = localStorage.encryptionPassword;
     }
     if(!password){
         return texts;
-    }   
+    }
     return texts.select(function(text){
         return encryptString(text,password);
     });
@@ -660,7 +660,7 @@ var decryptFields = function(obj){
         if(value && value.length > 0){
             var result = null;
             if(isString){
-                result = decryptString(value, key256Bits);                
+                result = decryptString(value, key256Bits);
             }else if(isArray){
                 result = decryptArray(value, key256Bits);
             }
@@ -676,7 +676,7 @@ var decryptArray = function(values, key256Bits){
     if(!localStorage.encryptionPassword){
         return values;
     }
-    if(!key256Bits){        
+    if(!key256Bits){
         key256Bits = getStoredKey();
     }
     var results = values.select(function(value){
@@ -692,7 +692,7 @@ var decryptString = function(value, key256Bits){
     if(!localStorage.encryptionPassword){
         return value;
     }
-    if(!key256Bits){        
+    if(!key256Bits){
         key256Bits = getStoredKey();
     }
     var separatorIndex = value.indexOf("=:=");
@@ -700,7 +700,7 @@ var decryptString = function(value, key256Bits){
         var split = value.split("=:=");
         if(split.length==2){
             var iv = CryptoJS.enc.Base64.parse(split[0]);
-            var encrypted = CryptoJS.enc.Base64.parse(split[1]);                     
+            var encrypted = CryptoJS.enc.Base64.parse(split[1]);
             var decrypted = CryptoJS.AES.decrypt({ ciphertext: encrypted },key256Bits, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: iv});
             var decryptedString = CryptoJS.enc.Utf8.stringify(decrypted);
             if(decryptedString && decryptedString.length>0){
@@ -727,7 +727,7 @@ var openNewTab = function(url,options, callback){
 			if(options){
 				for(var prop in options){
 					finalOptions[prop] = options[prop];
-				}	
+				}
 			}
             chrome.windows.create(finalOptions,callback);
         }
@@ -778,7 +778,7 @@ var getAuthUrl = function(selectAccount,background){
     	url += "&prompt=select_account";
     }
     return url;
-} 
+}
 /*var getRedirectUrl = function(url,callback){
     var req = new XMLHttpRequest();
     req.open("GET", "https://accounts.google.com/o/oauth2/v2/auth?response_type=token&client_id=596310809542-c2bg952rtmf05el5kouqlcf0ajqnfpdl.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Flocalhost:8080%2Fecho&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appfolder%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file&login_hint=joaomgcd@gmail.com", true);
@@ -813,9 +813,9 @@ var getUserInfo = function(callback,force,token){
 	  localStorage.userinfo = JSON.stringify(result);
 	  callback(result);
     },function(error){
-        console.log("Error: " + error); 
+        console.log("Error: " + error);
     },token);
-  
+
 }
 Date.prototype.customFormat = function(formatString){
     var YYYY,YY,MMMM,MMM,MM,M,DDDD,DDD,DD,D,hhhh,hhh,hh,h,mm,m,ss,s,ampm,AMPM,dMod,th;
@@ -840,7 +840,7 @@ Date.prototype.customFormat = function(formatString){
     mm=(m=this.getMinutes())<10?('0'+m):m;
     ss=(s=this.getSeconds())<10?('0'+s):s;
     return formatString.replace("#hhhh#",hhhh).replace("#hhh#",hhh).replace("#hh#",hh).replace("#h#",h).replace("#mm#",mm).replace("#m#",m).replace("#ss#",ss).replace("#s#",s).replace("#ampm#",ampm).replace("#AMPM#",AMPM);
-};  
+};
 Number.prototype.formatDate = function(full){
     var date = new Date(this);
     var now = new Date();
@@ -856,14 +856,14 @@ Number.prototype.formatDate = function(full){
     var yesterday = new Date(now);
     yesterday.setDate(now.getDate()-1);
     if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
-    return "Yesterday " + date.customFormat(format);
+    return "Yesterday<br>" + date.customFormat(format);
     }
 
     if (full) {
         return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
     }
     return date.customFormat("#MMM# #DD#");
-} 
+}
 function tintImage(image, color) {
     var canvas = document.createElement("canvas");
     canvas.width = image.width;
