@@ -13,7 +13,7 @@
 	padding: 8px;
 	background-color: white;
 	box-sizing: initial;
-	position: relative;  	  
+	position: relative;
 	align-self: center;
 }
 #closebutton{
@@ -42,7 +42,6 @@
 	margin: 8px;
 }
 .notificationtitle{
-	font-weight: bold;
 	font-size: 160%;
 	font-family: 'Roboto', sans-serif;
 	flex-grow: 1;
@@ -73,7 +72,7 @@
 	height: 48px;
 	border-radius: 50%;
 }
-.notificationiconapp{ 
+.notificationiconapp{
 	position: absolute;
 	bottom: 5px;
 	right: -5px;
@@ -120,7 +119,7 @@
 	flex-grow: 1;
 	font-family: 'Roboto', sans-serif;
 	font-size: 130%;
-	font-weight: bold;
+	font-weight: 500;
 	margin-left: 8px;
 	margin-right: 8px;
 	text-transform: uppercase;

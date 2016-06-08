@@ -80,7 +80,6 @@ body.popout {
 	align-items: center;
 	cursor: pointer;
 	display: flex;
-	font-weight: bold;
 	padding: 8px;
 	width: 100%;
 }
@@ -116,7 +115,6 @@ a#link:hover {
 .devicename {
 	overflow: hidden;
 	text-overflow: ellipsis;
-	font-weight: bold;
 	width: 69px;
 	word-break: break-word;
 }
@@ -149,7 +147,6 @@ a#link:hover {
 }
 .button {
 	color: white;
-	font-weight: bold;
 	height: 20px;
 	line-height: 20px;
 	margin-right: 5px;
@@ -203,7 +200,6 @@ td {
 #currenttabtitle {
 	color: white;
 	display: none;
-	font-weight: bold;
 	padding-bottom: 3px;
 	padding-left: 10px;
 }
@@ -226,7 +222,7 @@ td {
 	flex-direction: column;
 	justify-content: center;
 	color: white;
-	font-weight: bold;
+	font-weight: 500;
 	height:100%;
 }
 #tools .tab {
@@ -290,7 +286,6 @@ img.tabIcon {
 	color: white;
 	cursor: pointer;
 	flex-direction: row;
-	font-weight: bold;
 	position: absolute;
 	transition: all 0.3s ease;
 	z-index:80;
@@ -366,7 +361,6 @@ img.tabIcon {
 	background-color: var(--global-color-gray);
 }
 .smscontactname {
-	font-weight: bold;
 	font-size: medium;
 }
 .smstextanddate {
@@ -406,7 +400,6 @@ img.tabIcon {
 	margin-left: auto;
 	margin-right: 0;
 	flex-direction: column;
-	font-weight: 500;
 }
 .smsmessage.received {
 	background-color: var(--global-color-faded);
