@@ -9,8 +9,8 @@ var writeDevices = function(){
 	var deviceButtonsHtml = document.querySelector('link[href="components/device-buttons.html"]').import.querySelector('#devicebuttons');
 	var buttonsElement = null;
 	var selectedDevice = null;
-	
-	var deviceHover = function(e){		
+
+	var deviceHover = function(e){
 		var element = e.target;
 		if(!element){
 			return;
@@ -51,12 +51,12 @@ var writeDevices = function(){
 			}
 			if(enabled){
 				buttonElement.className = buttonElement.className.replace("disabled","");
-			}else{				
+			}else{
 				buttonElement.classList.add("disabled");
 			}
 		};
 	}
-	
+
 	var deviceCommandsElement = deviceCommandsHtml.querySelector("#devicecommands").cloneNode(true);
 	back.getCurrentTab(function(tab){
 		if(!tab){
@@ -85,7 +85,7 @@ var writeDevices = function(){
 			deviceIcon = device.deviceId.substring(6) + ".png";
 		}
 		deviceElement.querySelector("#deviceicon").src = "icons/" + deviceIcon;
-	    devicesElement.appendChild(deviceElement);
+			devicesElement.appendChild(deviceElement);
 		deviceElements.push(deviceElement);
 	};
 
@@ -118,17 +118,17 @@ var writeDevices = function(){
 		/*if(link.command.condition && !link.command.condition(selectedDevice)){
 			return;
 		}*/
-		  
+
 		back.getCurrentTab(function(tab){
-			if(!tab || isPopup){       
+			if(!tab || isPopup){
 				link.command.func(selectedDevice.deviceId,true, tab);
 				if(tab && !link.command.keepTab){
-	                chrome.tabs.remove(tab.id,function(){             
-	                });
-	            }
-            }else{            	
+									chrome.tabs.remove(tab.id,function(){
+									});
+							}
+						}else{
 				link.command.func(selectedDevice.deviceId,true);
-            }
+						}
 		});
 	}
 	var buttonScroll = 0;
@@ -142,37 +142,37 @@ var writeDevices = function(){
 		var buttonScroll = commandsElement.scrollTop;
 		//console.log(e.target);
 		var buttonElement = findButtonElement(e);
-    	var oldIndex = e.dataTransfer.getData("index");
-    	var newIndex = buttonElement.commandIndex;
-    	var commandBeingDragged = null;
-    	var moveIndex = function(prop, index, value){
+			var oldIndex = e.dataTransfer.getData("index");
+			var newIndex = buttonElement.commandIndex;
+			var commandBeingDragged = null;
+			var moveIndex = function(prop, index, value){
 			console.log(index + "=>" + (index + value));
 			index = index + value;
 			commandSortOrder[prop] = index;
-    	}
-    	var moveIndexForward = function(prop, index){
+			}
+			var moveIndexForward = function(prop, index){
 			moveIndex(prop,index,1);
-    	};
-    	var moveIndexBackward = function(prop, index){
+			};
+			var moveIndexBackward = function(prop, index){
 			moveIndex(prop,index,-1);
-    	};
-    	for(var prop in commandSortOrder){
-    		var commandBeingDraggedIndex = commandSortOrder[prop];
-    		if(newIndex < oldIndex){
-    			if(commandBeingDraggedIndex >= newIndex && commandBeingDraggedIndex < oldIndex){
-    				moveIndexForward(prop, commandBeingDraggedIndex);
-    			}
-    		}else{
-    			if(commandBeingDraggedIndex <= newIndex && commandBeingDraggedIndex > oldIndex){
-    				moveIndexBackward(prop, commandBeingDraggedIndex);
-    			}
-    		}
-    		if(commandBeingDraggedIndex == oldIndex){
-    			commandBeingDragged = deviceCommands.first(function(command){
-    				return command.commandId == prop;
-    			});
-    		}
-    	}
+			};
+			for(var prop in commandSortOrder){
+				var commandBeingDraggedIndex = commandSortOrder[prop];
+				if(newIndex < oldIndex){
+					if(commandBeingDraggedIndex >= newIndex && commandBeingDraggedIndex < oldIndex){
+						moveIndexForward(prop, commandBeingDraggedIndex);
+					}
+				}else{
+					if(commandBeingDraggedIndex <= newIndex && commandBeingDraggedIndex > oldIndex){
+						moveIndexBackward(prop, commandBeingDraggedIndex);
+					}
+				}
+				if(commandBeingDraggedIndex == oldIndex){
+					commandBeingDragged = deviceCommands.first(function(command){
+						return command.commandId == prop;
+					});
+				}
+			}
 		console.log(commandBeingDragged);
 		console.log("=>");
 		console.log(buttonElement.command);
@@ -197,7 +197,7 @@ var writeDevices = function(){
 		buttonElement.onmouseout = buttonHoverOut;
 		var link = buttonElement.querySelector("#link");
 		var image = buttonElement.querySelector("#devicebuttonimage");
-		
+
 		image.src = "icons/" + command.commandId + ".png";
 		commandSortOrder[command.commandId] = e;
 		link.textContent = command.label;
@@ -217,9 +217,9 @@ var writeDevices = function(){
 	if(lastHoveredDevice){
 		deviceHover({"target":deviceElements.first(function(deviceElement){return deviceElement.device.deviceId == localStorage.lastHoveredDeviceId;})});
 	}else{
-		deviceHover({"target":deviceElements[0]});	
+		deviceHover({"target":deviceElements[0]});
 	}
-   
+
 }
 document.addEventListener('DOMContentLoaded', function() {
 	writeDevices();

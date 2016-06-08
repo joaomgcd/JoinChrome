@@ -142,6 +142,6 @@
 }
 #clearAllNotificationButtonIcon {
 	height: 100%;
-    width: 100%;
-    background: url('icons/clear_all.png') center/60% 60% no-repeat;
+		width: 100%;
+		background: url('icons/clear_all.png') center/60% 60% no-repeat;
 }
