@@ -377,9 +377,10 @@ img.tabIcon {
 .smscontacttext {
 	max-width: 320px;
 	overflow: hidden;
-	text-overflow: ellipsis;
 	color: #777777;
-	flex-grow: 1;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
 }
 .smscontactdate {
 	align-self: flex-end;
