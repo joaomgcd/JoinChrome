@@ -238,6 +238,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 	}
 }
 var SmsApp = function(){
+
 	var me = this;
 	var smsTitleContainerElement = document.getElementById("smstitlecontainer");
 	var smsInputContainerElement = document.getElementById("smssendcontainer");
@@ -269,6 +270,16 @@ var SmsApp = function(){
 	me.contact = numberFromUrl ? {"number":numberFromUrl,"name":getURLParameter("name")} : (localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null);
 	this.number = null;
 	me.contactsScroll = null;
+
+	me.clearSmsNotification = function(){
+		if(localStorage.selectedTab == "sms" && me.number){
+			back.notifications.where(function(notification){
+				return notification.id == UtilsSMS.getNotificationId(me.deviceId, me.number);
+			}).doForAll(function(notification){
+				notification.cancel();
+			});
+		}
+	}
 	var setPlaceholderText = function(text){
 		smsContainerElement.innerHTML = "<h5 id='tabsplaceholder'>"+text+"</h5>";
 	}
@@ -392,6 +403,7 @@ var SmsApp = function(){
 		showInput(true);
 		showContactFind(false);
 
+		me.clearSmsNotification();
 		smsInputElement.placeholder = "Send message to " + number;
 		smsInputElement.focus();
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
@@ -525,6 +537,7 @@ var SmsApp = function(){
 		me.addSms(me.deviceId,sms);
 		me.refresh(true);
 		me.newInput();
+		me.clearSmsNotification();
 	}
 	this.newInput = function(){
 		smsInputElement.value = "";
@@ -564,6 +577,8 @@ var smsReceived = function(event){
 	// console.log(event.sms);
 	smsApp.receiveSms(event.deviceId,event.sms);
 	smsApp.refresh(true);
+	smsApp.clearSmsNotification();
+	
 }
 back.addEventListener('smsreceived', smsReceived, false);
 

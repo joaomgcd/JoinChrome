@@ -420,6 +420,7 @@ var GCMNotification = function(){
 			not.appName ="";
 		}
 	}
+	
 	this.execute = function() {
 
 		var me = this;
@@ -427,7 +428,13 @@ var GCMNotification = function(){
 			var not = this.requestNotification.notifications[i];
 			this.decryptNotification(not);
 			not.senderId = me.requestNotification.senderId;
+			not.isSmsNotification = function(){
+				return this.actionId && this.actionId == SMS_ACTION_ID;
+			}
 			not.cancel = function(){
+				if(not.isSmsNotification()){
+					back.dispatch(EVENT_SMS_HANDLED,{"text":not.text,"deviceId":not.senderId});
+				}
 				notifications.removeNotificationsWithSameId(this.id);
 				if(!this.keepRemote){
 					var gcmNotificationClear = new GCMNotificationClear();
@@ -441,7 +448,7 @@ var GCMNotification = function(){
 			}
 			not.doAction = function(actionId,text, isReply){
 				var notification = this;
-				if(actionId && actionId == SMS_ACTION_ID){
+				if(notification.isSmsNotification()){
 					var number = notification.smsnumber;
 					showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
 					notification.cancel();
@@ -605,7 +612,7 @@ var GCMNewSmsReceived = function(){
 		chromeNotification.notify(); */
 
 		var not = {};
-		not.id = this.senderId + this.number;
+		not.id = UtilsSMS.getNotificationId(this.senderId, this.number);
 		not.title= title;
 		not.text = this.text;
 		not.priority = 2;

@@ -179,11 +179,7 @@ var fire = function(nameOfEvent,description){
 }
 var dispatch = function(eventName, data){
 	var event = new Event(eventName);
-	if(data){
-		for(var prop in data){
-			event[prop] = data[prop];
-		}
-	}
+	event.applyProps(data);
 	back.dispatchEvent(event);
 }
 /***********************************************************/

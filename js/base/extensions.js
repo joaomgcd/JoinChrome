@@ -141,10 +141,10 @@ Object.prototype.applyProps = function(objToApply){
         return;
     }
     for(var prop in objToApply){
-      var value = objToApply[prop];
-        if(value.toClass() != "[object Function]"){
-          this[prop] = value;
-        }
+    	var value = objToApply[prop];
+		if(value && value.toClass() != "[object Function]"){
+			this[prop] = value;
+		}
     }
     return this;
 };

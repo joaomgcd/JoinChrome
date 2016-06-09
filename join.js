@@ -1106,7 +1106,7 @@ var smsWindow = null;
 var smsWindowId = null;
 var showSmsPopup = function(deviceId,number,name,isReply,text){
 	createPushClipboardWindow("sms",{"deviceId":deviceId,"number":number,"name":name},{"reply":isReply,"text":text});
-	dispatch(EVENT_SMS_HANDLED,{"text":text,"deviceId":deviceId});
+	
 }
 addEventListener(EVENT_SMS_HANDLED,function(event){
 	var text = event.text;
