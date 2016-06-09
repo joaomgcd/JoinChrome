@@ -392,21 +392,26 @@ img.tabIcon {
 	margin-bottom: 6px;
 	z-index:50;
 }
+.smsmessagecontainer.sent {
+	justify-content: flex-end;
+}
 .smsmessage {
-	padding: 12px 16px 12px 16px;
+	padding: 8px 15px 5px 12px;
 	background-color: white;
 	border-radius: 4px;
-	width: 75%;
 	display: flex;
 	position: relative;
 	margin-left: auto;
 	margin-right: 0;
 	flex-direction: column;
 }
+.sent .smsmessage {
+	margin-left: 1em;
+}
 .smsmessage.received {
 	background-color: var(--global-color-faded);
 	margin-left: 0;
-	margin-right: auto;
+	margin-right: 1em;
 }
 .smsbubbletriangle {
 	position: relative;
