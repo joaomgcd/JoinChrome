@@ -9,10 +9,9 @@ a {
 }
 html, body {
 	height: 100%;
-	min-height: 600px;
-	overflow: hidden;
 }
 body {
+	height: 600px;
 	width: 410px;
 	font-family: "Roboto", sans-serif;
 	display: flex;
@@ -205,10 +204,8 @@ td {
 	padding-left: 10px;
 }
 .tab {
-	align-self: center;
 	cursor: hand;
 	cursor: pointer;
-	height: 100%;
 	opacity: 0.6;
 	padding-left: 12px;
 	padding-right: 12px;
@@ -238,7 +235,7 @@ img.tabIcon {
 	width: 40px;
 }
 .selected {
-	box-shadow: 0px -4px 0px white inset;
+	border-bottom: 4px solid #fff;
 	opacity: 1;
 }
 #usericon {
@@ -275,6 +272,9 @@ img.tabIcon {
 #sms, #devices, #notifications {
 	flex: auto;
 	overflow-y: auto;
+}
+#sms {
+	background-color: var(--global-color-gray);
 }
 #smsback {
 	display: flex;
@@ -346,7 +346,6 @@ img.tabIcon {
 #smscontainer {
 	background-color: var(--global-color-gray);
 	height: 100%;
-	overflow-y: scroll;
 }
 #smscontainer div.smsmessagecontainer:first-of-type {
 	margin-top:80px;
