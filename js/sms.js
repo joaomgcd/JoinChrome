@@ -276,7 +276,9 @@ var SmsApp = function(){
 			back.notifications.where(function(notification){
 				return notification.id == UtilsSMS.getNotificationId(me.deviceId, me.number);
 			}).doForAll(function(notification){
-				notification.cancel();
+				setTimeout(function(){
+					notification.cancel();
+				},2000);
 			});
 		}
 	}

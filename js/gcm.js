@@ -448,15 +448,7 @@ var GCMNotification = function(){
 			}
 			not.doAction = function(actionId,text, isReply){
 				var notification = this;
-				if(notification.isSmsNotification()){
-					var number = notification.smsnumber;
-					showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
-					notification.cancel();
-					return;
-				}
-				if(!actionId || (!text && isReply)){
-					return;
-				}
+				
 				if(actionId == COPY_NUMBER){
 					var matches = notification.text.match(regexNumbers);
 					if(matches && matches.length > 0){
@@ -466,6 +458,15 @@ var GCMNotification = function(){
 					}else{
 						showNotification("Couldn't copy number", notification.text,5000);
 					}
+					return;
+				}
+				if(notification.isSmsNotification()){
+					var number = notification.smsnumber;
+					showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
+					notification.cancel();
+					return;
+				}
+				if(!actionId || (!text && isReply)){
 					return;
 				}
 				doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",{"actionId":actionId,"text":text,"deviceId":me.requestNotification.senderId,"appPackage":notification.appPackage}, function(result){
