@@ -7,9 +7,15 @@
 a {
 	color: var(--global-color);
 }
+html, body {
+	height: 100%;
+	min-height: 600px;
+}
 body {
 	width: 410px;
 	font-family: "Roboto", sans-serif;
+	display: flex;
+	flex-direction: column;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 }
 body.popout {
@@ -23,14 +29,12 @@ body.popout {
 .devicecommands {
 	display: flex;
 	flex-direction: column;
-	height: 510px;
 	width: 100%;
 }
 .devicecommandsleft {
 	background-color: white;
 	display: flex;
 	flex-direction: column;
-	height: 510px;
 	width: 100%;
 }
 .commands {
@@ -132,7 +136,6 @@ a#link:hover {
 	flex-direction: column;
 	padding: 8px;
 	background-color: var(--global-color-gray);
-	height: 510px;
 	overflow-y: scroll;
 }
 .button-container {
@@ -182,9 +185,9 @@ td {
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
-	height:54px;
 	position: relative;
 	z-index:100;
+	flex: 0 0 10%;
 }
 #tabs {
 	flex-grow: 1;
@@ -269,10 +272,9 @@ img.tabIcon {
 	}
 }
 
-#sms {
-	flex-direction: column;
-	display: flex;
-	height: 510px;
+#sms, #devices, #notifications {
+	flex: auto;
+	overflow-y: auto;
 }
 #smsback {
 	display: flex;

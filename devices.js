@@ -92,7 +92,7 @@ var selectTab = function(idToShow){
 		var currentId = tab.id.replace("tab-","");
 		var tabContent = document.getElementById(currentId);
 		if(currentId == idToShow){
-			tabContent.style.display = "flex";
+			tabContent.style.display = "";
 			if(tab.className.indexOf("selected")<0){
 				tab.classList.add("selected");
 				tabTitleElement.innerText = idToShow.substring(0,1).toUpperCase() + idToShow.substring(1);
