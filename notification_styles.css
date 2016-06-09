@@ -40,7 +40,6 @@
 	flex-direction: column;
 	flex-grow: 1;
 	margin: 8px;
-	width: 0px;
 }
 .notificationtitle{
 	font-size: 160%;
