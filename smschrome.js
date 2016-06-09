@@ -8,7 +8,7 @@ if(hashIndex>=0){
 var myWindow = window;
 document.addEventListener('DOMContentLoaded', function() {
 	console.log(deviceId);
-    setFrameUrl();
+		setFrameUrl();
 	chrome.extension.getBackgroundPage().smsWindow = window;
 	chrome.extension.getBackgroundPage().onSmsReceived = function(gcmNewSmsReceived){
 		var number  = gcmNewSmsReceived.number;
@@ -32,16 +32,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 var setFrameUrl = function(){
 	var url =  joinserverBase + "sms.html?refresh=false&deviceId="+deviceId;
-    var frame = document.getElementById("frame");
-    if(contactParameter){
-    	url = url + "#"+contactParameter;
-    }
+		var frame = document.getElementById("frame");
+		if(contactParameter){
+			url = url + "#"+contactParameter;
+		}
 	frame.src = url;
 }
 
 window.onbeforeunload = function(){
-    chrome.extension.getBackgroundPage().smsWindow = null;
-    chrome.extension.getBackgroundPage().onSmsReceived = null;
+		chrome.extension.getBackgroundPage().smsWindow = null;
+		chrome.extension.getBackgroundPage().onSmsReceived = null;
 }
 var sendMessageToFrame = function(obj){
 	window.frames[0].window.postMessage(JSON.stringify(obj),"*");
