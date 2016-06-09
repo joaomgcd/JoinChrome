@@ -10,6 +10,7 @@ a {
 html, body {
 	height: 100%;
 	min-height: 600px;
+	overflow: hidden;
 }
 body {
 	width: 410px;
@@ -181,24 +182,21 @@ td {
 	background-color: var(--global-color);
 	display: flex;
 	font-size: medium;
-	justify-content: flex-start;
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
-	position: relative;
+/*	position: relative;*/
 	z-index:100;
 	flex: 0 0 10%;
 }
 #tabs {
 	flex-grow: 1;
-	height:100%;
-	position:relative;
+/*	height:100%;
+	position:relative;*/
 }
 #tools {
-	align-self: center;
-	display: flex;
-	margin-right: 8px;
-	position: relative;
+	align-items: center;
+	justify-content: flex-end;
 }
 #currenttabtitle {
 	color: white;
@@ -229,7 +227,9 @@ td {
 	height:100%;
 }
 #tools .tab {
-	display: inline;
+/*	display: inline;*/
+	display: flex;
+	align-items: center;
 	opacity: 1;
 	padding:0;
 }
