@@ -7,9 +7,15 @@
 a {
 	color: var(--global-color);
 }
+html, body {
+	height: 100%;
+}
 body {
+	height: 600px;
 	width: 410px;
 	font-family: "Roboto", sans-serif;
+	display: flex;
+	flex-direction: column;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 }
 body.popout {
@@ -23,14 +29,12 @@ body.popout {
 .devicecommands {
 	display: flex;
 	flex-direction: column;
-	height: 510px;
 	width: 100%;
 }
 .devicecommandsleft {
 	background-color: white;
 	display: flex;
 	flex-direction: column;
-	height: 510px;
 	width: 100%;
 }
 .commands {
@@ -132,7 +136,6 @@ a#link:hover {
 	flex-direction: column;
 	padding: 8px;
 	background-color: var(--global-color-gray);
-	height: 510px;
 	overflow-y: scroll;
 }
 .button-container {
@@ -178,24 +181,21 @@ td {
 	background-color: var(--global-color);
 	display: flex;
 	font-size: medium;
-	justify-content: flex-start;
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
-	height:54px;
-	position: relative;
+/*	position: relative;*/
 	z-index:100;
+	flex: 0 0 10%;
 }
 #tabs {
 	flex-grow: 1;
-	height:100%;
-	position:relative;
+/*	height:100%;
+	position:relative;*/
 }
 #tools {
-	align-self: center;
-	display: flex;
-	margin-right: 8px;
-	position: relative;
+	align-items: center;
+	justify-content: flex-end;
 }
 #currenttabtitle {
 	color: white;
@@ -204,10 +204,8 @@ td {
 	padding-left: 10px;
 }
 .tab {
-	align-self: center;
 	cursor: hand;
 	cursor: pointer;
-	height: 100%;
 	opacity: 0.6;
 	padding-left: 12px;
 	padding-right: 12px;
@@ -226,7 +224,9 @@ td {
 	height:100%;
 }
 #tools .tab {
-	display: inline;
+/*	display: inline;*/
+	display: flex;
+	align-items: center;
 	opacity: 1;
 	padding:0;
 }
@@ -235,7 +235,7 @@ img.tabIcon {
 	width: 40px;
 }
 .selected {
-	box-shadow: 0px -4px 0px white inset;
+	border-bottom: 4px solid #fff;
 	opacity: 1;
 }
 #usericon {
@@ -269,10 +269,12 @@ img.tabIcon {
 	}
 }
 
+#sms, #devices, #notifications {
+	flex: auto;
+	overflow-y: auto;
+}
 #sms {
-	flex-direction: column;
-	display: flex;
-	height: 510px;
+	background-color: var(--global-color-gray);
 }
 #smsback {
 	display: flex;
@@ -344,7 +346,6 @@ img.tabIcon {
 #smscontainer {
 	background-color: var(--global-color-gray);
 	height: 100%;
-	overflow-y: scroll;
 }
 #smscontainer div.smsmessagecontainer:first-of-type {
 	margin-top:80px;
@@ -390,21 +391,26 @@ img.tabIcon {
 	margin-bottom: 6px;
 	z-index:50;
 }
+.smsmessagecontainer.sent {
+	justify-content: flex-end;
+}
 .smsmessage {
-	padding: 12px 16px 12px 16px;
+	padding: 8px 15px 5px 12px;
 	background-color: white;
 	border-radius: 4px;
-	width: 75%;
 	display: flex;
 	position: relative;
 	margin-left: auto;
 	margin-right: 0;
 	flex-direction: column;
 }
+.sent .smsmessage {
+	margin-left: 1em;
+}
 .smsmessage.received {
 	background-color: var(--global-color-faded);
 	margin-left: 0;
-	margin-right: auto;
+	margin-right: 1em;
 }
 .smsbubbletriangle {
 	position: relative;
@@ -423,6 +429,9 @@ img.tabIcon {
 .smsmessagetext {
 	word-wrap: break-word;
 	font-size: medium;
+}
+.smsmessagetext a {
+	word-break: break-all;
 }
 .smsmessagedate {
 	flex-grow: 1;
