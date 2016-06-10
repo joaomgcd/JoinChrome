@@ -430,6 +430,9 @@ img.tabIcon {
 	word-wrap: break-word;
 	font-size: medium;
 }
+.smsmessagetext a {
+	word-break: break-all;
+}
 .smsmessagedate {
 	flex-grow: 1;
 	color: #999999;
