@@ -17,6 +17,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
+	overflow: hidden;
 }
 body.popout {
 	width: 100%;
@@ -269,11 +270,13 @@ img.tabIcon {
 	}
 }
 
-#sms, #devices, #notifications {
+#devices, #notifications {
 	flex: auto;
 	overflow-y: auto;
 }
 #sms {
+  display: flex;
+  flex-direction: column;
 	background-color: var(--global-color-gray);
 }
 #smsback {
@@ -313,6 +316,7 @@ img.tabIcon {
 	margin: 0;
 	padding: 8px;
 	z-index: 60;
+	flex: 0 0 auto;
 }
 #smssendcontainer.hidden {
 	display: none;
@@ -346,6 +350,9 @@ img.tabIcon {
 #smscontainer {
 	background-color: var(--global-color-gray);
 	height: 100%;
+	flex: 1 1 auto;
+	position: relative;
+	overflow: auto;
 }
 #smscontainer div.smsmessagecontainer:first-of-type {
 	margin-top:80px;
