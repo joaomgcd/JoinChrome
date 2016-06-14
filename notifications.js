@@ -156,7 +156,7 @@ var writeNotifications = function(){
 				var buttonElement = notificationButtonHtml.cloneNode(true);
 				var buttonTextElement = buttonElement.querySelector("#text");
 				// var buttonIconElement = buttonElement.querySelector("#icon");
-				buttonTextElement.innerHTML = "Join Reply";
+				buttonTextElement.innerHTML = Constants.REPLY_DIRECTLY;
 				// buttonIconElement.src = "icons/reply.png"
 				buttonElement.id = not.replyId;
 				buttonsElement.appendChild(buttonElement);

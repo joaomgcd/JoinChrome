@@ -606,7 +606,7 @@ var GCMNewSmsReceived = function(){
 				"title":title,
 				"text":this.text,"actionId":"newsms",
 				"buttons":[{
-					"text": "Reply Directly",
+					"text": Constants.REPLY_DIRECTLY,
 					"icon": "icons/reply.png"
 				}]
 			});

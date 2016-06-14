@@ -427,7 +427,7 @@ var SmsApp = function(){
 						var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
 						var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
 
-						smsTextElement.innerHTML = Autolinker.link(sms.text.replaceAll("<","&lt;").replaceAll(">","&gt;"));
+						smsTextElement.innerHTML = Autolinker.link(sms.text.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>"));
 						smsDateElement.innerHTML = sms.date.formatDate(true);
 						if(sms.received){
 							smsMessageElement.classList.add("received");

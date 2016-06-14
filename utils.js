@@ -598,8 +598,8 @@ var encrypt = function(text, password){
 	if(!password){
 		return text;
 	}
-	var isString = (typeof text) == "string";
-	var isArray = Object.prototype.toString.call(text);
+	var isString = text.isString();
+	var isArray = text.isArray();
 	if(isString){
 		return encryptString(text,password);
 	}else if(isArray){
@@ -651,8 +651,8 @@ var decryptFields = function(obj){
 	var key256Bits = getStoredKey();
 	for(var prop in obj){
 		var value = obj[prop];
-		var isString = (typeof value) == "string";
-		var isArray = Object.prototype.toString.call(value);
+		var isString = value.isString();
+		var isArray = value.isArray();
 		if(value && value.length > 0){
 			var result = null;
 			if(isString){
@@ -660,7 +660,9 @@ var decryptFields = function(obj){
 			}else if(isArray){
 				result = decryptArray(value, key256Bits);
 			}
-			obj[prop] = result;
+            if(result){
+    			obj[prop] = result;
+            }
 		}
 	}
 }
