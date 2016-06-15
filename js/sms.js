@@ -433,6 +433,7 @@ var SmsApp = function(){
 							smsMessageElement.classList.add("received");
 							triangleElement.style.display = "none";
 						}else{
+							smsMessageContainerElement.classList.add("sent");
 							triangleElementReceived.style.display = "none";
 						}
 						if(!sms.progress){
@@ -580,7 +581,6 @@ var smsReceived = function(event){
 	smsApp.receiveSms(event.deviceId,event.sms);
 	smsApp.refresh(true);
 	smsApp.clearSmsNotification();
-	
 }
 back.addEventListener('smsreceived', smsReceived, false);
 
