@@ -41,6 +41,7 @@ body.popout {
 .commands {
 	flex: 1;
 	overflow-y: auto;
+	height: 100vh;
 }
 #deviceiconcontainer {
 	border-radius: 100%;
@@ -270,11 +271,12 @@ img.tabIcon {
 	}
 }
 
-#devices, #notifications {
+#notifications {
 	flex: auto;
 	overflow-y: auto;
 }
 #sms {
+	height: 100vh;
   display: flex;
   flex-direction: column;
 	background-color: var(--global-color-gray);
