@@ -896,20 +896,29 @@ var requestLocation = function(deviceId, notify){
 		showNotification("Join","Requested location...");
 	}
 }
-var getScreenshot = function(deviceId, notify){
+var doRequestFile = function(deviceId, notify, requestType, funcName, notificationText, startText){
 	if(notify){
-		showNotification("Join", "Getting screenshot...");
+        if(!startText){
+            startText = "Getting "+ notificationText + "...";
+        }
+		showNotification("Join", startText);
 	}
-	var requestFile = new RequestFile(REQUEST_TYPE_SCREENSHOT);
+	var requestFile = new RequestFile(requestType);
 	requestFile.send(deviceId, function(responseFile){
 		var url = responseFile.viewUrl;
 		if(getDownloadScreenshotsEnabled()){
 			url = responseFile.downloadUrl;
 		}
 		openTab(url);
-		showNotification("Join", "Got screenshot!");
+		showNotification("Join", "Got "+notificationText+"!");
 	});
-	setLastPush(deviceId, "getScreenshot");
+	setLastPush(deviceId, funcName);
+}
+var getScreenshot = function(deviceId, notify){
+    doRequestFile(deviceId, notify, REQUEST_TYPE_SCREENSHOT,"getScreenshot","screenshot");
+}
+var getScreenCapture = function(deviceId, notify){
+    doRequestFile(deviceId, notify, REQUEST_TYPE_VIDEO,"getScreenCapture","screen capture","Toggling screen capture...");
 }
 var renameDevice = function(deviceId, notify){
 	var device = devices.first(function(device){return device.deviceId == deviceId;});

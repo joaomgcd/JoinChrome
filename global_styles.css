@@ -97,7 +97,10 @@ body.popout {
 }
 #devicebuttondrag {
 	margin-left: auto;
-	opacity: 0.5;
+	opacity: 0.2;
+}
+#devicebuttondrag:hover{
+	opacity: 0.9 !important;
 }
 #devicebuttonimage {
 	height: 24px;
