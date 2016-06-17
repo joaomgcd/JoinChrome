@@ -376,8 +376,10 @@ var SmsApp = function(){
 								smsContainerElement.appendChild(contactElement);
 							}
 					}
-					if(me.contactsScroll != null){
+					if(me.contactsScroll){
 						smsContainerElement.scrollTop = me.contactsScroll;
+					}else{						
+						smsContainerElement.scrollTop = 0;
 					}
 				}
 		},function(error){

@@ -21,13 +21,13 @@ var ContextMenu = function(){
 	}
 	//Opens
 	var openUrl = function(device, url){
-		push(device, {"url": info.pageUrl});
+		push(device, {"url": url});
 	}
 	var openPage = function(device, info, tab){
 		openUrl(device, info.pageUrl);
 	}
 	var openLink = function(device, info, tab){
-		openUrl(device, info.pageUrl);
+		openUrl(device, info.linkUrl);
 	}
 
 	//Pastes
