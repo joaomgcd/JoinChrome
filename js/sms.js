@@ -417,34 +417,34 @@ var SmsApp = function(){
 				setPlaceholderText("No messages for " + name);
 				return;
 			}
-				smsContainerElement.innerHTML = "";
-				for (var i = 0; i < smses.length; i++) {
-						var sms = smses[i];
-						var smsMessageContainerElement = smsMessageHtml.cloneNode(true);
+			smsContainerElement.innerHTML = "";
+			for (var i = 0; i < smses.length; i++) {
+				var sms = smses[i];
+				var smsMessageContainerElement = smsMessageHtml.cloneNode(true);
 				smsMessageContainerElement.sms = sms;
 				var triangleElement = smsMessageContainerElement.querySelector("#smsbubbletriangle");
 				var triangleElementReceived = smsMessageContainerElement.querySelector("#smsbubbletrianglereceived");
 				var smsMessageElement = smsMessageContainerElement.querySelector("#smsmessage");
-						var smsTextElement = smsMessageElement.querySelector("#smsmessagetext");
-						var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
-						var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
+				var smsTextElement = smsMessageElement.querySelector("#smsmessagetext");
+				var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
+				var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
 
-						smsTextElement.innerHTML = Autolinker.link(sms.text.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>"));
-						smsDateElement.innerHTML = sms.date.formatDate(true);
-						if(sms.received){
-							smsMessageElement.classList.add("received");
-							triangleElement.style.display = "none";
-						}else{
-							triangleElementReceived.style.display = "none";
-						}
-						if(!sms.progress){
-							smsLoaderElement.classList.add("hidden");
-						}else{
-							smsLoaderElement.classList.remove("hidden");
-						}
-						smsContainerElement.appendChild(smsMessageContainerElement);
-					}
-					smsContainerElement.scrollTop = smsContainerElement.scrollHeight;
+				smsTextElement.innerHTML = Autolinker.link(sms.text.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>"));
+				smsDateElement.innerHTML = sms.date.formatDate(true);
+				if(sms.received){
+					smsMessageElement.classList.add("received");
+					triangleElement.style.display = "none";
+				}else{
+					triangleElementReceived.style.display = "none";
+				}
+				if(!sms.progress){
+					smsLoaderElement.classList.add("hidden");
+				}else{
+					smsLoaderElement.classList.remove("hidden");
+				}
+				smsContainerElement.appendChild(smsMessageContainerElement);
+			}
+			smsContainerElement.scrollTop = smsContainerElement.scrollHeight;
 		},function(progress){
 			setPlaceholderText(progress);
 		},function(error){

@@ -848,19 +848,24 @@ Number.prototype.formatDate = function(full){
 	}
 
 	if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
-	return date.customFormat(format);
+		return date.customFormat(format);
 	}
 
 	var yesterday = new Date(now);
 	yesterday.setDate(now.getDate()-1);
-	if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
-	return "Yesterday<br>" + date.customFormat(format);
-	}
 
 	if (full) {
-		return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
-	}
+		if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+			return "Yesterday, " + date.customFormat(format);
+		} else {
+			return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
+		}
+	} else {
+		if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+			return "Yesterday";
+		}
 	return date.customFormat("#MMM# #DD#");
+	}
 }
 function tintImage(image, color) {
 	var canvas = document.createElement("canvas");
