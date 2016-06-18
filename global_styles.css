@@ -185,7 +185,7 @@ td {
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
-	height:54px;
+	height:48px;
 	position: relative;
 	z-index:100;
 }
