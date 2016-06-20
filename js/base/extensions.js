@@ -136,7 +136,7 @@ Array.prototype.doForChain = function(func, callbackFinal) {
   };
   doAll(callbackFinal);
 };
-Object.prototype.applyProps = function(objToApply){
+/*Object.prototype.applyProps = function(objToApply){
     if(!objToApply){
         return;
     }
@@ -147,13 +147,13 @@ Object.prototype.applyProps = function(objToApply){
 		}
     }
     return this;
-};
-Object.prototype.toClass = function(){
+};*/
+/*Object.prototype.toClass = function(){
   return {}.toString.call(this);
-};
-Object.prototype.isString = function(){
-  return this.toClass() == "[object String]";
+};*/
+/*Object.prototype.isString = function(){
+  return UtilsObject.toClass(this) == "[object String]";
 };
 Object.prototype.isArray = function(){
-  return this.toClass() == "[object Array]";
-};
+  return UtilsObject.toClass(this) == "[object Array]";
+};*/

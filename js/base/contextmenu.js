@@ -10,7 +10,8 @@ var ContextMenu = function(){
 	var me = this;
 	var push = function(device,data){
 		var gcmPush = new GCMPush();
-		gcmPush.applyProps(data);
+		UtilsObject.applyProps(gcmPush,data);
+		//gcmPush.applyProps(data);
 		gcmPush.send(device.deviceId,function(result){
 			console.log("Pushed");
 			console.log(result);
@@ -150,7 +151,7 @@ var ContextMenu = function(){
 
 	        for(var contextId in contexts){
 	        	var context = contexts[contextId];
-	        	if(!context.isArray()){
+	        	if(!UtilsObject.isArray(context)){
 	        		continue;
 	        	}
 	        	if(context.length > 0){

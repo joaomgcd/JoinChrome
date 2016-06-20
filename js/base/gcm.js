@@ -12,7 +12,8 @@ var GCM = function(){
         console.log(this);
     }
     this.fromJson = function(json) {
-        this.applyProps(json);
+        UtilsObject.applyProps(this,json);
+        //this.applyProps(json);
     }
     this.fromJsonString = function(str) {
         str = decryptString(str);
@@ -40,8 +41,9 @@ var GCMPush = function(){
         return "GCMPush";
     }
     this.send = function(deviceIds,callback,callbackError){
-        var push = {}.applyProps(this);
-        if(deviceIds.isString()){
+        var push = UtilsObject.applyProps({},this);
+        //var push = {}.applyProps(this);
+        if(UtilsObject.isString(deviceIds)){
             push.deviceIds = [deviceIds];
         }else{
             push.deviceIds = deviceIds;

@@ -179,7 +179,8 @@ var fire = function(nameOfEvent,description){
 }
 var dispatch = function(eventName, data){
 	var event = new Event(eventName);
-	event.applyProps(data);
+	UtilsObject.applyProps(event,data);
+	//event.applyProps(data);
 	back.dispatchEvent(event);
 }
 /***********************************************************/
@@ -598,8 +599,8 @@ var encrypt = function(text, password){
 	if(!password){
 		return text;
 	}
-	var isString = text.isString();
-	var isArray = text.isArray();
+	var isString = UtilsObject.isString(text);
+	var isArray = UtilsObject.isArray(text);
 	if(isString){
 		return encryptString(text,password);
 	}else if(isArray){
@@ -651,8 +652,8 @@ var decryptFields = function(obj){
 	var key256Bits = getStoredKey();
 	for(var prop in obj){
 		var value = obj[prop];
-		var isString = value.isString();
-		var isArray = value.isArray();
+		var isString = UtilsObject.isString(value);
+		var isArray = UtilsObject.isArray(value);
 		if(value && value.length > 0){
 			var result = null;
 			if(isString){
