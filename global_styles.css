@@ -185,7 +185,7 @@ td {
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
-	height:54px;
+	height:48px;
 	position: relative;
 	z-index:100;
 }
@@ -389,25 +389,27 @@ img.tabIcon {
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
-	margin-top: 18px;
+	margin-top: 12px;
 	margin-bottom: 6px;
 	z-index:50;
 }
+.smsmessagecontainer.sent {
+	justify-content: flex-end;
+}
 .smsmessage {
-	padding: 12px 16px 12px 16px;
+	padding: 8px 14px 8px 14px;
 	background-color: white;
 	border-radius: 4px;
-	width: 75%;
 	display: flex;
 	position: relative;
-	margin-left: auto;
+	margin-left: 16px;
 	margin-right: 0;
 	flex-direction: column;
 }
 .smsmessage.received {
 	background-color: var(--global-color-faded);
 	margin-left: 0;
-	margin-right: auto;
+	margin-right: 16px;
 }
 .smsbubbletriangle {
 	position: relative;
@@ -430,8 +432,8 @@ img.tabIcon {
 .smsmessagedate {
 	flex-grow: 1;
 	color: #999999;
-	margin-top: 8px;
-	text-align: right;
+	margin-top: 2px;
+	text-align: left;
 }
 #smsmessagebottom {
 	align-items: baseline;
