@@ -254,6 +254,12 @@ var SmsApp = function(){
 			me.sendSms();
 		}
 	});
+	smsInputElement.addEventListener("keyup",function(e){
+		localStorage.smsDraft = smsInputElement.value;
+	});
+	if(localStorage.smsDraft){
+		smsInputElement.value = localStorage.smsDraft;
+	}
 	newSmsButton.addEventListener("click",function(e){
 		// console.log("new SMS");
 		me.writeContactList(contactFindInputElement.value);
@@ -546,7 +552,8 @@ var SmsApp = function(){
 	}
 	this.newInput = function(){
 		smsInputElement.value = "";
-		smsInputElement.focus();
+		smsInputElement.focus();		
+		delete localStorage.smsDraft;
 	}
 	this.refresh = function(local){
 		if(me.contact){
