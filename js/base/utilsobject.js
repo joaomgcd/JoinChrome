@@ -5,7 +5,7 @@ var UtilsObject = {
 	    }
 	    for(var prop in objToApply){
 	    	var value = objToApply[prop];
-			if(value && UtilsObject.toClass(value) != "[object Function]"){
+			if(value !== null && value !== undefined && value !== "" && UtilsObject.toClass(value) != "[object Function]"){
 				obj[prop] = value;
 			}
 	    }
