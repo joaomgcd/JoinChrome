@@ -7,10 +7,17 @@
 a {
 	color: var(--global-color);
 }
+html, body {
+	height: 100%;
+}
 body {
+	height: 600px;
 	width: 410px;
 	font-family: "Roboto", sans-serif;
+	display: flex;
+	flex-direction: column;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
+	overflow: hidden;
 }
 body.popout {
 	width: 100%;
@@ -23,19 +30,18 @@ body.popout {
 .devicecommands {
 	display: flex;
 	flex-direction: column;
-	height: 510px;
 	width: 100%;
 }
 .devicecommandsleft {
 	background-color: white;
 	display: flex;
 	flex-direction: column;
-	height: 510px;
 	width: 100%;
 }
 .commands {
 	flex: 1;
 	overflow-y: auto;
+	height: 100vh;
 }
 #deviceiconcontainer {
 	border-radius: 100%;
@@ -135,7 +141,6 @@ a#link:hover {
 	flex-direction: column;
 	padding: 8px;
 	background-color: var(--global-color-gray);
-	height: 510px;
 	overflow-y: scroll;
 }
 .button-container {
@@ -181,24 +186,19 @@ td {
 	background-color: var(--global-color);
 	display: flex;
 	font-size: medium;
-	justify-content: flex-start;
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
-	height:48px;
-	position: relative;
 	z-index:100;
+	flex: 0 0 48px;
 }
 #tabs {
 	flex-grow: 1;
-	height:100%;
-	position:relative;
+
 }
 #tools {
-	align-self: center;
-	display: flex;
-	margin-right: 8px;
-	position: relative;
+	align-items: center;
+	justify-content: flex-end;
 }
 #currenttabtitle {
 	color: white;
@@ -207,10 +207,8 @@ td {
 	padding-left: 10px;
 }
 .tab {
-	align-self: center;
 	cursor: hand;
 	cursor: pointer;
-	height: 100%;
 	opacity: 0.6;
 	padding-left: 12px;
 	padding-right: 12px;
@@ -229,7 +227,8 @@ td {
 	height:100%;
 }
 #tools .tab {
-	display: inline;
+	display: flex;
+	align-items: center;
 	opacity: 1;
 	padding:0;
 }
@@ -272,10 +271,15 @@ img.tabIcon {
 	}
 }
 
+#notifications {
+	flex: auto;
+	overflow-y: auto;
+}
 #sms {
-	flex-direction: column;
-	display: flex;
-	height: 510px;
+	height: 100vh;
+  display: flex;
+  flex-direction: column;
+	background-color: var(--global-color-gray);
 }
 #smsback {
 	display: flex;
@@ -314,6 +318,7 @@ img.tabIcon {
 	margin: 0;
 	padding: 8px;
 	z-index: 60;
+	flex: 0 0 auto;
 }
 #smssendcontainer.hidden {
 	display: none;
@@ -347,7 +352,9 @@ img.tabIcon {
 #smscontainer {
 	background-color: var(--global-color-gray);
 	height: 100%;
-	overflow-y: scroll;
+	flex: 1 1 auto;
+	position: relative;
+	overflow: auto;
 }
 #smscontainer div.smsmessagecontainer:first-of-type {
 	margin-top:80px;
