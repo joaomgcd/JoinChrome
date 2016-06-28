@@ -38,6 +38,9 @@ var ContextMenu = function(){
 	var pastePage = function(device, info, tab){
 		pasteText(device, info.pageUrl);
 	}
+	var pasteSourceUrl = function(device, info, tab){
+		pasteText(device, info.srcUrl);
+	}
 	var pasteLink = function(device, info, tab){
 		pasteText(device, info.linkUrl);
 	}
@@ -129,14 +132,17 @@ var ContextMenu = function(){
 		    "editable":[],
 		    "image":[
 		    	new ContextMenuItem(SET_AS_WALLPAPER,setWallpaperSourceUrl),
+		    	new ContextMenuItem(PASTE,pasteSourceUrl),
 		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
 		    "video":[
+		    	new ContextMenuItem(PASTE,pasteSourceUrl),
 		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
 		    "audio":[
+		    	new ContextMenuItem(PASTE,pasteSourceUrl),
 		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ]
