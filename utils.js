@@ -179,7 +179,8 @@ var fire = function(nameOfEvent,description){
 }
 var dispatch = function(eventName, data){
 	var event = new Event(eventName);
-	event.applyProps(data);
+	UtilsObject.applyProps(event,data);
+	//event.applyProps(data);
 	back.dispatchEvent(event);
 }
 /***********************************************************/
@@ -598,8 +599,8 @@ var encrypt = function(text, password){
 	if(!password){
 		return text;
 	}
-	var isString = (typeof text) == "string";
-	var isArray = Object.prototype.toString.call(text);
+	var isString = UtilsObject.isString(text);
+	var isArray = UtilsObject.isArray(text);
 	if(isString){
 		return encryptString(text,password);
 	}else if(isArray){
@@ -651,8 +652,8 @@ var decryptFields = function(obj){
 	var key256Bits = getStoredKey();
 	for(var prop in obj){
 		var value = obj[prop];
-		var isString = (typeof value) == "string";
-		var isArray = Object.prototype.toString.call(value);
+		var isString = UtilsObject.isString(value);
+		var isArray = UtilsObject.isArray(value);
 		if(value && value.length > 0){
 			var result = null;
 			if(isString){
@@ -660,7 +661,9 @@ var decryptFields = function(obj){
 			}else if(isArray){
 				result = decryptArray(value, key256Bits);
 			}
-			obj[prop] = result;
+            if(result){
+    			obj[prop] = result;
+            }
 		}
 	}
 }
@@ -846,19 +849,24 @@ Number.prototype.formatDate = function(full){
 	}
 
 	if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
-	return date.customFormat(format);
+		return date.customFormat(format);
 	}
 
 	var yesterday = new Date(now);
 	yesterday.setDate(now.getDate()-1);
-	if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
-	return "Yesterday<br>" + date.customFormat(format);
-	}
 
 	if (full) {
-		return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
-	}
+		if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+			return "Yesterday, " + date.customFormat(format);
+		} else {
+			return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
+		}
+	} else {
+		if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+			return "Yesterday";
+		}
 	return date.customFormat("#MMM# #DD#");
+	}
 }
 function tintImage(image, color) {
 	var canvas = document.createElement("canvas");

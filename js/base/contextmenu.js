@@ -10,7 +10,8 @@ var ContextMenu = function(){
 	var me = this;
 	var push = function(device,data){
 		var gcmPush = new GCMPush();
-		gcmPush.applyProps(data);
+		UtilsObject.applyProps(gcmPush,data);
+		//gcmPush.applyProps(data);
 		gcmPush.send(device.deviceId,function(result){
 			console.log("Pushed");
 			console.log(result);
@@ -21,13 +22,13 @@ var ContextMenu = function(){
 	}
 	//Opens
 	var openUrl = function(device, url){
-		push(device, {"url": info.pageUrl});
+		push(device, {"url": url});
 	}
 	var openPage = function(device, info, tab){
 		openUrl(device, info.pageUrl);
 	}
 	var openLink = function(device, info, tab){
-		openUrl(device, info.pageUrl);
+		openUrl(device, info.linkUrl);
 	}
 
 	//Pastes
@@ -45,11 +46,14 @@ var ContextMenu = function(){
 	}
 
 	//Notifications
-	var notificationForUrl = function(device, info, tab, url, title){
+	var notificationForUrl = function(device, info, tab, url, title, text){
 		if(!title){
 			title = "Saved Page";
 		}
-		push(device, {"url": url,"text": tab.title,"title": title});
+		if(!text){
+			text = tab.title;
+		}
+		push(device, {"url": url,"text": text,"title": title});
 	}
 	var notificationPage = function(device, info, tab){
 		notificationForUrl(device, info, tab, info.pageUrl);
@@ -58,7 +62,7 @@ var ContextMenu = function(){
 		notificationForUrl(device, info, tab, info.linkUrl);
 	}
 	var notificationSelection = function(device, info, tab){
-		notificationForUrl(device, info, tab, info.selectionText, "Note To Self");
+		notificationForUrl(device, info, tab, info.pageUrl, "Note To Self", info.selectionText);
 	}
 
 	//Downloads
@@ -150,7 +154,7 @@ var ContextMenu = function(){
 
 	        for(var contextId in contexts){
 	        	var context = contexts[contextId];
-	        	if(!context.isArray()){
+	        	if(!UtilsObject.isArray(context)){
 	        		continue;
 	        	}
 	        	if(context.length > 0){

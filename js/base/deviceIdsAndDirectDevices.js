@@ -41,7 +41,9 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	        },
 	        "registration_ids": regId
 	    }
-	    content.applyProps(gcmParams);
+
+		UtilsObject.applyProps(content,gcmParams);
+	    //content.applyProps(gcmParams);
 	    content[GCM_PARAM_PRIORITY] = GCM_MESSAGE_PRIORITY_HIGH;
 	    content[GCM_PARAM_DELAY_WHILE_IDLE] = false;
 	    var contentString = JSON.stringify(content);

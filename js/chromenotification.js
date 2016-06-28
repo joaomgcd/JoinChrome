@@ -36,7 +36,7 @@ var ChromeNotification = function(notificationFromGcm){
 				var image = getIcon(results[1]);
 				var notificationButtons = [];
 				if(me.replyId){
-					notificationButtons.push({"title":"Reply Directly","iconUrl":"icons/reply.png"});
+					notificationButtons.push({"title":Constants.REPLY_DIRECTLY,"iconUrl":"icons/reply.png"});
 				}
 				if(me.buttons){
 					for (var i = 0; i < me.buttons.length; i++) {

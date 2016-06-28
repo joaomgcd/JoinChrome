@@ -600,13 +600,13 @@ var GCMNewSmsReceived = function(){
 		return "GCMNewSmsReceived";
 	}
 	this.execute = function() {
-		var title = "New SMS from " + this.name + " (" + this.number +")";
+		var title = "New SMS from " + this.name;
 		/*var chromeNotification = new ChromeNotification({
 				"id":"sms=:=" + this.senderId + "=:=" + this.number + "=:=" + this.text,
 				"title":title,
 				"text":this.text,"actionId":"newsms",
 				"buttons":[{
-					"text": "Reply Directly",
+					"text": Constants.REPLY_DIRECTLY,
 					"icon": "icons/reply.png"
 				}]
 			});
