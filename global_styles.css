@@ -412,6 +412,7 @@ img.tabIcon {
 	margin-left: 16px;
 	margin-right: 0;
 	flex-direction: column;
+	min-width: 0;
 }
 .smsmessage.received {
 	background-color: var(--global-color-faded);
