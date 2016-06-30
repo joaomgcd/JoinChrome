@@ -3,6 +3,7 @@
 }
 body {
 	background: #fafafa;
+	font: normal 14px Roboto,arial,sans-serif;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	margin: 0px;
 }
