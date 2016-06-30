@@ -30,6 +30,9 @@ var ContextMenu = function(){
 	var openLink = function(device, info, tab){
 		openUrl(device, info.linkUrl);
 	}
+	var openSelection = function(device, info, tab){
+		openUrl(device, info.selectionText);
+	}
 
 	//Pastes
 	var pasteText = function(device, text){
@@ -118,6 +121,7 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandPage, WITH),
 		    ],
 		    "selection":[
+		    	new ContextMenuItem(OPEN,openSelection),
 		    	new ContextMenuItem(PASTE,pasteSelection),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationSelection, WITH),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSelection, WITH),
