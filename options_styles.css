@@ -1,8 +1,35 @@
 :root {
 	--global-color: #FF9800;
 }
+
+@font-face {
+  font-family: "Roboto";
+  src: local(Roboto Thin), url("materialize/font/roboto/Roboto-Thin.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Thin.woff") format("woff"), url("materialize/font/roboto/Roboto-Thin.ttf") format("truetype");
+  font-weight: 200; }
+
+@font-face {
+  font-family: "Roboto";
+  src: local(Roboto Light), url("materialize/font/roboto/Roboto-Light.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Light.woff") format("woff"), url("materialize/font/roboto/Roboto-Light.ttf") format("truetype");
+  font-weight: 300; }
+
+@font-face {
+  font-family: "Roboto";
+  src: local(Roboto Regular), url("materialize/font/roboto/Roboto-Regular.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Regular.woff") format("woff"), url("materialize/font/roboto/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("materialize/font/roboto/Roboto-Medium.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Medium.woff") format("woff"), url("materialize/font/roboto/Roboto-Medium.ttf") format("truetype");
+  font-weight: 500; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("materialize/font/roboto/Roboto-Bold.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Bold.woff") format("woff"), url("materialize/font/roboto/Roboto-Bold.ttf") format("truetype");
+  font-weight: 700; }
+
 body {
 	background: #fafafa;
+	font: normal 13px Roboto,arial,sans-serif;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	margin: 0px;
 }
@@ -178,7 +205,6 @@ h5 { color: #FF7A00; }
 	color: white;
 	font-weight: bolder;
 	margin-left: 20px;
-	text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 #toggleadvanced {
 	height: 30px;
