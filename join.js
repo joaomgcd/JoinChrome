@@ -656,6 +656,9 @@ var getOptionValue = function(type, id, defaultValue){
 var getDownloadScreenshotsEnabled = function(){
 	return getOptionValue("checkbox","downloadscreenshots");
 }
+var getDownloadScreenshotsEnabled = function(){
+	return getOptionValue("checkbox","autoopenlinks");
+}
 var getDownloadVideosEnabled = function(){
 	return getOptionValue("checkbox","downloadvideos");
 }

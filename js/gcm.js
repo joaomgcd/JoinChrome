@@ -183,7 +183,14 @@ var GCMPush = function(){
 		}
 		if(this.push.url && !this.push.title){
 			var url = this.push.url;
-			openTab(url);
+			if (getOpenLinksEnabled()) {
+				openTab(url);
+			} else {
+				this.push.title = "URL";
+				if (!this.push.text) {
+					me.createNotificationFromPush();
+				}
+			}
 		}
 		if(this.push.files && this.push.files.length > 0){
 			for (var i = 0; i < this.push.files.length; i++) {
