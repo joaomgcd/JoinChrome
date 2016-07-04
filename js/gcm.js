@@ -386,9 +386,9 @@ Notifications.prototype = new Array();
 var notifications = new Notifications();
 var updateBadgeText = function(){
 	if(!notifications || notifications.length == 0){
-		chrome.browserAction.setBadgeText({text: ""});
+		UtilsBadge.setBadge("");
 	}else{
-		chrome.browserAction.setBadgeText({text: ""+ notifications.length});
+		UtilsBadge.setBadge(notifications.length);
 	}
 }
 var GCMNotification = function(){
