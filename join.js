@@ -656,7 +656,7 @@ var getOptionValue = function(type, id, defaultValue){
 var getDownloadScreenshotsEnabled = function(){
 	return getOptionValue("checkbox","downloadscreenshots");
 }
-var getDownloadScreenshotsEnabled = function(){
+var getOpenLinksEnabled = function(){
 	return getOptionValue("checkbox","autoopenlinks");
 }
 var getDownloadVideosEnabled = function(){
@@ -738,7 +738,8 @@ var defaultValues = {
 	"prefixtaskercommands":false,
 	"hidenotificationtext": false,
 	"playnotificationsound": true,
-	"showinfonotifications": true
+    "showinfonotifications": true,
+    "autoopenlinks": true
 };
 /******************************************************************************/
 

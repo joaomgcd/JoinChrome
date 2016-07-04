@@ -186,8 +186,8 @@ var GCMPush = function(){
 			if (getOpenLinksEnabled()) {
 				openTab(url);
 			} else {
-				this.push.title = "URL";
 				if (!this.push.text) {
+					this.push.title = "URL";
 					me.createNotificationFromPush();
 				}
 			}
@@ -339,8 +339,10 @@ var GCMLocation = function(){
 		return "GCMLocation";
 	}
 	this.execute = function() {
-		var location = this.latitude + "," + this.longitude;
-		openTab("https://www.google.com/maps?q="+location+"&ll="+location+"&z=17");
+		if(this.latitude && this.longitude){			
+			var location = this.latitude + "," + this.longitude;
+			openTab("https://www.google.com/maps?q="+location+"&ll="+location+"&z=17");
+		}
 	}
 }
 GCMLocation.prototype = new GCMGenericPush();
