@@ -1256,9 +1256,7 @@ var refreshDevices = function(callback){
 getToken();
 chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 	if (registrationId == null || registrationId == "") {
-		if (callback != null) {
-			console.log("Error getting key: " + chrome.runtime.lastError);
-		}
+		console.log("Error getting key: " + chrome.runtime.lastError);
 	} else {
 		console.log("Got key: " + registrationId);
 		localStorage.regIdLocal = registrationId;
