@@ -5,7 +5,7 @@ var deviceCommands = [
 	{"label":"Send an SMS message","commandId":"sms","func":back.sendSms,"keepTab":true,"condition":function(device){return device.deviceType == DEVICE_TYPE_ANDROID_PHONE}},
 	{"label":"Send a file to your device","commandId":"file","func":back.pushFile,"keepTab":true,"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups},
 	{"label":"Take a screenshot","commandId":"screenshot","func":back.getScreenshot,"condition":function(device){return device.deviceType != DEVICE_TYPE_CHROME_BROWSER && device.apiLevel >=21}},
-	{"label":"Toggle screen capture","commandId":"screencapture","func":back.getScreenCapture,"condition":function(device){return device.deviceType != DEVICE_TYPE_CHROME_BROWSER && device.apiLevel >=21}},
+	{"label":"Toggle screen capture","commandId":"screencapture","func":back.getScreenCapture,"keepTab":true,"condition":function(device){return device.deviceType != DEVICE_TYPE_CHROME_BROWSER && device.apiLevel >=21}},
 	{"label":"Locate your device","commandId":"location","func":back.requestLocation},
 	{"label":"Ring your device","commandId":"find","func":back.findDevice,"condition":function(device){return device.deviceType == DEVICE_TYPE_ANDROID_PHONE || device.deviceType == DEVICE_TYPE_ANDROID_TABLET}},
 	{"label":"Send a Tasker command","commandId":"tasker","showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,"func":back.pushTaskerCommand,"hasText":true},
