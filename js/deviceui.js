@@ -122,13 +122,13 @@ var writeDevices = function(){
 		back.getCurrentTab(function(tab){
 			if(!tab || isPopup){
 				link.command.func(selectedDevice.deviceId,true, tab);
-				if(tab && !link.command.keepTab){
-									chrome.tabs.remove(tab.id,function(){
-									});
-							}
-						}else{
+				if(tab && !link.command.keepTab && closeAfterCommand)
+				{
+					chrome.tabs.remove(tab.id,function(){});
+				}
+			}else{
 				link.command.func(selectedDevice.deviceId,true);
-						}
+			}
 		});
 	}
 	var buttonScroll = 0;

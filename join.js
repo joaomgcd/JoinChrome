@@ -1,12 +1,12 @@
 chrome.commands.onCommand.addListener(function(command) {
 	console.log('Command:', command);
 	if(command == "popup"){
-		createPushClipboardWindow();
+		createPushClipboardWindowAndCloseAfterCommand();
 	}else if(command == "repeat-last-command"){
 		if(localStorage["lastpush"]){
 			window[localStorage["lastpushtype"]](localStorage["lastpush"], true);
 		}else{
-			createPushClipboardWindow();
+			createPushClipboardWindowAndCloseAfterCommand();
 		}
 	}else if(command == "favorite-command"){
 		var favoriteCommand = getFavoriteCommand();
@@ -43,11 +43,14 @@ var showNotificationsPopup = function(tab){
 			notificationsWindow = win;
 	});
 }
-var createPushClipboardWindow = function(tab,params,paramsIfClosed){
+var createPushClipboardWindowAndCloseAfterCommand = function(){
+    createPushClipboardWindow(null,null,null,true);
+}
+var createPushClipboardWindow = function(tab,params,paramsIfClosed,closeAfterCommand){
 	if(!tab){
 		tab = "devices";
 	}
-	var url = 'devices.html?tab='+ tab+'&popup=1';
+	var url = 'devices.html?tab='+ tab+'&popup=1' + (closeAfterCommand ? '&closeAfterCommand=1' : '');
 	if(params){
 		var addParams = function(params){
 			if(!params){

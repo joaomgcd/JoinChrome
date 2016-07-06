@@ -1,6 +1,7 @@
 
 var OPTIONS_URL = "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html";
 var isPopup = getURLParameter("popup");
+var closeAfterCommand = getURLParameter("closeAfterCommand");
 if(!isPopup){
 	chrome.extension.getBackgroundPage().popupWindow = window;
 }
