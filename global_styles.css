@@ -97,6 +97,7 @@ body.popout {
 }
 #devicebuttondrag {
 	visibility: hidden;
+	transition: all 0.1s ease;
 }
 .devicebutton:hover #devicebuttondrag {
 	visibility: visible;

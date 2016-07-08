@@ -891,6 +891,3 @@ var setPopupIcon = function(alternative){
 		chrome.browserAction.setIcon({"path":"/small.png"});
 	  }
 }
-
-
-/***********************************************************/
