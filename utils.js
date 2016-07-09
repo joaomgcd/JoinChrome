@@ -10,7 +10,7 @@ var joinserver =  joinserverBase + "_ah/api/";
 var TEST_PUSH_TEXT = "###Testing Join###";
 var TEST_PUSH_EVENT = "testpush";
 var EVENT_SMS_HANDLED = "smshandled";
-var JOIN_ICON = "icon.png";
+var JOIN_ICON = "icons/icon.png";
 var ICON_DATA_PREFIX = "data:image/jpeg;base64,";
 var CHROME_EXTENSION_URL = "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/";
 var DEVICES_POPUP_URL = CHROME_EXTENSION_URL + "devices.html?tab=devices";
