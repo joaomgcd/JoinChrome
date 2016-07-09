@@ -209,6 +209,14 @@ h5 { color: #FF7A00; }
 	margin-top: auto;
 	margin-bottom: auto;
 }
+#deviceNameTitle {
+	font-size: x-small;
+	color: white;
+}
+#deviceName {
+	font-size: x-large;
+	font-weight: bold;
+}
 #toggleadvanced {
 	height: 30px;
 }
