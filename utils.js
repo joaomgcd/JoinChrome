@@ -886,8 +886,18 @@ function tintImage(image, color) {
 
 var setPopupIcon = function(alternative){
 	if(alternative){
-		chrome.browserAction.setIcon({"path":"/icons/alternative.png"});
+		chrome.browserAction.setIcon({
+			path: {
+				"19": "icons/alternative_19.png",
+				"38": "icons/alternative_38.png"
+			}
+		});
 	  }else{
-		chrome.browserAction.setIcon({"path":"/small.png"});
+		chrome.browserAction.setIcon({
+			path: {
+				"19": "icons/small.png",
+				"38": "icons/medium.png"
+			}
+		});
 	  }
 }
