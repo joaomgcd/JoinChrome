@@ -1,7 +1,7 @@
 var UtilsBadge = {
 	"setColor": function(color){
 		if(!color){
-			color = "#FF0000";
+			color = "#FF9800";
 		}
 	  	chrome.browserAction.setBadgeBackgroundColor({"color":color});
 	},

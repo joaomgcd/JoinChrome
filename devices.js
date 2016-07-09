@@ -103,7 +103,7 @@ var selectTab = function(idToShow){
 			tab.classList.remove("selected");
 		}
 		if(idToShow == "notifications"){			
-			UtilsBadge.setColor("#00FF00");
+			UtilsBadge.setColor("#929292");
 		}
    }
 	localStorage.selectedTab = idToShow;
