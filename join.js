@@ -1177,7 +1177,7 @@ var showNotification = function(title, message, timeout, notificationId){
 	if(!timeout)timeout = 3000;
 	var options = {
 		"type":"basic",
-		"iconUrl":"big.png",
+		"iconUrl":"icons/big.png",
 		"title": title,
 		"message": message
 	};

@@ -165,6 +165,7 @@ var updatePasswordStatus = function(){
 document.addEventListener('DOMContentLoaded', function() {
 
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
+		document.getElementById("deviceName").innerHTML = localStorage.deviceName;
 		var optionTabSelectors = document.querySelectorAll("[showtab]");
 		for (var i = 0; i < optionTabSelectors.length; i++) {
 			var optionTabSelector = optionTabSelectors[i];
