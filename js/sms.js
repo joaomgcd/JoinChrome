@@ -389,7 +389,7 @@ var SmsApp = function(){
 					}
 				}
 		},function(error){
-			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.");
+			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		},function(contact){
 			var lastsms = contact.lastsms;
 			if(!lastsms){
