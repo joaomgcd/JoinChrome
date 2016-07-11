@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		var favoriteCommandText = document.getElementById("text_favourite_command");
 		var favoriteCommandTextArea = document.getElementById("favouritecommandtextarea");
 		var selectFavoriteCommandDevices = document.getElementById("select_favourite_command_device");
-		var devices = getDevices();
+		var devices = getDevices().where(UtilsDevices.isNotDeviceGroup);
 		var htmlDevicesAutoClipboard = "";
 		for (var i = 0; i < devices.length; i++) {
 				var device = devices[i];
