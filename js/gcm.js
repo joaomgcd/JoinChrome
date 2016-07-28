@@ -57,6 +57,13 @@ var GCM = function(){
 			params.deviceIds = deviceIds.join();
 			doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
 		},gcm,gcmParams, function(result){
+			  if(!result.success){
+				  console.log("Couldn't send push: " + result.errorMessage);
+				  if(callbackError){
+					callbackError(result.errorMessage);
+				  }
+				  return;
+			  }
 			  console.log("Sent push: " + JSON.stringify(result));
 			  if(callback){
 				callback(result);

@@ -1,7 +1,7 @@
 
 /*************************CONSTANTS***********************/
 
-//var joinserverBase =  "http://192.168.1.67:8080/";
+//var joinserverBase =  "http://192.168.12.100:8080/";
 var joinserverBase =  "https://joinjoaomgcd.appspot.com/";
 
 var joinserver =  joinserverBase + "_ah/api/";
@@ -80,7 +80,7 @@ joindevices.groups.DeviceGroups = function(){
 		for (var i = 0; i < this.allDeviceGroups.length; i++) {
 			var deviceGroup = this.allDeviceGroups[i];
 			deviceGroup.devices = devices.where(function(device){
-				return device.deviceType != DEVICE_TYPE_GROUP && me.deviceTypeGroups[device.deviceType].indexOf(deviceGroup) >=0;
+				return UtilsDevices.isNotDeviceShare(device) && device.deviceType != DEVICE_TYPE_GROUP && me.deviceTypeGroups[device.deviceType].indexOf(deviceGroup) >=0;
 			});
 		}
 		//Check equal groups and remove devices from them

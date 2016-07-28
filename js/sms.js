@@ -217,7 +217,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 			setRefreshing(false);
 		},function(error){
 			delete localStorage[fileKey];
-			doPostWithAuth("https://joinjoaomgcd.appspot.com/_ah/api/requestfile/v1/request?alt=json",
+			doPostWithAuth(joinserver + "requestfile/v1/request?alt=json",
 				{
 					"deviceId":me.deviceId,
 					"payload":me.number,

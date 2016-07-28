@@ -166,6 +166,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
         		console.log("RegId2 changed for " + device.deviceName);
         		setDevices(allDevices);
         	}
+        	result.success = true;
         }else{
         	var error = result.error;
         	var errorMessage = error;
@@ -175,6 +176,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
     		if(!errorMessage){
     			errorMessage = "Unknown Error";
     		}
+    		result.errorMessage = errorMessage;
     		console.log(errorMessage);
     		showNotificationFunc("Error Direct Send", errorMessage);
         }

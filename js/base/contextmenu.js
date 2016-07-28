@@ -16,8 +16,12 @@ var ContextMenu = function(){
 			console.log("Pushed");
 			console.log(result);
 		},function(result){
-			console.log("Not Pushed!");
+			var title = "Not Pushed!";
+			console.log(title);
 			console.log(result);
+			if(showNotification){
+				showNotification(title, result);
+			}
 		});
 	}
 	//Opens

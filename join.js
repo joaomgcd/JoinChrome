@@ -794,6 +794,10 @@ var RequestFile = function(requestType){
 			params.deviceIds = deviceId;
 		}
 		doPostWithAuth(joinserver + "requestfile/v1/request/",params, function(result){
+            if(!result.success){
+                showNotification("Can't request file",result.errorMessage);
+                return;
+            }
 			pendingRequests.push({"requestId":result.requestId,"callback":callback,"download":download,"keep":keepPendingRequest});
 			console.log("Added pending request: " + result.requestId);
 		},function(error){
@@ -849,22 +853,29 @@ var pushClipboard = function(deviceId, notify){
 	getClipboard(function(clipboardData){
 		var push = new GCMPush();
 		push.clipboard = clipboardData;
-		push.send(deviceId);
+        push.send(deviceId,function(){
+            if(notify){
+                showNotification("Join","Sent Clipboard");
+            }
+        },function(error){
+            showNotification("Couldn't send clipboard", error);
+        });
 		setLastPush(deviceId, "pushClipboard");
-		if(notify){
-			showNotification("Join","Sent Clipboard");
-		}
+		
 	});
 }
 var openClipboard = function(deviceId, notify){
 	getClipboard(function(clipboardData){
 		var push = new GCMPush();
 		push.files = [clipboardData];
-		push.send(deviceId);
+        push.send(deviceId,function(){
+            if(notify){
+                showNotification("Join","Sent Clipboard to open");
+            }
+        },function(error){
+            showNotification("Couldn't send", error);
+        });
 		setLastPush(deviceId, "openClipboard");
-		if(notify){
-			showNotification("Join","Sent Clipboard to open");
-		}
 	});
 }
 var findDevice = function(deviceId, notify){
@@ -873,11 +884,15 @@ var findDevice = function(deviceId, notify){
 	}
 	var push = new GCMPush();
 	push.find = true;
-	push.send(deviceId);
+	push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join","Device will now ring...");
+        }
+    },function(error){
+        showNotification("Couldn't ring device", error);
+    });
 	setLastPush(deviceId, "findDevice");
-	if(notify){
-		showNotification("Join","Device will now ring...");
-	}
+	
 }
 var writeText = function(deviceId, notify, text){
 	var push = new GCMPush();
@@ -897,11 +912,14 @@ var writeText = function(deviceId, notify, text){
 var requestLocation = function(deviceId, notify){
 	var push = new GCMPush();
 	push.location = true;
-	push.send(deviceId);
+	push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join","Requested location...");
+        }
+    },function(error){
+        showNotification("Couldn't locate device", error);
+    });
 	setLastPush(deviceId, "requestLocation");
-	if(notify){
-		showNotification("Join","Requested location...");
-	}
 }
 var doRequestFile = function(deviceId, notify, requestType, funcName, notificationText, startText){
 	if(notify){
@@ -936,9 +954,14 @@ var renameDevice = function(deviceId, notify){
 	if(confirm){
 		doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId="+deviceId+"&newName="+encodeURIComponent(confirm),{"deviceId":deviceId,"newName":confirm}, function(result){
 		  console.log(result);
+         
 		  var device = devices.first(function(device){
 			return device.deviceId == deviceId;
 		  });
+           if(!result.success){
+            showNotification("Couldn't rename " + device.deviceName, result.errorMessage);
+            return;
+          }
 		  device.deviceName = confirm;
 		  setDevices(devices);
 		  refreshDevicesPopup();
@@ -980,7 +1003,13 @@ var noteToSelf = function(deviceId, notify){
 			var push = new GCMPush();
 			push.title = "Note To Self";
 			push.text = noteText;
-			push.send(deviceId);
+            push.send(deviceId,function(){
+                if(notify){
+                    showNotification("Join", "Created note");
+                }
+            },function(error){
+                showNotification("Couldn't push note", error);
+            });
 			setLastPush(deviceId, "noteToSelf");
 		}
 }
@@ -1013,16 +1042,18 @@ var pushUrl = function(deviceId, notify,callback){
 			var push = new GCMPush();
 			push.url = url;
 			push.text = text;
-			push.send(deviceId);
+			push.send(deviceId,function(){
+                if(notify){
+                    showNotification("Join", "Pushed current tab");
+                }
+            },function(error){
+                showNotification("Couldn't push current tab", error);
+            });
 			setLastPush(deviceId, "pushUrl");
 			pushed = true;
 		}
 		if(!pushed){
 			showNotification("Join", "Link not supported. Must start with http. Was " + tab.url);
-		}else{
-			if(notify){
-				showNotification("Join", "Pushed current tab");
-			}
 		}
 		if(callback){
 			callback();
@@ -1041,11 +1072,14 @@ var pushTaskerCommand = function(deviceId, notify,text){
 		 text = "=:=" + text;
 	}
 	push.text =text;
-	push.send(deviceId);
-	setLastPush(deviceId, "pushTaskerCommand");
-	if(notify){
-		showNotification("Join", "Sent command " + text);
-	}
+    push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join", "Sent command " + text);
+        }
+    },function(error){
+        showNotification("Couldn't push current tab", error);
+    });
+	setLastPush(deviceId, "pushTaskerCommand");	
 }
 var fileInput = null;
 addEventListener("popupunloaded",function(){
@@ -1102,16 +1136,43 @@ var pushFile = function(deviceId, notify, tab){
 				doPostWithAuth("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",formData, function(result){
 					console.log("Upload result:");
 					console.log(result);
-					callbackSingleUpload("https://drive.google.com/file/d/" + result.id);
+                    getUserInfo(function(userInfo){
+                        var resultFileUrl = "https://drive.google.com/file/d/" + result.id;
+                        var device = devices.first(function(device){return device.deviceId == deviceId});
+                        if(device && device.userAccount){
+                            var userToShareTo = device.userAccount;
+                            //userToShareTo = "jakuxes@gmail.com";
+                            if(userToShareTo != userInfo.email){
+                                console.log("Sharing file to " + userToShareTo);                            
+                                doPostWithAuth("https://www.googleapis.com/drive/v2/files/" + result.id + "/permissions/",{"role":"writer","type":"user","value":userToShareTo}, function(resultShareFile){
+                                    console.log("Share file result:");
+                                    console.log(resultShareFile);
+                                    callbackSingleUpload(resultFileUrl);
+                                },function(error){
+                                    console.log("Error: " + error);
+                                });
+                            }else{
+                                console.log("Not sharing file to " + userToShareTo + " because it's not another user");
+                                callbackSingleUpload(resultFileUrl);
+                            }                            
+                        }else{
+                            console.log("Not sharing file because device " + deviceId + " not found");
+                            callbackSingleUpload(resultFileUrl);
+                        }
+                    });
+                    
 				},function(error){
 					console.log("Error: " + error);
 				});
 			},function(uploadResults){
 				var push = new GCMPush();
 				push.files = uploadResults;
-				push.send(deviceId);
+				push.send(deviceId,function(){
+                    showNotification("Join", "Sent " + whatsUploading);
+                },function(error){
+                    showNotification("Join", "Couldn't send file: " + error);
+                });
 				setLastPush(deviceId, "pushFile");
-				showNotification("Join", "Sent " + whatsUploading);
 			});
 
 		},"Join Files/from " + deviceName);
@@ -1184,6 +1245,9 @@ var showNotification = function(title, message, timeout, notificationId){
 	if(!notificationId){
 		notificationId = guid();
 	}
+    if(!title || !message){
+        return;
+    }
 	chrome.notifications.create(notificationId, options,function(){
 		setInterval(function() {
 			chrome.notifications.clear(notificationId, function() {})
