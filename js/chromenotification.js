@@ -15,6 +15,7 @@ var ChromeNotification = function(notificationFromGcm){
 			return;
 		}
 		var timeoutFromSettings = getNotificationSeconds();
+		var requireInteraction = getNotificationRequireInteraction();
 		if(!timeout && timeoutFromSettings)
 		{
 			timeout = timeoutFromSettings * 1000;
@@ -55,7 +56,8 @@ var ChromeNotification = function(notificationFromGcm){
 						"message": text,
 						"contextMessage": me.subText,
 						"buttons": notificationButtons,
-						"eventTime": Date.now()
+						"eventTime": Date.now(),
+						"requireInteraction": requireInteraction
 				};
 				if(me.image){
 					options.type = "image";
@@ -81,7 +83,7 @@ var ChromeNotification = function(notificationFromGcm){
 					}
 					new Audio(notificationSound).play();
 			}
-				if(timeout){
+				if(timeout && !requireInteraction){
 					if(timeout > 8000){
 						options.priority = 2;
 					}

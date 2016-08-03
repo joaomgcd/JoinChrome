@@ -687,7 +687,10 @@ var getFavoriteCommandDevice = function(){
 	return getOptionValue("select","select_favourite_command_device");
 }
 var getNotificationSeconds = function(){
-	return getOptionValue("text","notificationseconds");
+    return getOptionValue("text","notificationseconds");
+}
+var getNotificationRequireInteraction = function(){
+    return getOptionValue("checkbox","notificationrequireinteraction");
 }
 var getNotificationSound = function(){
 	return getOptionValue("text","notificationsound");
@@ -748,7 +751,8 @@ var defaultValues = {
 	"hidenotificationtext": false,
 	"playnotificationsound": true,
     "showinfonotifications": true,
-    "autoopenlinks": true
+    "autoopenlinks": true,
+    "notificationrequireinteraction": false
 };
 /******************************************************************************/
 
