@@ -494,6 +494,7 @@ var GCMNotification = function(notification, senderId){
 				params.senderId = localStorage.deviceId;
 				params.actionId = actionId;
 				params.appPackage = notification.appPackage;
+				params.text = text;
 				var gcm = {"requestNotification":params,"getCommunicationType":function(){return "GCMNotificationAction"}};
 				new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
 					params.deviceId = deviceIdsServer[0];

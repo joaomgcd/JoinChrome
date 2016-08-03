@@ -79,8 +79,14 @@ var createPushClipboardWindow = function(tab,params,paramsIfClosed,closeAfterCom
 	}else{
 		/*var height = Math.min(Math.round((88 * devices.length) + 100), screen.height * 0.75);
 		height = Math.max(height, (deviceCommands.length * 25) + 100);*/
-		var width = 456;
-		var height = 606;
+		var width = parseInt(localStorage.popoutWidth);
+        if(!width){
+            width = 456;
+        }
+		var height = parseInt(localStorage.popoutHeight);
+        if(!height){
+            height = 606;
+        }
 		chrome.windows.create({ url: url, type: 'detached_panel' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
 				popupWindowClipboard = clipboardWindow;
 				popupWindowClipboardId = clipboardWindow.id;

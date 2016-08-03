@@ -154,6 +154,8 @@ addEventListener("unload", function (event) {
 		back.popupWindow = null;
 	}
 	back.dispatch("popupunloaded");
+	localStorage.popoutWidth = window.outerWidth;
+	localStorage.popoutHeight = window.outerHeight;
 }, true);
 var settingsElement = document.getElementById("settings");
 var topBarPopoutElement = document.getElementById("topBarPopout");
