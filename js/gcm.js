@@ -1,6 +1,8 @@
 
 var SMS_ACTION_ID = "SMS_ACTION_ID";
 var COPY_NUMBER = "COPY_NUMBER";
+var HANG_UP = "HANG_UP";
+var CALL_BACK = "CALL_BACK";
 var regexNumbers = /[0-9]{4,}/;
 
 var Request = function(){
@@ -407,7 +409,7 @@ var updateBadgeText = function(){
 		UtilsBadge.setBadge(notifications.length);
 	}
 }
-var GCMNotification = function(){
+var GCMNotification = function(notification, senderId){
 
 	this.getCommunicationType = function() {
 		return "GCMNotification";
@@ -444,11 +446,11 @@ var GCMNotification = function(){
 			var not = this.requestNotification.notifications[i];
 			this.decryptNotification(not);
 			not.senderId = me.requestNotification.senderId;
-			not.isSmsNotification = function(){
-				return this.actionId && this.actionId == SMS_ACTION_ID;
+			not.isSmsNotification = function(actionId){
+				return actionId && actionId == SMS_ACTION_ID;
 			}
 			not.cancel = function(){
-				if(not.isSmsNotification()){
+				if(not.isSmsNotification(me.actionId)){
 					back.dispatch(EVENT_SMS_HANDLED,{"text":not.text,"deviceId":not.senderId});
 				}
 				notifications.removeNotificationsWithSameId(this.id);
@@ -476,7 +478,7 @@ var GCMNotification = function(){
 					}
 					return;
 				}
-				if(notification.isSmsNotification()){
+				if(notification.isSmsNotification(actionId)){
 					var number = notification.smsnumber;
 					showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
 					notification.cancel();
@@ -485,7 +487,39 @@ var GCMNotification = function(){
 				if(!actionId || (!text && isReply)){
 					return;
 				}
-				doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",{"actionId":actionId,"text":text,"deviceId":me.requestNotification.senderId,"appPackage":notification.appPackage}, function(result){
+				var gcmParams = {};
+				gcmParams[GCM_PARAM_TIME_TO_LIVE] = 0;
+				var params = {};
+				params.deviceIds = [me.requestNotification.senderId];
+				params.senderId = localStorage.deviceId;
+				params.actionId = actionId;
+				params.appPackage = notification.appPackage;
+				var gcm = {"requestNotification":params,"getCommunicationType":function(){return "GCMNotificationAction"}};
+				new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
+					params.deviceId = deviceIdsServer[0];
+					doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",params,callback, callbackError);
+				},gcm,gcmParams, function(result){
+				  	if(result.success){
+						console.log("Sent notification action: " + notification.id);
+						var message = notification.actionDescription;
+						if(!message){
+							message = "Performed action remotely.";
+						}
+						if(back.getShowInfoNotifications()){
+							showNotification("Join",message);
+						}
+				  	}else{
+						console.log("Sent notification action error: " + result.errorMessage);
+						showNotification("Join","Error performing action: " + result.errorMessage);
+				  	}
+				  	if(notification.cancelOnAction){
+						notification.cancel();
+				  	}
+				},function(error){
+					showNotification("Join","Couldn't perform action: " + error);
+					console.log("Error: " + error);
+				});
+				/*doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",{"actionId":actionId,"text":text,"deviceId":me.requestNotification.senderId,"appPackage":notification.appPackage}, function(result){
 				  if(result.success){
 					console.log("Sent notification action: " + notification.id);
 					var message = notification.actionDescription;
@@ -504,7 +538,7 @@ var GCMNotification = function(){
 				  }
 				},function(error){
 					console.log("Error: " + error);
-				});
+				});*/
 			}
 
 			var chromeNotification = new ChromeNotification(not);
@@ -554,6 +588,9 @@ var GCMNotification = function(){
 			handlePendingRequest(this,requestId);
 		}
 
+	}
+	if(notification && senderId){
+		this.requestNotification = {notifications:[notification], senderId:senderId};
 	}
 }
 GCMNotification.prototype = new GCM();
@@ -677,6 +714,57 @@ var GCMSmsSentResult = function(){
 	}
 }
 GCMSmsSentResult.prototype = new GCM();
+var GCMPhoneCall = function(){
+    var PHONE_CALL_STATE_INCOMING_RECEIVED = 0;
+    var PHONE_CALL_STATE_INCOMING_ANSWERED = 1;
+    var PHONE_CALL_STATE_INCOMING_ENDED = 2;
+    var PHONE_CALL_STATE_OUTGOING_STARTED = 3;
+    var PHONE_CALL_STATE_OUTGOING_ENDED = 4;
+    var PHONE_CALL_STATE_MISSED = 5;
+	this.getCommunicationType = function() {
+		return "GCMPhoneCall";
+	}
+	this.execute = function() {	
+		if(!this.name){
+			this.name = this.number;
+		}
+		var buttons = [];
+		var title = null;
+		var icon = null;
+		if(this.state == PHONE_CALL_STATE_INCOMING_RECEIVED){
+			title = "Incoming Call";
+			buttons.push({
+				text: "Hang Up",
+				actionId: HANG_UP
+			});
+			icon = "icons/phone_incoming.png";
+		}else if(this.state == PHONE_CALL_STATE_MISSED){
+			title = "Missed Call";
+			buttons.push({
+				text: "Call Back",
+				actionId: CALL_BACK + "=:=" + this.number
+			});
+			icon = "icons/phone_missed.png";
+		}
+		if(title){
+			var not = {};
+			not.senderId = this.senderId;
+			not.id = this.senderId + this.number + "PHONE_CALL";
+			not.title = title;
+			not.text = this.name;
+			not.appIcon = icon;
+			not.priority = 2;
+			not.appName = "Join";
+			not.keepRemote = true;
+			not.buttons = buttons;
+			not.cancelOnAction = false;			
+			var gcmNotification = new GCMNotification(not,this.senderId);			
+			gcmNotification.execute();
+		}
+		
+	}
+}
+GCMPhoneCall.prototype = new GCM();
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){
 		directCopy(lastTextPushed);

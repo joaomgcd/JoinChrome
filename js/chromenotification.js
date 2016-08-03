@@ -27,7 +27,7 @@ var ChromeNotification = function(notificationFromGcm){
 					var button = this.buttons[i];
 					imagesToDownload.push({"url":getDriveUrlFromFileId(button.icon)});
 				};
-			}
+			}			
 			doGetBase64Images(imagesToDownload,function(results){
 				var notificationIcon = getIcon(results[0]);
 				if(notificationIcon == "icons/notificationbutton.png" && me.iconData){

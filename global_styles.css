@@ -227,6 +227,9 @@ td {
 	font-weight: 500;
 	height:100%;
 }
+.small {
+	font-size: smaller;
+}
 #tools .tab {
 	display: flex;
 	align-items: center;
@@ -371,8 +374,29 @@ img.tabIcon {
 .smscontact:hover {
 	background-color: var(--global-color-gray);
 }
+.smscontactnameandphone {
+	display: flex;
+	font-size: small;
+	justify-content: space-between;
+}
 .smscontactname {
 	font-size: medium;
+}
+.smscontactcall {
+	align-self: flex-end;
+	margin-left: 8px;
+	text-align: end;
+	color: #aaaaaa;
+	visibility: hidden;
+	opacity: 0.2;
+}
+.smscontactcall {
+}
+.smscontact:hover .smscontactcall{
+	visibility: visible;
+}
+.smscontactcall:hover{
+	opacity: 0.9 !important;
 }
 .smstextanddate {
 	display: flex;
@@ -459,10 +483,18 @@ img.tabIcon {
 .btn-floating:hover {
 	background-color: var(--global-color-light) !important;
 }
+#newsmscall {
+	font-size: 300%;
+}
 #newsmsbuttonicon {
 	height: 100%;
 	width: 100%;
 	background: url('icons/compose.png') center/50% 50% no-repeat;
+}
+#newcallbuttonicon {
+	height: 100%;
+	width: 100%;
+	background: url('icons/call_white.png') center/50% 50% no-repeat;
 }
 #newsmsbutton.hidden {
 	display: none;

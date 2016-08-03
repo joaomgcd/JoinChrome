@@ -142,9 +142,11 @@ var sendSmsDevices = function(event){
 };
 
 back.addEventListener("sendsms",sendSmsDevices,false);
+back.addEventListener("phonecall",sendSmsDevices,false);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading popup devices...");
 	back.removeEventListener("sendsms",sendSmsDevices,false);
+	back.removeEventListener("phonecall",sendSmsDevices,false);
 	if(isPopup){
 		/*back.console.log("Is popup. Firing popup closed event");
 		dispatch("popupwindowclosed");*/

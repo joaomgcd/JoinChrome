@@ -5,6 +5,7 @@ var ContextMenu = function(){
 	var CREATE_NOTIFICATION = "Create Notification";
 	var SET_AS_WALLPAPER = "Set As Wallpaper";
 	var SEND_TASKER_COMMAND = "Send Tasker Command";
+	var CALL = "Call";
 	var WITH = "With";
 	var DOWNLOAD = "Download";
 	var me = this;
@@ -115,6 +116,17 @@ var ContextMenu = function(){
 	var sendTaskerCommandSourceUrl = function(device, info, tab){
 		sendTaskerCommand(device, info.srcUrl);
 	}
+
+	//Calls
+	var callNumber = function(device, number){ 
+		push(device, {"callnumber": number});
+	}
+	var callNumberSelection = function(device, info, tab){ 
+		callNumber(device, info.selectionText);
+	}
+	var callNumberLink = function(device, info, tab){ 
+		callNumber(device, info.linkUrl);
+	}
 	this.update = function(devices){
 	    chrome.contextMenus.removeAll();
 	    var contexts = {
@@ -129,6 +141,7 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(PASTE,pasteSelection),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationSelection, WITH),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSelection, WITH),
+		    	new ContextMenuItem(CALL,callNumberSelection),
 		    ],
 		    "link":[		    	
 		    	new ContextMenuItem(OPEN,openLink),
@@ -136,6 +149,7 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationLink, WITH),
 		    	new ContextMenuItem(DOWNLOAD,downloadLink),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandLink, WITH),
+		    	new ContextMenuItem(CALL,callNumberLink),
 	    	],
 		    "editable":[],
 		    "image":[
@@ -201,16 +215,21 @@ var ContextMenu = function(){
 			        		"onclick": function(info, tab){
 			        			contextMenuItem.handler(device, info, tab);
 			        		},
-			        		"title": actionTitle
+			        		"title": actionTitle,
+			        		"targetUrlPatterns": contextMenuItem.patterns
 			        	});
 		        	});
 		        }
 			}
 	    });
 	}
-	var ContextMenuItem = function(title,handler, joiner){
+	var ContextMenuItem = function(title,handler, joiner, patterns){
 		this.title = title;
 		this.handler = handler;
 		this.joiner = joiner;
+		if(UtilsObject.isString(patterns)){
+			patterns = [patterns];
+		}
+		this.patterns = patterns;
 	}
 }

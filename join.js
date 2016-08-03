@@ -1061,25 +1061,49 @@ var pushUrl = function(deviceId, notify,callback){
 	});
 }
 var pushTaskerCommand = function(deviceId, notify,text){
-	var push = new GCMPush();
-	if(!text || (typeof text) != "string" ){
-		text = prompt("Write your Tasker command.\n\nSetup a profile with the AutoApps condition to react to it.");
-	}
-	if(!text){
-		return;
-	}
-	if(getPrefixTaskerCommands()){
-		 text = "=:=" + text;
-	}
-	push.text =text;
+    var push = new GCMPush();
+    if(!text || (typeof text) != "string" ){
+        text = prompt("Write your Tasker command.\n\nSetup a profile with the AutoApps condition to react to it.");
+    }
+    if(!text){
+        return;
+    }
+    if(getPrefixTaskerCommands()){
+         text = "=:=" + text;
+    }
+    push.text =text;
     push.send(deviceId,function(){
         if(notify){
             showNotification("Join", "Sent command " + text);
         }
     },function(error){
-        showNotification("Couldn't push current tab", error);
+        showNotification("Couldn't push tasker command", error);
     });
-	setLastPush(deviceId, "pushTaskerCommand");	
+    setLastPush(deviceId, "pushTaskerCommand"); 
+}
+var selectContactForCall = function(deviceId){
+    dispatch("phonecall",{"deviceId":deviceId});
+    if(!popupWindow && !popupWindowClipboard){
+        showSmsPopup(deviceId);
+    }
+}
+var pushCall = function(deviceId, notify, number){
+    var push = new GCMPush();
+    if(!number){
+        return;
+    }
+    var shouldCall = confirm("This will call " + number +" on your device. Are you sure?");
+    if(!shouldCall){
+        return;
+    }
+    push.callnumber = number;
+    push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join", "Sent request to call" + number);
+        }
+    },function(error){
+        showNotification("Couldn't Push Call Request", error);
+    }); 
 }
 var fileInput = null;
 addEventListener("popupunloaded",function(){
@@ -1182,6 +1206,9 @@ var pushFile = function(deviceId, notify, tab){
 var smsWindow = null;
 var smsWindowId = null;
 var showSmsPopup = function(deviceId,number,name,isReply,text){
+    if(!name){
+        name = number;
+    }
 	createPushClipboardWindow("sms",{"deviceId":deviceId,"number":number,"name":name},{"reply":isReply,"text":text});
 	
 }
@@ -1197,7 +1224,7 @@ addEventListener(EVENT_SMS_HANDLED,function(event){
 });
 var sendSms = function(deviceId, number){
 	dispatch("sendsms",{"deviceId":deviceId});
-	if(!popupWindow){
+	if(!popupWindow && !popupWindowClipboard){
 		showSmsPopup(deviceId);
 	}
 	/*if(smsWindow != null){

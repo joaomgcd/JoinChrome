@@ -1,3 +1,4 @@
+
 var deviceCommands = [
 	{
 		"label":"Send current tab to your device",
@@ -123,8 +124,16 @@ var deviceCommands = [
 			return UtilsDevices.canReceiveNotifications(device);
 		}
 	},
+	{
+		"label":"Make a Phone Call",
+		"commandId":"call",
+		"func":back.selectContactForCall,
+		"keepTab":true,
+		"condition":function(device){
+			return device.deviceType == DEVICE_TYPE_ANDROID_PHONE && UtilsDevices.isNotDeviceShare(device);
+		}
+	},
 ];
-
 var commandSortOrder = {};
 var sortDeviceCommands = function(){
 	if(!localStorage){

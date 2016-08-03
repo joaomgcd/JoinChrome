@@ -28,7 +28,7 @@
 		<div id="tabs"  class="tabselement">
 			<div id="tab-devices" class="tab waves-effect waves-light"><div class="tabIcon"><p>Devices</p></div></div>
 			<div id="tab-notifications" class="tab waves-effect waves-light"><div class="tabIcon"><p>Notifications</p></div></div>
-			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p>SMS</p></div></div>
+			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon small"><p>SMS/Phone</p></div></div>
 		</div>
 		<div id="tools" class="tabselement">
 			<div id="refresh" class="tab waves-effect waves-light"><img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" /></div>
@@ -44,8 +44,12 @@
 		</div>
 		<div class="fixed-action-btn" id="newsmsbutton">
 			<a class="btn-floating btn-large">
-				<div id="newsmsbuttonicon"></div>
-			</a>
+				<div id="newsmscall">+</div>
+			</a>	
+		    <ul>
+		      <li><a class="btn-floating"><div id="newcallbuttonicon"></div></a></li>
+		      <li><a class="btn-floating"><div id="newsmsbuttonicon"></div></a></li>
+		    </ul>
 		</div>
 		<div id="contactfindcontainer" class="input-field col s6">
 					<input placeholder="Search for contact" type="text" class="validate" id="contactfindinput" />

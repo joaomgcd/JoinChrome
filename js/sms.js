@@ -248,6 +248,8 @@ var SmsApp = function(){
 	var contactFindInputElement = document.getElementById("contactfindinput");
 	var smsContainerElement = document.getElementById("smscontainer");
 	var newSmsButton = document.getElementById("newsmsbutton");
+	var newSmsButtonIcon = document.getElementById("newsmsbuttonicon");
+	var newCallButtonIcon = document.getElementById("newcallbuttonicon");
 	smsInputElement.addEventListener("keydown",function(e){
 		if(e.keyCode == 13 && !e.shiftKey){
 			e.preventDefault();
@@ -260,12 +262,18 @@ var SmsApp = function(){
 	if(localStorage.smsDraft){
 		smsInputElement.value = localStorage.smsDraft;
 	}
-	newSmsButton.addEventListener("click",function(e){
+	newSmsButtonIcon.addEventListener("click",function(e){
 		// console.log("new SMS");
-		me.writeContactList(contactFindInputElement.value);
+		me.writeContactListFunction = smsApp.writeContactListForSms;
+		me.writeContactListFunction(contactFindInputElement.value);
+	});
+	newCallButtonIcon.addEventListener("click",function(e){
+		// console.log("new SMS");
+		me.writeContactListFunction = smsApp.writeContactListForCall;
+		me.writeContactListFunction(contactFindInputElement.value);
 	});
 	contactFindInputElement.addEventListener("input",function(e){
-		me.writeContactList(contactFindInputElement.value);
+		me.writeContactListFunction(contactFindInputElement.value);
 	});
 	var deviceIdFromUrl = getURLParameter("deviceId");
 	var numberFromUrl = getURLParameter("number");
@@ -344,6 +352,14 @@ var SmsApp = function(){
 	if(textFromUrl){
 		me.receiveSms(deviceIdFromUrl,{"number":numberFromUrl,"text":textFromUrl});
 	}
+	var findContactForElement = function(element){
+		var element = event.target;
+		while(!element.contact){
+			element = element.parentElement;
+		}
+		var contact = element.contact;
+		return contact;
+	}
 	me.writeSms = function(deviceId, local){
 		me.number = null;
 		me.contact = null;
@@ -364,6 +380,7 @@ var SmsApp = function(){
 								var contactElement = smsContactHtml.cloneNode(true);
 								contactElement.contact = contact;
 								var contactNameElement = contactElement.querySelector("#smscontactname");
+								var contactCallElement = contactElement.querySelector("#smscontactcall");
 								var contactTextElement = contactElement.querySelector("#smscontacttext");
 								var contactDateElement = contactElement.querySelector("#smscontactdate");
 								contactNameElement.innerHTML = contact.name;
@@ -371,13 +388,14 @@ var SmsApp = function(){
 								contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
 								contactElement.addEventListener("click",function(event){
-									var element = event.target;
-									while(!element.contact){
-										element = element.parentElement;
-									}
-									var contact = element.contact;
+									var contact = findContactForElement(event.target);
 									me.contactsScroll = smsContainerElement.scrollTop;
 									me.writeContactMessages(deviceId, contact);
+								});
+								contactCallElement.addEventListener("click",function(event){
+									var contact = findContactForElement(event.target);
+									back.pushCall(me.deviceId,true,contact.number);
+									event.stopPropagation();
 								});
 								smsContainerElement.appendChild(contactElement);
 							}
@@ -464,7 +482,18 @@ var SmsApp = function(){
 			return sms.date;
 		},false,local);
 	}
-	me.writeContactList = function(filter){
+	me.writeContactListForSms = function(filter){
+		me.writeContactList(filter,function(deviceId, contact){
+			me.writeContactMessages(deviceId, contact);
+		});
+	}
+	me.writeContactListFunction = me.writeContactListForSms;
+	me.writeContactListForCall = function(filter){
+		me.writeContactList(filter,function(deviceId, contact){
+			back.pushCall(deviceId, true, contact.number);
+		});
+	}
+	me.writeContactList = function(filter,callback){
 		setTitleText("Contacts");
 		showTitle(true);
 		showContactFind(true);
@@ -481,10 +510,12 @@ var SmsApp = function(){
 						var contactElement = smsContactHtml.cloneNode(true);
 							contactElement.contact = contact;
 							var contactNameElement = contactElement.querySelector("#smscontactname");
+							var contactCallElement = contactElement.querySelector("#smscontactcall");
 							var contactTextElement = contactElement.querySelector("#smscontacttext");
 							var contactDateElement = contactElement.querySelector("#smscontactdate");
 							contactNameElement.innerHTML = contact.name;
 							contactTextElement.innerHTML = contact.number;
+							contactCallElement.innerHTML = "";
 							contactDateElement.innerHTML = "";
 
 							contactElement.addEventListener("click",function(event){
@@ -493,7 +524,7 @@ var SmsApp = function(){
 									element = element.parentElement;
 								}
 								var contact = element.contact;
-								me.writeContactMessages(me.deviceId, contact);
+								callback(me.deviceId, contact)
 							});
 							smsContainerElement.appendChild(contactElement);
 					}
@@ -588,6 +619,13 @@ var sendSms = function(event){
 }
 back.addEventListener("sendsms",sendSms,false);
 
+var phoneCall = function(event){
+	smsApp.deviceId = event.deviceId;
+    smsApp.writeContactListFunction = smsApp.writeContactListForCall;
+    smsApp.writeContactListFunction();
+}
+back.addEventListener("phonecall",phoneCall,false);
+
 var smsReceived = function(event){
 	// console.log("Received SMS in popup from " + event.deviceId);
 	// console.log(event.sms);
@@ -600,5 +638,6 @@ back.addEventListener('smsreceived', smsReceived, false);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading sms...");
 	back.removeEventListener("sendsms",sendSms,false);
+	back.removeEventListener("phonecall",phoneCall,false);
 	back.removeEventListener('smsreceived',smsReceived,false);
 }, true);
