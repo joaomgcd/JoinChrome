@@ -1215,7 +1215,10 @@ var showSmsPopup = function(deviceId,number,name,isReply,text){
     if(!name){
         name = number;
     }
-	createPushClipboardWindow("sms",{"deviceId":deviceId,"number":number,"name":name},{"reply":isReply,"text":text});
+    dispatch("sendsms",{"deviceId":deviceId,"sms":{"number":number,"text":text},"reply":isReply});
+    if(!popupWindow && !popupWindowClipboard){
+	   createPushClipboardWindow("sms",{"deviceId":deviceId,"number":number,"name":name},{"reply":isReply,"text":text});
+    }
 	
 }
 addEventListener(EVENT_SMS_HANDLED,function(event){
@@ -1229,10 +1232,7 @@ addEventListener(EVENT_SMS_HANDLED,function(event){
 	gcm.send(deviceId);
 });
 var sendSms = function(deviceId, number){
-	dispatch("sendsms",{"deviceId":deviceId});
-	if(!popupWindow && !popupWindowClipboard){
-		showSmsPopup(deviceId);
-	}
+	showSmsPopup(deviceId, number);
 	/*if(smsWindow != null){
 		chrome.windows.update(smsWindowId,{"focused":true});
 		return;

@@ -122,6 +122,17 @@ var ContactsGetter = function(deviceId){
 		me.getLastSms(callbackForProcessing,callbackError);
 		me.getContacts(callbackForProcessing,callbackError);
 	}
+	me.getContactForNumber = function(numberToFind, callback,callbackError, local){
+		me.getInfo(function(info){
+			var contact = info.contacts.first(function(contact){
+				return contact.number == numberToFind;
+			});
+			if(!contact){
+				contact = {"name":numberToFind,"number":numberToFind};
+			}
+			callback(contact);
+		},callbackError,null,false,local);
+	}
 	me.getLastSms = function(callback,callbackError){
 		downloadDriveString("lastsms=:=" + me.deviceId,function(lastsms){
 			if(lastsms.error){
@@ -615,7 +626,16 @@ var refreshSms = function(){
 	smsApp.refresh();
 }
 var sendSms = function(event){
-	smsApp.writeSms(event.deviceId);
+	var sms = event.sms;
+	if(sms){
+		var contactsGetter = new ContactsGetter(event.deviceId);
+		contactsGetter.getContactForNumber(sms.number,function(contact){
+			smsApp.writeContactMessages(event.deviceId,contact,false);
+			smsReceived(event);
+		},null,true);
+	} else {
+		smsApp.writeSms(event.deviceId);
+	}
 }
 back.addEventListener("sendsms",sendSms,false);
 
