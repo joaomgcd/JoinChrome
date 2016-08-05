@@ -367,7 +367,12 @@ var doRequestWithAuth = function(method, url,content, callback, callbackError, i
 				console.log("POST status: " + this.status);
 				var result = {};
 				if(this.responseText){
-					result = JSON.parse(this.responseText)
+                    try{
+    					result = JSON.parse(this.responseText)
+                    }
+                    catch(err) {
+                        result = this.responseText;
+                    }
 				}
 				if(!isRetry && result.userAuthError){
 					console.log("Retrying with new token...");
@@ -398,13 +403,31 @@ var doRequestWithAuth = function(method, url,content, callback, callbackError, i
 	},token);
 }
 var doPostWithAuth = function(url,content, callback, callbackError) {
-	doRequestWithAuth("POST",url,content,callback,callbackError);
+    doRequestWithAuth("POST",url,content,callback,callbackError);
+}
+var doPostWithAuthPromise = function(url,content) {
+    return new Promise(function(resolve,reject){
+        doPostWithAuth(url,content,resolve,reject);
+    });
+}
+var doPutWithAuth = function(url,content, callback, callbackError) {
+    doRequestWithAuth("PUT",url,content,callback,callbackError);
+}
+var doPutWithAuthPromise = function(url,content) {
+    return new Promise(function(resolve,reject){
+        doPutWithAuth(url,content,resolve,reject);
+    });
 }
 var doDeleteWithAuth = function(url,content, callback, callbackError) {
 	doRequestWithAuth("DELETE",url,content,callback,callbackError);
 }
 var doGetWithAuth = function(url, callback, callbackError,token) {
 	doRequestWithAuth("GET",url,null,callback,callbackError,false, token);
+}
+var doGetWithAuthPromise = function(url,token) {
+    return new Promise(function(resolve,reject){
+        doGetWithAuth(url,resolve,reject,token);
+    });
 }
 var doGetWithAuthAsyncRequest = function(endpointRequest, endpointGet, deviceId, callback, callbackError) {
 	doRequestWithAuth("GET",joinserver + "messaging/v1/" + endpointRequest + "?deviceId=" + deviceId,null,function(response){
@@ -1009,19 +1032,20 @@ var deleteDevice = function(deviceId, notify){
 }
 var noteToSelf = function(deviceId, notify){
 		var noteText = prompt("Note to self");
-		if(noteText){
-			var push = new GCMPush();
-			push.title = "Note To Self";
-			push.text = noteText;
-            push.send(deviceId,function(){
-                if(notify){
-                    showNotification("Join", "Created note");
-                }
-            },function(error){
-                showNotification("Couldn't push note", error);
-            });
-			setLastPush(deviceId, "noteToSelf");
-		}
+		if(!noteText){
+            return;
+        }
+		var push = new GCMPush();
+		push.title = "Note To Self";
+		push.text = noteText;
+        push.send(deviceId)
+        .then(function(){
+            if(notify){
+                showNotification("Join", "Created note");
+            }
+        })
+        .catch(UtilsObject.handleError);
+		setLastPush(deviceId, "noteToSelf");
 }
 var getCurrentTab = function(callback){
 	chrome.tabs.query({'active': true, currentWindow: true}, function (tabs) {
@@ -1137,79 +1161,34 @@ var pushFile = function(deviceId, notify, tab){
 		if(!fileInput.files || fileInput.files.length == 0){
 			return;
 		}
-		var deviceName = localStorage.deviceName;
-		if(!deviceName){
-			deviceName = "Chrome";
-		}
+
 		var filesLength = fileInput.files.length;
 		var whatsUploading = filesLength == 1 ? fileInput.files[0].name : filesLength + " files";
 		showNotification("Join", "Uploading " + whatsUploading);
-
-		getFolderId(function(folderId){
-			var files = [];
-			for (var i = 0; i < fileInput.files.length; i++) {
-				var file = fileInput.files[i];
-				files.push(file);
-			}
-			files.doForAllAsync(function(file,callbackSingleUpload){
-				if(!file){
-					return;
-				}
-				if(filesLength > 1){
-					showNotification("Join", "Uploading " + file.name);
-				}
-				console.log("Uploading...");
-				console.log(file);
-				var formData = new FormData();
-				formData.append("data", new Blob([JSON.stringify(
-					{
-						"name": file.name,
-						"parents":[folderId]
-					})],{"type":"application/json"}));
-				formData.append("file", file);
-				doPostWithAuth("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",formData, function(result){
-					console.log("Upload result:");
-					console.log(result);
-                    getUserInfo(function(userInfo){
-                        var resultFileUrl = "https://drive.google.com/file/d/" + result.id;
-                        var device = devices.first(function(device){return device.deviceId == deviceId});
-                        if(device && device.userAccount){
-                            var userToShareTo = device.userAccount;
-                            //userToShareTo = "jakuxes@gmail.com";
-                            if(userToShareTo != userInfo.email){
-                                console.log("Sharing file to " + userToShareTo);                            
-                                doPostWithAuth("https://www.googleapis.com/drive/v2/files/" + result.id + "/permissions/",{"role":"writer","type":"user","value":userToShareTo}, function(resultShareFile){
-                                    console.log("Share file result:");
-                                    console.log(resultShareFile);
-                                    callbackSingleUpload(resultFileUrl);
-                                },function(error){
-                                    console.log("Error: " + error);
-                                });
-                            }else{
-                                console.log("Not sharing file to " + userToShareTo + " because it's not another user");
-                                callbackSingleUpload(resultFileUrl);
-                            }                            
-                        }else{
-                            console.log("Not sharing file because device " + deviceId + " not found");
-                            callbackSingleUpload(resultFileUrl);
-                        }
-                    });
-                    
-				},function(error){
-					console.log("Error: " + error);
-				});
-			},function(uploadResults){
-				var push = new GCMPush();
-				push.files = uploadResults;
-				push.send(deviceId,function(){
-                    showNotification("Join", "Sent " + whatsUploading);
-                },function(error){
-                    showNotification("Join", "Couldn't send file: " + error);
-                });
-				setLastPush(deviceId, "pushFile");
-			});
-
-		},"Join Files/from " + deviceName);
+        var googleDriveManager = new GoogleDriveManager();
+        var filesToUpload = fileInput.files;
+        var device = devices.first(function(device){return device.deviceId == deviceId});
+        var accountToShareTo = null;
+        if(device){
+            accountToShareTo = device.userAccount;
+        }
+        googleDriveManager.uploadFiles({
+            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
+            accountToShareTo:accountToShareTo,
+            notify: getShowInfoNotifications()
+        }, filesToUpload)
+        .then(function(uploadResults){
+            var push = new GCMPush();
+            push.files = uploadResults;
+            push.send(deviceId,function(){
+                console.log("pushed files");
+                //showNotification("Join", "Sent " + whatsUploading);
+            },function(error){
+                showNotification("Join", "Couldn't send file: " + error);
+            });
+            setLastPush(deviceId, "pushFile");
+        })
+        .catch(UtilsObject.handleError);
 	}
 	fileInput.click();
 }
@@ -1530,3 +1509,35 @@ handleAutoClipboard();
 
 
 contextMenu.update(devices);
+
+var googleDriveManager = new GoogleDriveManager();
+    console.log("Finding file");
+/*googleDriveManager.getFile({
+    folderName:"Join Files/From Nexus 5X",
+    fileName:"faqold.png"
+}).then(function(file){
+    console.log("Found file");
+    console.log(file);
+}).catch(function(error){
+    console.log("Error: " + error);
+});*/
+/*googleDriveManager.getFolderId({
+    folderName: "Join Files/blabla"
+}).then(function(result){
+    console.log("FOLDER RESULT");
+    console.log(result)
+}).catch(function(error){
+    console.log("FOLDER ERROR");
+    console.log(error)
+});*/
+/*var promise = googleDriveManager.uploadContent({
+    folderName:"Join Files/From Nexus 5X",
+    fileName:"stuff.json",
+    content:{"hello":"bye"},
+    overwrite:false
+}).then(function(file){
+    console.log("Uploaded file");
+    console.log(file);
+}).catch(function(error){
+    console.log("Didn't upload file: " + error);
+});*/

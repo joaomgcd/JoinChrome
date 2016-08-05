@@ -70,7 +70,21 @@ var ContextMenu = function(){
 		notificationForUrl(device, info, tab, info.pageUrl);
 	}
 	var notificationLink = function(device, info, tab){
-		notificationForUrl(device, info, tab, info.linkUrl);
+		var url = info.linkUrl;
+		//showNotification("Join","Getting link's title...");
+		doGetWithAuthPromise(url)
+		.then(function(html){
+    		var matches = html.match(/<title>(.*?)<\/title>/);
+    		if(matches && matches.length>0){
+    			return matches[0];
+    		}
+		})
+		.catch(function(error){
+			console.log("Couldn't get title for link. Using current title instead");
+		})
+		.then(function(title){
+			notificationForUrl(device, info, tab, url, null, title);
+		});
 	}
 	var notificationSelection = function(device, info, tab){
 		notificationForUrl(device, info, tab, info.pageUrl, "Note To Self", info.selectionText);

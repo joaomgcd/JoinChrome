@@ -54,7 +54,31 @@ var GCM = function(){
 		}
 		var gcm = {"push":params};
 		gcm.getCommunicationType = this.getCommunicationType;
-		new DeviceIdsAndDirectDevices(deviceId).send(function(deviceIds,callback,callbackError){
+        return new DeviceIdsAndDirectDevices(deviceId)
+        .sendPromise({
+            gcm:gcm,
+            gcmParams:gcmParams,
+            sendThroughServer:function(deviceIds,callback,callbackError){
+                params.deviceId = null;
+                params.deviceIds = deviceIds.join();
+                doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
+            }
+        })
+        .then(function(result){
+            console.log("Sent push: " + JSON.stringify(result));
+            if(callback){
+                callback(result);
+            }
+        })
+        .catch(function(error){
+            console.log("Error: " + error);
+            if(callbackError){
+                callbackError(error);
+            }else{
+                return Promise.reject(error);
+            }
+        });
+		/*new DeviceIdsAndDirectDevices(deviceId).send(function(deviceIds,callback,callbackError){
 			params.deviceId = null;
 			params.deviceIds = deviceIds.join();
 			doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
@@ -75,7 +99,7 @@ var GCM = function(){
 				if(callbackError){
 					callbackError(error);
 				}
-		});
+		});*/
 
 
 	}
@@ -224,6 +248,8 @@ var GCMPush = function(){
 				});
 			}
 		}
+		var googleDriveManager = new GoogleDriveManager();
+		googleDriveManager.addPushToMyDevice(this.push);
 	}
 	this.encryptSpecific = function(push, password){
 		push.encrypted = true;

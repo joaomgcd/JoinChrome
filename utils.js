@@ -183,43 +183,6 @@ var dispatch = function(eventName, data){
 	//event.applyProps(data);
 	back.dispatchEvent(event);
 }
-/***********************************************************/
-/*************************GOOGLE DRIVE***********************/
-var getFolderId = function(callback,path,parentId){
-	var getFolderIdForName = function(callback,name,parentId){
-		var query = "name='"+name+"'";
-		if(parentId){
-			query += " and '"+parentId+"' in parents";
-		}
-		query = encodeURIComponent(query);
-		doGetWithAuth("https://www.googleapis.com/drive/v3/files?q="+query,function(result){
-			if(!result || !result.files || result.files.length == 0){
-				var createOptions = {"name":name,"mimeType":"application/vnd.google-apps.folder"};
-				if(parentId){
-					createOptions.parents = [parentId];
-				}
-				doPostWithAuth("https://www.googleapis.com/drive/v3/files",createOptions,function(createResult){
-					callback(createResult.id);
-				},function(error){
-					console.log("Error: " + error);
-				})
-				return;
-			}else{
-				callback(result.files[0].id);
-			}
-		},function(error){
-			console.log("Error: " + error);
-		});
-	}
-	if(path.indexOf("/")>=0){
-		var split = path.split("/");
-		split.doForChain(function(name,parentId,callback){
-			getFolderIdForName(callback,name,parentId);
-		},callback);
-	}else{
-		getFolderIdForName(callback,path,parentId);
-	}
-}
 
 /***********************************************************/
 
@@ -566,6 +529,50 @@ Array.prototype.doForAllAsync = function(func, callbackFinal, shouldProcessItem,
   };
   doAll(callbackFinal);
 };
+Array.prototype.doForAllPromise = function(promise, shouldProcessItem, callbackEach) {
+  var me = this;
+  var results = [];
+  var doAll = function(count){
+	if(count == me.length){
+	  return results;
+	}else{
+		var item = me[count];
+      	++count;
+       	if(!shouldProcessItem || shouldProcessItem(item)){
+	        return promise(item).then(function(result){
+	          results.push(result);
+	          if(callbackEach){
+	            callbackEach(result, count);
+	          }
+	          return doAll(count);
+	        });
+       	}else{
+	        results.push(null);
+	        return doAll(count);
+       	}
+	}
+  };
+  return doAll(0);
+};
+Array.prototype.doForChainPromise = function(promise){
+	var me = this;
+	var preivousResult = null;
+    var finalPromise = null;
+	var doAll = function(count){
+		if(count == me.length){
+		  return preivousResult;
+		}else{
+			var item = me[count];
+			return promise(item,preivousResult)
+			.then(function(processedValue){				
+				preivousResult = processedValue;
+				return doAll(++count);
+			});
+		}
+	};
+	return doAll(0);
+}
+
 Array.prototype.doForChain = function(func, callbackFinal) {
   var me = this;
   var count = -1;
@@ -815,6 +822,12 @@ var getUserInfo = function(callback,force,token){
 		console.log("Error: " + error);
 	},token);
 
+}
+
+var getUserInfoPromise = function(force,token){
+	return new Promise(function(resolve,reject){
+		getUserInfo(resolve,force,token);
+	});
 }
 Date.prototype.customFormat = function(formatString){
 	var YYYY,YY,MMMM,MMM,MM,M,DDDD,DDD,DD,D,hhhh,hhh,hh,h,mm,m,ss,s,ampm,AMPM,dMod,th;

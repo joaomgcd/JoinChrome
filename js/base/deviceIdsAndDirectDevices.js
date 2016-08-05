@@ -5,52 +5,55 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	var GCM_PARAM_PRIORITY = "priority";
 	var GCM_MESSAGE_PRIORITY_HIGH = "high";
 	var GCM_PARAM_DELAY_WHILE_IDLE = "delay_while_idle";
-	var doDirectGCMRequest = function(regId, gcmString, gcmType, gcmParams, callback, callbackError){
-	    var req = new XMLHttpRequest();
-	    req.open("POST", "https://gcm-http.googleapis.com/gcm/send", true);
-	    req.setRequestHeader("Authorization", "key=AIzaSyDvDS_KGPYTBrCG7tppCyq9P3_iVju9UkA");
-	    req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-	    req.onload = function() {
-	        console.log("POST status: " + this.status);
-	        var result = {};
-	        if(this.status != 200){
-	            if (callbackError != null) {
-	                callbackError(this.responseText);
-	            }
-	            return;
-	        }
-	        if(this.responseText){
-	            result = JSON.parse(this.responseText)
-	        }
-	        if (callback != null) {                
-	            callback(result);
-	        }
-	    }
-	    req.onerror = function(e) {
-	        if (callbackError != null) {
-	            callbackError(e.currentTarget);
-	        }
-	    }
-	    if(typeof regId == "string"){
-	        regId = [regId];
-	    }
-	    var content = {
-	        "data": {
-	            "json": gcmString,
-	            "type": gcmType
-	        },
-	        "registration_ids": regId
-	    }
+	var doDirectGCMRequest = function(options){
+		return new Promise(function(resolve, reject){
+			var regId = options.regId;
+			if(!regId){
+				regId = options.regIds;
+			}
+			var gcmString = options.gcmString;
+			var gcmType = options.gcmType;
+			var gcmParams = options.gcmParams;
+		    var req = new XMLHttpRequest();
+		    req.open("POST", "https://gcm-http.googleapis.com/gcm/send", true);
+		    req.setRequestHeader("Authorization", "key=AIzaSyDvDS_KGPYTBrCG7tppCyq9P3_iVju9UkA");
+		    req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+		    req.onload = function() {
+		        console.log("POST status: " + this.status);
+		        var result = {};
+		        if(this.status != 200){
+		            reject(this.responseText);
+		        }
+		        if(this.responseText){
+		            result = JSON.parse(this.responseText)
+		        }
+		       	resolve(result);
+		    }
+		    req.onerror = function(e) {
+		        reject(e.currentTarget);
+		    }
+		    if(typeof regId == "string"){
+		        regId = [regId];
+		    }
+		    var content = {
+		        "data": {
+		            "json": gcmString,
+		            "type": gcmType
+		        },
+		        "registration_ids": regId
+		    }
 
-		UtilsObject.applyProps(content,gcmParams);
-	    //content.applyProps(gcmParams);
-	    content[GCM_PARAM_PRIORITY] = GCM_MESSAGE_PRIORITY_HIGH;
-	    content[GCM_PARAM_DELAY_WHILE_IDLE] = false;
-	    var contentString = JSON.stringify(content);
-	    req.send(contentString);
+			UtilsObject.applyProps(content,gcmParams);
+		    //content.applyProps(gcmParams);
+		    content[GCM_PARAM_PRIORITY] = GCM_MESSAGE_PRIORITY_HIGH;
+		    content[GCM_PARAM_DELAY_WHILE_IDLE] = false;
+		    var contentString = JSON.stringify(content);
+		    req.send(contentString);
+
+		});
 	};
 	var me = this;
-	if(!allDevices){
+	if(!allDevices){	
 		allDevices = devices;
 	}
 	if(!showNotificationFunc){
@@ -111,6 +114,17 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			callback(data);
 		}
 	}
+	this.sendPromise = function(options){
+		return new Promise(function(resolve,reject){
+			me.send(options.sendThroughServer,options.gcm,options.gcmParams,function(result){
+				if(!result.success){
+					reject(result.errorMessage);
+				}else{
+					resolve(result);
+				}
+			},reject);
+		});
+	}
 	this.send = function(sendThroughServer, gcm, gcmParams,callback, callbackError){
 		if(!gcm){
 			me.callCallback(callbackError,"No message to push");
@@ -128,7 +142,8 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			if(!gcmParams){
 				gcmParams = {};
 			}
-			doDirectGCMRequest(regIds,gcmString,gcm.getCommunicationType(),gcmParams,function(multicastResult){
+			doDirectGCMRequest({regIds:regIds,gcmString:gcmString,gcmType:gcm.getCommunicationType(),gcmParams:gcmParams})
+			.then(function(multicastResult){
 				for (var i = 0; i < directDevices.length; i++) {
 					var device = directDevices[i];
 					var result = multicastResult.results[i];
@@ -141,13 +156,12 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 
 	            console.log("Posted direct GCM");
 	            console.log(gcmString);
-	        },
-	        function(error){
+	        })
+	        .catch(function(error){
 	        	var title = "Direct GCM error";
 	            console.log(title);
 	            console.log(error);
-            	showNotificationFunc(title, "Error: " + error.responseText);
-            	
+            	showNotificationFunc(title, "Error: " + error.responseText);            	
 				if(serverDevices.length == 0){
 					me.callCallback(callbackError,error.toString());
 				}
