@@ -3,10 +3,13 @@
 <head>
 	<title>Join</title>
 	<script src="js/base/constants.js"></script>
+	<script src="js/base/dialog/dialog.js"></script>
 	<script src="js/base/extensions.js"></script>
 	<script src="js/base/utilsobject.js"></script>
 	<script src="js/base/utilsbadge.js"></script>
 	<script src="js/base/utilsdevices.js"></script>
+	<script src="js/base/eventBus.js"></script>
+	<script src="js/base/googleDriveManager.js"></script>
 	<script src="utils.js"></script>
 	<script src="js/utilssms.js"></script>
 	<script src="js/devicecommands.js"></script>
@@ -16,7 +19,7 @@
 	<link rel="import" href="components/device-buttons.html" />
 	<link rel="import" href="notifications.html" />
 	<link rel="import" href="components/sms.html" />
-		<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
+	<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
 	<link type="text/css" rel="stylesheet" href="global_styles.css"/>
 </head>
 <body>
@@ -28,7 +31,7 @@
 		<div id="tabs"  class="tabselement">
 			<div id="tab-devices" class="tab waves-effect waves-light"><div class="tabIcon"><p>Devices</p></div></div>
 			<div id="tab-notifications" class="tab waves-effect waves-light"><div class="tabIcon"><p>Notifications</p></div></div>
-			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon small"><p>SMS/Phone</p></div></div>
+			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p>SMS/Phone</p></div></div>
 		</div>
 		<div id="tools" class="tabselement">
 			<div id="refresh" class="tab waves-effect waves-light"><img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" /></div>

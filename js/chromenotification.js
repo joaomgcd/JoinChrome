@@ -141,21 +141,27 @@ chrome.notifications.onButtonClicked.addListener(function(id,index){
 		console.log("WARNING: button clicked but didn't exist! Shouldn't happen!" );
 		return;
 	}
-	if(notification.replyId && index == 0){
-		notification.doAction(notification.replyId,notification.noPrompt ? null : prompt(notification.text),true);
-		return;
-	}
-	var buttons = notification.buttons;
-	if(!buttons){
-		console.log("WARNING: button clicked but didn't find buttons! Shouldn't happen!" );
-		return;
-	}
-	if(notification.replyId){
-		index--;
-	}
-	if(buttons.length <= index){
-		console.log("WARNING: button " + (index + 1) + " clicked but didn't find that many buttons! Shouldn't happen!" );
-		return;
-	}
-	notification.doAction(buttons[index].actionId);
+	var isReplyAction = notification.replyId && index == 0;
+	var shouldPrompt = !notification.noPrompt;
+	return Promise.resolve()
+	.then(Dialog.showNotificationReplyDialog(notification,isReplyAction && shouldPrompt))
+	.then(function(input){	
+		if(isReplyAction){
+			notification.doAction(notification.replyId, input, true);
+			return;
+		}	
+		var buttons = notification.buttons;
+		if(!buttons){
+			console.log("WARNING: button clicked but didn't find buttons! Shouldn't happen!" );
+			return;
+		}
+		if(notification.replyId){
+			index--;
+		}
+		if(buttons.length <= index){
+			console.log("WARNING: button " + (index + 1) + " clicked but didn't find that many buttons! Shouldn't happen!" );
+			return;
+		}
+		notification.doAction(buttons[index].actionId);
+	}).catch(UtilsObject.ignoreError);
 });

@@ -299,6 +299,11 @@ var getAuthTokenFromTab = function(callback,selectAccount){
 var getAuthTokenFromChrome = function(callback){
 
 }
+var getAuthTokenPromise =function(selectAccount, token){
+    return new Promise(function(resolve){
+        getAuthToken(resolve, selectAccount, token);
+    });
+}
 var getAuthToken = function(callback, selectAccount, token){
 	if(token){
 		if(callback){
@@ -342,7 +347,7 @@ var removeAuthToken = function(callback){
 	delete localStorage.userinfo;
 }
 
-var doRequestWithAuth = function(method, url,content, callback, callbackError, isRetry, token) {
+/*var doRequestWithAuth = function(method, url,content, callback, callbackError, isRetry, token) {
 	getToken(function(token) {
 		if(token == null){
 			if (callbackError != null) {
@@ -398,7 +403,13 @@ var doRequestWithAuth = function(method, url,content, callback, callbackError, i
 					contentString = JSON.stringify(content);
 				}
 			}
-			req.send(contentString);
+            try{
+                req.send(contentString);
+            }catch(error){
+                if (callbackError != null) {
+                    callbackError(error);
+                }
+            }
 		}
 	},token);
 }
@@ -428,7 +439,7 @@ var doGetWithAuthPromise = function(url,token) {
     return new Promise(function(resolve,reject){
         doGetWithAuth(url,resolve,reject,token);
     });
-}
+}*/
 var doGetWithAuthAsyncRequest = function(endpointRequest, endpointGet, deviceId, callback, callbackError) {
 	doRequestWithAuth("GET",joinserver + "messaging/v1/" + endpointRequest + "?deviceId=" + deviceId,null,function(response){
 		var requestId = response.requestId;
@@ -583,7 +594,7 @@ var optionSavers = [
 				value = option.checked;
 			}
 			localStorage[id] = value;
-			var onSaveFunc = window["on" + option.id + "save"];
+			var onSaveFunc = window["on" + id + "save"];
 			if(onSaveFunc){
 				onSaveFunc(option, value);
 			}
@@ -679,11 +690,15 @@ var getDeviceIdsToSendAutoClipboard = function(){
 }
 
 var getOptionValue = function(type, id, defaultValue){
-	if(!defaultValue){
-		defaultValue = getDefaultValue(id);
-	}
-	var optionSaver = getOptionSaver(type);
-	return optionSaver.getValue(id,defaultValue);
+    if(!defaultValue){
+        defaultValue = getDefaultValue(id);
+    }
+    var optionSaver = getOptionSaver(type);
+    return optionSaver.getValue(id,defaultValue);
+}
+var saveOptionValue = function(type, id, value){
+    var optionSaver = getOptionSaver(type);
+    return optionSaver.save(id,value);
 }
 var getDownloadScreenshotsEnabled = function(){
 	return getOptionValue("checkbox","downloadscreenshots");
@@ -725,7 +740,10 @@ var getNotificationNoPopupPackages = function(){
 	return getOptionValue("textarea","notificationnopopuppackages");
 }
 var getShowChromeNotifications = function(){
-	return getOptionValue("checkbox","chromenotifications");
+    return getOptionValue("checkbox","chromenotifications");
+}
+var setShowChromeNotifications = function(value){
+    saveOptionValue("checkbox","chromenotifications",value);
 }
 var getPrefixTaskerCommands = function(){
 	return getOptionValue("checkbox","prefixtaskercommands");
@@ -749,8 +767,12 @@ var getFavoriteCommandText = function(){
 	return getOptionValue("text","text_favourite_command");
 }
 var onautoclipboardsave = function(option, value){
-	console.log("Auto clipboard: " + value);
-	handleAutoClipboard();
+    console.log("Auto clipboard: " + value);
+    handleAutoClipboard();
+}
+var onchromenotificationssave = function(option, value){
+    console.log("Changed chrome notification popup setting: " + value);
+    contextMenu.update(devices);
 }
 var getDefaultValue = function(option){
 	var id = null;
@@ -927,20 +949,37 @@ var findDevice = function(deviceId, notify){
 	setLastPush(deviceId, "findDevice");
 	
 }
+var getClipboardPush = function(text){    
+    var push = new GCMPush();
+    push.clipboard = text;
+    return push;
+}
+var sendPushToDeviceId = function(deviceId){    
+    return function(push){
+        return push.send(deviceId);
+    }
+}
+var setLastPushAndNotify = function(deviceId, notify, functionName, notificationMessage){    
+    return function(result){
+        setLastPush(deviceId, functionName);
+        if(notify){
+            showNotification("Join",notificationMessage);
+        }
+    }
+}
 var writeText = function(deviceId, notify, text){
-	var push = new GCMPush();
-	if(!text || (typeof text) != "string" ){
-		text = prompt("Text to write");
-	}
-	push.clipboard = text;
-	if(!push.clipboard){
-		return;
-	}
-	push.send(deviceId);
-	setLastPush(deviceId, "writeText");
-	if(notify){
-		showNotification("Join","Sent Text");
-	}
+    return Promise.resolve()
+    .then(Dialog.showInputDialog({
+        title:"Text to write",
+        placeholder:"Type some text"
+    },{
+        shouldShow:!text || (typeof text) != "string"
+    }))
+    .then(getClipboardPush)
+    .then(sendPushToDeviceId(deviceId))
+    .then(setLastPushAndNotify(deviceId, notify, "writeText","Sent Text"))
+    .catch(UtilsObject.ignoreError);
+	
 }
 var requestLocation = function(deviceId, notify){
 	var push = new GCMPush();
@@ -983,29 +1022,36 @@ var renameDevice = function(deviceId, notify){
 	if(!device){
 		return;
 	}
-	var confirm = window.prompt("What do you want to name " + device.deviceName + "?");
-	if(confirm){
-		doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId="+deviceId+"&newName="+encodeURIComponent(confirm),{"deviceId":deviceId,"newName":confirm}, function(result){
-		  console.log(result);
-         
-		  var device = devices.first(function(device){
-			return device.deviceId == deviceId;
-		  });
-           if(!result.success){
-            showNotification("Couldn't rename " + device.deviceName, result.errorMessage);
-            return;
-          }
-		  device.deviceName = confirm;
-		  setDevices(devices);
-		  refreshDevicesPopup();
-		  if(showNotification){
-			showNotification("Renamed",device.deviceName + " renamed to " +confirm);
-		  }
-		},function(error){
-			console.log("Error: " + error);
-			showNotification("Error renaming",error);
-		});
-	}
+    return Promise.resolve()
+    .then(Dialog.showInputDialog({
+            title:"What do you want to name " + device.deviceName + "?",
+            text: device.deviceName,
+            placeholder:"Device Name"
+    }))
+    .then(function(confirm){
+        if(confirm){
+            doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId="+deviceId+"&newName="+encodeURIComponent(confirm),{"deviceId":deviceId,"newName":confirm}, function(result){
+              console.log(result);
+             
+              var device = devices.first(function(device){
+                return device.deviceId == deviceId;
+              });
+               if(!result.success){
+                showNotification("Couldn't rename " + device.deviceName, result.errorMessage);
+                return;
+              }
+              device.deviceName = confirm;
+              setDevices(devices);
+              refreshDevicesPopup();
+              if(showNotification){
+                showNotification("Renamed",device.deviceName + " renamed to " +confirm);
+              }
+            },function(error){
+                console.log("Error: " + error);
+                showNotification("Error renaming",error);
+            });
+        }
+    }).catch(UtilsObject.ignoreError);	
 }
 var deleteDevice = function(deviceId, notify){
 	var device = devices.first(function(device){return device.deviceId == deviceId;});
@@ -1048,13 +1094,18 @@ var noteToSelf = function(deviceId, notify){
 		setLastPush(deviceId, "noteToSelf");
 }
 var getCurrentTab = function(callback){
-	chrome.tabs.query({'active': true, currentWindow: true}, function (tabs) {
-		if(tabs && tabs.length > 0){
-			callback(tabs[0]);
-		}else{
-			callback(null);
-		}
-	});
+    chrome.tabs.query({'active': true, currentWindow: true}, function (tabs) {
+        if(tabs && tabs.length > 0){
+            callback(tabs[0]);
+        }else{
+            callback(null);
+        }
+    });
+}
+var getCurrentTabPromise = function(){
+    return new Promise(function(resolve,reject){
+        getCurrentTab(resolve);
+    });
 }
 var pushUrl = function(deviceId, notify,callback){
 	getCurrentTab(function(tab){
@@ -1121,39 +1172,65 @@ var selectContactForCall = function(deviceId){
         showSmsPopup(deviceId);
     }
 }
-var pushCall = function(deviceId, notify, number){
+var pushCall = function(deviceId, notify, contact){
+    var number = contact.number;
+    var name = contact.name;
     var push = new GCMPush();
     if(!number){
         return;
     }
-    var shouldCall = confirm("This will call " + number +" on your device. Are you sure?");
-    if(!shouldCall){
-        return;
+    if(!name){
+        name = number;
     }
-    push.callnumber = number;
-    push.send(deviceId,function(){
-        if(notify){
-            showNotification("Join", "Sent request to call" + number);
-        }
-    },function(error){
-        showNotification("Couldn't Push Call Request", error);
-    }); 
+    return Dialog
+    .confirm("Calling " + name,"This will call " + name +" ("+number+") on your device. Are you sure?")
+    .then(function(){     
+        push.callnumber = number;
+        push
+        .send(deviceId)
+        .then(function(){
+            if(notify){
+                showNotification("Join", "Sent request to call " + number);
+            }
+        })
+        .catch(function(error){
+            showNotification("Couldn't Push Call Request", error);
+        });    
+    })
+    .catch(function(){
+        console.log("Not calling " + number);
+    });
 }
 var fileInput = null;
-addEventListener("popupunloaded",function(){
-	if(listeningForFile){
-		listeningForFile = false;
-		alert("Seems that the Join popup was closed by your system before you selected the file, which will make file sending not work.\n\nPlease popout the window using the popout button inside the Join popup and try again.");
-	}
-},false);
-var listeningForFile = false;
 var pushFile = function(deviceId, notify, tab){
 	if(!fileInput){
 		return;
 	}
-	listeningForFile = true;
+    var fileInputListener = null;
+
+    //check if the popup closes before the user is able to select the file
+    new Promise(function(resolve,reject){
+        fileInputListener = {
+            "onPopupUnloaded":function(){
+                reject();
+            },
+            "onFilePicked":function(){
+                resolve();
+            }
+        }
+        eventBus.register(fileInputListener);
+    })
+    .catch(function(){
+        alert("Seems that the Join popup was closed by your system before you selected the file, which will make file sending not work.\n\nPlease popout the window using the popout button inside the Join popup and try again.");        
+    })
+    .then(function(){
+        if(fileInputListener){
+            eventBus.unregister(fileInputListener);
+        }
+    });
+
 	fileInput.onchange = function(){
-		listeningForFile = false;
+		eventBus.post(new Events.FilePicked());
 		if(tab){
 			chrome.tabs.remove(tab.id,function(){
 			});
@@ -1271,25 +1348,25 @@ var showNotification = function(title, message, timeout, notificationId){
 	});
 }
 var registerDevice = function(callback,callbackError){
-	var registrationId = localStorage.regIdLocal;
-   /* if(!regId2){
-		console.log("Couldn't get direct regId");
-	}else{
-		//console.log("Got direct regId: " + registrationId);
-	}*/
-	doPostWithAuth(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId,"deviceName":"Chrome","deviceType":3}, function(result){
-	  console.log(result);
-	  localStorage.deviceId = result.deviceId;
-	  localStorage.regIdServer = result.regId;
-	  if(callback){
-		callback(result);
-	  }
-	},function(error){
-		console.log("Error: " + error);
-		if(callbackError){
-			callbackError(error);
-		}
-	});
+    var registrationId = localStorage.regIdLocal;
+    return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId,"deviceName":"Chrome","deviceType":3})
+    .then(function(result){
+        localStorage.deviceId = result.deviceId;
+        localStorage.regIdServer = result.regId;
+        if(callback){
+            callback(result);
+        }
+        return result;
+    })
+    .catch(function(error){
+        console.error("Error: " + error);
+        if(callbackError){
+            callbackError(error);
+        }
+        if(!callback){
+            return Promise.reject(error);
+        }   
+    });
 }
 chrome.gcm.onMessage.addListener(function(message){
 	console.log(message);
@@ -1509,9 +1586,37 @@ handleAutoClipboard();
 
 
 contextMenu.update(devices);
-
-var googleDriveManager = new GoogleDriveManager();
-    console.log("Finding file");
+UtilsObject.wait(2000,function(timeOut){
+   // clearTimeout(timeOut);
+})
+.then(function(){
+    console.log("done waiting");
+})
+/*var result = Dialog.showInputDialog({
+    text:"Something",
+    title:"Input stuffs",
+    subtitle:"I said stufff",
+    placeholder:"write stuff man"
+})()
+.then(function(result){
+    console.log("Input result");
+    console.log(result);
+}).catch(UtilsObject.ignoreError);*/
+/*var result = Dialog.showMultiChoiceDialog({
+    items:[
+        {id:0,text:"First"},
+        {id:1,text:"Second"},
+        {id:2,text:"Third"},
+        {id:2,text:"Fourth"},
+    ],
+    title:"Select One"
+})()
+.then(function(result){
+    console.log("Input result");
+    console.log(result);
+}).catch(UtilsObject.ignoreError);*/
+/*var googleDriveManager = new GoogleDriveManager();
+    console.log("Finding file");*/
 /*googleDriveManager.getFile({
     folderName:"Join Files/From Nexus 5X",
     fileName:"faqold.png"

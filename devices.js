@@ -6,11 +6,14 @@ if(!isPopup){
 	chrome.extension.getBackgroundPage().popupWindow = window;
 }
 
-
+var back = chrome.extension.getBackgroundPage();
 var deviceImages = chrome.extension.getBackgroundPage().deviceImages;
 var getDevices = function(){
 	return chrome.extension.getBackgroundPage().devices;
 }
+var doPostWithAuthPromise = back.doPostWithAuthPromise;
+var doGetWithAuthPromise = back.doGetWithAuthPromise;
+var doPutWithAuthPromise = back.doPutWithAuthPromise;
 var refreshDevices = function(callback){
 	return chrome.extension.getBackgroundPage().refreshDevices(function(){
 		writeDevices();
@@ -104,6 +107,7 @@ var selectTab = function(idToShow){
 		}
 		if(idToShow == "notifications"){			
 			UtilsBadge.setColor("#929292");
+			back.localStorage.areNotificationsUnread = false;
 		}
    }
 	localStorage.selectedTab = idToShow;
@@ -147,15 +151,13 @@ addEventListener("unload", function (event) {
 	back.console.log("Unloading popup devices...");
 	back.removeEventListener("sendsms",sendSmsDevices,false);
 	back.removeEventListener("phonecall",sendSmsDevices,false);
-	if(isPopup){
-		/*back.console.log("Is popup. Firing popup closed event");
-		dispatch("popupwindowclosed");*/
+	if(isPopup){    		
+        localStorage.popoutWidth = window.outerWidth;
+        localStorage.popoutHeight = window.outerHeight;
 	}else{
 		back.popupWindow = null;
 	}
-	back.dispatch("popupunloaded");
-	localStorage.popoutWidth = window.outerWidth;
-	localStorage.popoutHeight = window.outerHeight;
+	back.eventBus.post(new back.Events.PopupUnloaded());
 }, true);
 var settingsElement = document.getElementById("settings");
 var topBarPopoutElement = document.getElementById("topBarPopout");
@@ -172,12 +174,19 @@ if(onlyTabToShow){
 	// CHANGE NOTE: I can't tell what it does. Hope it's not important.
 	// document.getElementById("tabscontaineroutter").style.display ="none";
 }else{
-	if(localStorage.selectedTab){
-		selectTab(localStorage.selectedTab);
+	if(back.localStorage.areNotificationsUnread == "true"){
+		back.console.log("yes notifications")
+		var previousTab = back.localStorage.selectedTab;
+		selectTab("notifications");
+		back.localStorage.selectedTab = previousTab;
 	}else{
-		var idToShow = tabs[0].id.replace("tab-","");
-		selectTab(idToShow);
-		console.log("Showed tab " + idToShow + " by default");
+		if(localStorage.selectedTab){
+			selectTab(localStorage.selectedTab);
+		}else{
+			var idToShow = tabs[0].id.replace("tab-","");
+			selectTab(idToShow);
+			console.log("Showed tab " + idToShow + " by default");
+		}
 	}
 }
 var topBarElement = document.getElementById("topBar");

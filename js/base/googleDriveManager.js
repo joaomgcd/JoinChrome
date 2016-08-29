@@ -171,11 +171,10 @@ var GoogleDriveManager = function(){
 			}        	
             return doPostWithAuthPromise(urlAndData.url,urlAndData.data)
         }).then(function(resultShareFile){
-        	if(!resultShareFile){
-        		return;
+        	if(resultShareFile){
+	            console.log("Share file result:");
+	            console.log(resultShareFile);
         	}
-            console.log("Share file result:");
-            console.log(resultShareFile);
             return options;
         });
 	}
@@ -309,8 +308,8 @@ var GoogleDriveManager = function(){
 		}
 		return doGetWithAuthPromise("https://www.googleapis.com/drive/v3/files/"+fileId+"?fields=parents");
 	}
-	me.getMyDevicePushes = function(forceDownload){		
-		var options = {fileName:getDevicePushFileName(localStorage.deviceId),getParents:true};
+	me.getDevicePushes = function(deviceId, forceDownload){		
+		var options = {fileName:getDevicePushFileName(deviceId),getParents:true};
 		return Promise.resolve()
 		.then(function(){
 			if(!forceDownload){
@@ -328,9 +327,12 @@ var GoogleDriveManager = function(){
 			device.folderId = options.folderId;
 			return device;
 		});
+	}
+	me.getMyDevicePushes = function(forceDownload){		
+		return me.getDevicePushes(localStorage.deviceId, forceDownload);
 	}	
-	me.addPushToMyDevice = function(push){	
-		var fileName = getDevicePushFileName(localStorage.deviceId);	
+	me.addPushToDevice = function(deviceId,push){	
+		var fileName = getDevicePushFileName(deviceId);	
 		return me.getMyDevicePushes(false)
 		.catch(function(error){
 			return {};
@@ -365,6 +367,9 @@ var GoogleDriveManager = function(){
 			console.error("Couldn't upload push history");
 			console.error(error.stack);
 		});
+	}
+	me.addPushToMyDevice = function(push){
+		me.addPushToDevice(localStorage.deviceId,push);
 	}
 }
 GoogleDriveManager.getBaseFolderForMyDevice = function(){

@@ -68,6 +68,8 @@ var GCM = function(){
             console.log("Sent push: " + JSON.stringify(result));
             if(callback){
                 callback(result);
+            }else{
+            	return result;
             }
         })
         .catch(function(error){
@@ -201,7 +203,8 @@ var GCMPush = function(){
 				}
 			}
 			if(this.push.text == TEST_PUSH_TEXT){
-				/*setTimeout(function(){*/fire(TEST_PUSH_EVENT)//},2000);
+                back.eventBus.postSticky(new back.Events.TestPush());
+				/*setTimeout(function(){*///fire(TEST_PUSH_EVENT)//},2000);
 			}
 		}
 		if(this.push.title){
@@ -305,9 +308,11 @@ var GCMRespondFile = function(){
 		console.log("got file response for requestId: " + this.responseFile.request.requestId);
 		handlePendingRequest(this.responseFile,this.responseFile.request.requestId,me.responseFile.senderId,this.responseFile.fileId);
 		console.log("got file response");
-		var event = new Event('fileresponse',{"fileId":this.responseFile.fileId});
+		/*var event = new Event('fileresponse',{"fileId":this.responseFile.fileId});
 		event.fileId = this.responseFile.fileId;
 		back.dispatchEvent(event);
+        */
+        back.eventBus.post(new back.Events.FileResponse(this.responseFile.fileId));
 	}
 }
 GCMRespondFile.prototype = new GCM();
@@ -433,6 +438,7 @@ var updateBadgeText = function(){
 		UtilsBadge.setBadge("");
 	}else{
 		UtilsBadge.setBadge(notifications.length);
+		back.localStorage.areNotificationsUnread = true;
 	}
 }
 var GCMNotification = function(notification, senderId){

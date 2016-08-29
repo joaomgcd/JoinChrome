@@ -1,4 +1,5 @@
 
+var back = chrome.extension.getBackgroundPage();
 var ContextMenu = function(){
 	var OPEN = "Open";
 	var PASTE = "Paste";
@@ -9,6 +10,7 @@ var ContextMenu = function(){
 	var WITH = "With";
 	var DOWNLOAD = "Download";
 	var me = this;
+	var timeOut = null;
 	var push = function(device,data){
 		var gcmPush = new GCMPush();
 		UtilsObject.applyProps(gcmPush,data);
@@ -183,17 +185,73 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ]
 		};
-	
+		
+		chrome.contextMenus.create({
+			"type":"checkbox",
+			"checked": !getShowChromeNotifications(),
+			"title":"Mute Notifications",
+			"contexts":["browser_action"],
+			"onclick":function(info, tab) {
+				return Promise.resolve()
+				.then(Dialog.showMultiChoiceDialog({
+				    items:[
+				        {id:15,text:"15 Minutes"},
+				        {id:30,text:"30 Minutes"},
+				        {id:60,text:"1 Hour"},
+				        {id:180,text:"3 Hours"},
+				        {id:360,text:"6 Hours"},
+				    ],
+				    title:"Mute Fotifications For"
+				},{
+				    shouldShow:info.checked
+				}))
+				.catch(function(){
+					console.log("Mute cancelled")
+				})
+				.then(function(item){
+					var shouldMute = true;
+					if(!item){
+						shouldMute = false;
+					}
+					back.setShowChromeNotifications(!shouldMute);
+					if(shouldMute){
+						var minutesToWait = item.id;
+						var timeToWait = minutesToWait * 1000 * 60;
+						showNotification("Join", "Notifications Muted for " + minutesToWait + " minutes");	
+						console.log("Muted");				
+						return timeToWait;
+					}
+				})
+				.then(function(timeToWait){
+					return UtilsObject.wait(timeToWait,function(to){
+						timeOut = to;
+					});
+				})
+				.then(function(){
+					showNotification("Join", "Notifications Unmuted");
+					setShowChromeNotifications(true);
+					console.log("Mute ended");
+					if(timeOut){
+						clearTimeout(timeOut);
+						timeOut = null;
+						console.log("Cleared timeout");
+					}
+				});
+			}
+		});
 		if(!devices){
 			return;
+		}
+		var contextNames = [];
+		for(var contextName in contexts){
+			contextNames.push(contextName);
 		}
 		devices.doForAll(function(device){
 	        chrome.contextMenus.create({
 	            "id": device.deviceId,
 	            "title": device.deviceName,
-	            "contexts": ["all"]
+	            "contexts": contextNames
 	        });
-
 	        for(var contextId in contexts){
 	        	var context = contexts[contextId];
 	        	if(!UtilsObject.isArray(context)){

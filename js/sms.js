@@ -40,7 +40,7 @@ function sortByField(sortFieldGetter, sortDescending){
 	};
 }
 var ContactsGetter = function(deviceId){
-
+	var googleDriveManager = new GoogleDriveManager();
 	var me = this;
 	this.deviceId = deviceId;
 	var fileKey = "contacts=:=" + this.deviceId;
@@ -66,7 +66,7 @@ var ContactsGetter = function(deviceId){
 			}
 		}
 	}
-	me.processResults = function(callback,sortFieldGetter,sortDescending){
+	me.processResults = function(sortFieldGetter,sortDescending){
 		if(!me.contactsInfo){
 			console.log("Not processing yet. Contacts are empty");
 			return;
@@ -88,9 +88,8 @@ var ContactsGetter = function(deviceId){
 			contact.lastsms = lastsms;
 		});
 		me.sortContacts(sortFieldGetter,sortDescending);
-		callback(me.contactsInfo);
 		me.saveLocalContacts();
-		setRefreshing(false);
+		return me.contactsInfo;
 	}
 	this.addSms = function(sms){
 		me.initContactsIfEmpty();
@@ -105,22 +104,29 @@ var ContactsGetter = function(deviceId){
 		contact.lastsms.address = sms.number;
 		me.saveLocalContacts();
 	}
-	me.getInfo = function(callback,callbackError,sortFieldGetter, sortDescending, local){
+	me.getLocalInfo = function(sortFieldGetter, sortDescending){
 		if(me.contactsInfo){
 			me.sortContacts(sortFieldGetter,sortDescending);
-			callback(me.contactsInfo);
 		}
-		if(local){
-			return;
-		}
+		return me.contactsInfo;
+	}
+	me.getInfo = function(sortFieldGetter, sortDescending){		
 		setRefreshing(true);
 		me.contactsInfo = null;
 		me.lastsms = null;
-		var callbackForProcessing = function(){
-			me.processResults(callback,sortFieldGetter,sortDescending);
-		};
-		me.getLastSms(callbackForProcessing,callbackError);
-		me.getContacts(callbackForProcessing,callbackError);
+		return Promise
+		.all([
+			me.getLastSms(),
+			me.getContacts()
+		])
+		.then(function(results){
+			setRefreshing(false);
+			return me.processResults(sortFieldGetter,sortDescending);
+		})
+		.catch(function(error){
+			setRefreshing(false);
+			return UtilsObject.errorPromise("Error downloading SMS files: " + error);
+		});
 	}
 	me.getContactForNumber = function(numberToFind, callback,callbackError, local){
 		me.getInfo(function(info){
@@ -133,50 +139,38 @@ var ContactsGetter = function(deviceId){
 			callback(contact);
 		},callbackError,null,false,local);
 	}
-	me.getLastSms = function(callback,callbackError){
-		downloadDriveString("lastsms=:=" + me.deviceId,function(lastsms){
+	me.getLastSms = function(){
+		return googleDriveManager.downloadContent({
+			fileName: "lastsms=:=" + me.deviceId
+		})
+		.then(function(lastsms){
 			if(lastsms.error){
-				var message = "Error getting lastsms: " + contacts.error.message;
-				callbackError(message);
-				console.log(message);
-				setRefreshing(false);
-				return;
+				var message = "Error getting lastsms: " + contacts.error.message;				
+				return UtilsObject.errorPromise(message);
 			}
-			// console.log("Got lastsms info");
-			// console.log(lastsms);
 			me.lastsms = lastsms;
-			callback();
-		},function(error){
-			var message = "Error downloading lastsms file: " + error;
-			// console.log(message);
-			callbackError(message);
-			setRefreshing(false);
+			return lastsms;
 		});
 	}
-	me.getContacts = function(callback,callbackError){
-		downloadDriveString("contacts=:=" + me.deviceId,function(contactsInfo){
+	me.getContacts = function(){
+		return googleDriveManager.downloadContent({
+			fileName: "contacts=:=" + me.deviceId
+		})
+		.then(function(contactsInfo){
 			if(contactsInfo.error){
 				var message = "Error getting contacts: " + contacts.error.message;
-				console.log(message);
-				callbackError(message);
-				setRefreshing(false);
-				return;
+				return UtilsObject.errorPromise(message);
 			}
-			// console.log("Got contacts info");
-			// console.log(contactsInfo);
 			me.contactsInfo = contactsInfo;
-			callback();
+			return contactsInfo;
 
-		},function(error){
-			var message = "Error downloading contacts file: " + error;
-			callbackError(message);
-			setRefreshing(false);
-			console.log(message);
 		});
 	}
 }
 var ContactMessagesGetter = function(deviceId, contact){
 	var me = this;
+
+	var googleDriveManager = new GoogleDriveManager();
 	me.deviceId = deviceId;
 	me.number = contact.number;
 	var fileKey = "sms=:=" + me.deviceId + "=:=" + me.number;
@@ -199,7 +193,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 		me.messages.smses.push(sms);
 		me.saveLocalMessages();
 	}
-	this.getInfo = function(callback,callbackProgress,callbackError,sortFieldGetter, sortDescending, local){
+	this.getInfo = UtilsObject.async(function* (callback,callbackProgress,callbackError,sortFieldGetter, sortDescending, local){
 		setRefreshing(true);
 		if(me.messages){
 			callback(me.messages);
@@ -210,15 +204,14 @@ var ContactMessagesGetter = function(deviceId, contact){
 			setRefreshing(false);
 			return;
 		}
-		downloadDriveString(fileKey,function(messages){
+		try{
+			var messages = yield googleDriveManager.downloadContent({fileName: fileKey});
 			if(messages.error){
 				console.log("Error getting messsages for "+me.number+": " + contacts.error.message);
 				callbackError(contacts.error.message);
 				setRefreshing(false);
 				return;
 			}
-			// console.log("Got sms messages info");
-			// console.log(messages);
 			me.messages = messages;
 			if(me.messages.smses){
 				me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
@@ -226,27 +219,27 @@ var ContactMessagesGetter = function(deviceId, contact){
 			callback(me.messages);
 			me.saveLocalMessages();
 			setRefreshing(false);
-		},function(error){
-			delete localStorage[fileKey];
-			doPostWithAuth(joinserver + "requestfile/v1/request?alt=json",
-				{
-					"deviceId":me.deviceId,
-					"payload":me.number,
-					"requestType":4,
-					"senderId": localStorage.deviceId
-				},function(response){
-					console.log(response);
-					var listener = function (event) {
-						back.removeEventListener('fileresponse',listener,false);
-						console.log("Response File");
-						console.log(event.fileId);
-						me.getInfo(callback,callbackProgress,callbackError,sortFieldGetter, sortDescending,false);
-					};
-					back.addEventListener('fileresponse', listener, false);
-				});
+		}catch(error){
 			console.log("Error downloading lastsms file: " + error);
-		});
-	}
+			delete localStorage[fileKey];
+			var response = yield doPostWithAuthPromise(joinserver + "requestfile/v1/request?alt=json",
+			{
+				"deviceId":me.deviceId,
+				"payload":me.number,
+				"requestType":4,
+				"senderId": localStorage.deviceId
+			});
+			console.log(response);
+			if(!response.success){
+				throw new Error(response.errorMessage);
+			}
+			var fileResponse = yield back.eventBus.waitFor(back.Events.FileResponse,60000);
+			console.log("Response File");
+			console.log(fileResponse.fileId);
+			me.getInfo(callback,callbackProgress,callbackError,sortFieldGetter, sortDescending,false);
+			setRefreshing(false);
+		}
+	});
 }
 var SmsApp = function(){
 
@@ -297,7 +290,23 @@ var SmsApp = function(){
 	me.contactsScroll = null;
 
 	me.clearSmsNotification = function(){
-		if(localStorage.selectedTab == "sms" && me.number){
+		back.getCurrentTabPromise()
+		.then(function(currentTab){
+			if(!currentTab){
+				return;
+			}
+			if(!currentTab.url){
+				return;
+			}
+			if(currentTab.url != window.location.toString()){
+				return;
+			}
+			if(localStorage.selectedTab != "sms"){
+				return;
+			}
+			if(!me.number){
+				return;
+			}
 			back.notifications.where(function(notification){
 				return notification.id == UtilsSMS.getNotificationId(me.deviceId, me.number);
 			}).doForAll(function(notification){
@@ -305,7 +314,7 @@ var SmsApp = function(){
 					notification.cancel();
 				},2000);
 			});
-		}
+		});
 	}
 	var setPlaceholderText = function(text){
 		smsContainerElement.innerHTML = "<h5 id='tabsplaceholder'>"+text+"</h5>";
@@ -371,7 +380,44 @@ var SmsApp = function(){
 		var contact = element.contact;
 		return contact;
 	}
-	me.writeSms = function(deviceId, local){
+	var writeContactsInfo = function(deviceId, contactsInfo){
+		if(contactsInfo.contacts){
+			var contacts = contactsInfo.contacts;
+			smsContainerElement.innerHTML = "";
+			for (var i = 0; i < contacts.length; i++) {
+					var contact = contacts[i];
+					if(contact.lastsms){
+						var contactElement = smsContactHtml.cloneNode(true);
+						contactElement.contact = contact;
+						var contactNameElement = contactElement.querySelector("#smscontactname");
+						var contactCallElement = contactElement.querySelector("#smscontactcall");
+						var contactTextElement = contactElement.querySelector("#smscontacttext");
+						var contactDateElement = contactElement.querySelector("#smscontactdate");
+						contactNameElement.innerHTML = contact.name;
+						contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ contact.lastsms.text;
+						contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
+
+						contactElement.addEventListener("click",function(event){
+							var contact = findContactForElement(event.target);
+							me.contactsScroll = smsContainerElement.scrollTop;
+							me.writeContactMessages(deviceId, contact);
+						});
+						contactCallElement.addEventListener("click",function(event){
+							var contact = findContactForElement(event.target);
+							back.pushCall(me.deviceId,true,contact);
+							event.stopPropagation();
+						});
+						smsContainerElement.appendChild(contactElement);
+					}
+			}
+			if(me.contactsScroll){
+				smsContainerElement.scrollTop = me.contactsScroll;
+			}else{						
+				smsContainerElement.scrollTop = 0;
+			}
+		}
+	};
+	me.writeSms = UtilsObject.async(function* (deviceId, local){
 		me.number = null;
 		me.contact = null;
 		delete localStorage.smsDeviceContact;
@@ -381,52 +427,23 @@ var SmsApp = function(){
 		showInput(false);
 		showContactFind(false);
 		var contactsGetter = new ContactsGetter(deviceId);
-		contactsGetter.getInfo(function(contactsInfo){
-			if(contactsInfo.contacts){
-				var contacts = contactsInfo.contacts;
-					smsContainerElement.innerHTML = "";
-					for (var i = 0; i < contacts.length; i++) {
-							var contact = contacts[i];
-							if(contact.lastsms){
-								var contactElement = smsContactHtml.cloneNode(true);
-								contactElement.contact = contact;
-								var contactNameElement = contactElement.querySelector("#smscontactname");
-								var contactCallElement = contactElement.querySelector("#smscontactcall");
-								var contactTextElement = contactElement.querySelector("#smscontacttext");
-								var contactDateElement = contactElement.querySelector("#smscontactdate");
-								contactNameElement.innerHTML = contact.name;
-								contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ contact.lastsms.text;
-								contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
-
-								contactElement.addEventListener("click",function(event){
-									var contact = findContactForElement(event.target);
-									me.contactsScroll = smsContainerElement.scrollTop;
-									me.writeContactMessages(deviceId, contact);
-								});
-								contactCallElement.addEventListener("click",function(event){
-									var contact = findContactForElement(event.target);
-									back.pushCall(me.deviceId,true,contact.number);
-									event.stopPropagation();
-								});
-								smsContainerElement.appendChild(contactElement);
-							}
-					}
-					if(me.contactsScroll){
-						smsContainerElement.scrollTop = me.contactsScroll;
-					}else{						
-						smsContainerElement.scrollTop = 0;
-					}
-				}
-		},function(error){
-			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
-		},function(contact){
+		var sortFunc = function(contact){
 			var lastsms = contact.lastsms;
 			if(!lastsms){
 				return null;
 			}
 			return lastsms.date;
-		},true, local);
-	}
+		};
+		var sortDescending = true;
+		try{
+			writeContactsInfo(deviceId, yield contactsGetter.getLocalInfo(sortFunc,sortDescending));
+			if(!local){
+				writeContactsInfo(deviceId, yield contactsGetter.getInfo(sortFunc,sortDescending));
+			}
+		}catch(error){
+			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
+		}
+	});
 
 	me.writeContactMessages = function(deviceId, contact, local){
 		me.deviceId = deviceId;
@@ -501,60 +518,61 @@ var SmsApp = function(){
 	me.writeContactListFunction = me.writeContactListForSms;
 	me.writeContactListForCall = function(filter){
 		me.writeContactList(filter,function(deviceId, contact){
-			back.pushCall(deviceId, true, contact.number);
+			back.pushCall(deviceId, true, contact);
 		});
+	}
+	var writeContactListFromInfo = function(filter, contactsInfo, callback){
+		// console.log(contactsInfo);
+		if(contactsInfo.contacts){
+			var contacts = contactsInfo.contacts;
+			smsContainerElement.innerHTML = "";
+			if(filter){
+				filter = filter.toLowerCase();
+			}
+			var addContactToList = function(contact){
+				var contactElement = smsContactHtml.cloneNode(true);
+					contactElement.contact = contact;
+					var contactNameElement = contactElement.querySelector("#smscontactname");
+					var contactCallElement = contactElement.querySelector("#smscontactcall");
+					var contactTextElement = contactElement.querySelector("#smscontacttext");
+					var contactDateElement = contactElement.querySelector("#smscontactdate");
+					contactNameElement.innerHTML = contact.name;
+					contactTextElement.innerHTML = contact.number;
+					contactCallElement.innerHTML = "";
+					contactDateElement.innerHTML = "";
+
+					contactElement.addEventListener("click",function(event){
+						var element = event.target;
+						while(!element.contact){
+							element = element.parentElement;
+						}
+						var contact = element.contact;
+						callback(me.deviceId, contact)
+					});
+					smsContainerElement.appendChild(contactElement);
+			}
+			for (var i = 0; i < contacts.length; i++) {
+					var contact = contacts[i];
+					var numberForFilter = contact.number.replace(" ","").replace("+","").replace("-","");
+					if(!filter || contact.name.toLowerCase().indexOf(filter) >= 0 || numberForFilter.indexOf(filter) >= 0){
+						addContactToList(contact);
+					}
+			}
+			if(filter && filter.match(/[0-9]+/) == filter){
+				addContactToList({"name":"Unlisted Contact","number": filter});
+			}
+		}
 	}
 	me.writeContactList = function(filter,callback){
 		setTitleText("Contacts");
 		showTitle(true);
 		showContactFind(true);
-		var contactsGetter = new ContactsGetter(me.deviceId);
-		contactsGetter.getInfo(function(contactsInfo){
-			// console.log(contactsInfo);
-			if(contactsInfo.contacts){
-				var contacts = contactsInfo.contacts;
-					smsContainerElement.innerHTML = "";
-					if(filter){
-						filter = filter.toLowerCase();
-					}
-					var addContactToList = function(contact){
-						var contactElement = smsContactHtml.cloneNode(true);
-							contactElement.contact = contact;
-							var contactNameElement = contactElement.querySelector("#smscontactname");
-							var contactCallElement = contactElement.querySelector("#smscontactcall");
-							var contactTextElement = contactElement.querySelector("#smscontacttext");
-							var contactDateElement = contactElement.querySelector("#smscontactdate");
-							contactNameElement.innerHTML = contact.name;
-							contactTextElement.innerHTML = contact.number;
-							contactCallElement.innerHTML = "";
-							contactDateElement.innerHTML = "";
-
-							contactElement.addEventListener("click",function(event){
-								var element = event.target;
-								while(!element.contact){
-									element = element.parentElement;
-								}
-								var contact = element.contact;
-								callback(me.deviceId, contact)
-							});
-							smsContainerElement.appendChild(contactElement);
-					}
-					for (var i = 0; i < contacts.length; i++) {
-							var contact = contacts[i];
-							var numberForFilter = contact.number.replace(" ","").replace("+","").replace("-","");
-							if(!filter || contact.name.toLowerCase().indexOf(filter) >= 0 || numberForFilter.indexOf(filter) >= 0){
-								addContactToList(contact);
-							}
-					}
-					if(filter && filter.match(/[0-9]+/) == filter){
-						addContactToList({"name":"Unlisted Contact","number": filter});
-					}
-				}
-		},function(error){
-			setPlaceholderText(error);
-		},function(contact){
+		var sortFunc = function(contact){
 			return contact.name;
-		},false,true);
+		};
+		var sortDescending = false;
+		var contactsGetter = new ContactsGetter(me.deviceId);
+		writeContactListFromInfo(filter, contactsGetter.getLocalInfo(sortFunc,sortDescending),callback);
 	}
 	this.sendSms = function(){
 		var text = smsInputElement.value;

@@ -210,8 +210,8 @@ td {
 	cursor: hand;
 	cursor: pointer;
 	opacity: 0.6;
-	padding-left: 12px;
-	padding-right: 12px;
+	padding-left: 4px;
+	padding-right: 4px;
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
@@ -519,3 +519,4 @@ img.tabIcon {
 .btn-floating {
 	background: #FF9800 !important;
 }
+
