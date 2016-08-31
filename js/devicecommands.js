@@ -31,7 +31,7 @@ var deviceCommands = [
 	{
 		"label":"Send an SMS message",
 		"commandId":"sms",
-		"func":back.sendSms,
+		"func":back.sendSmsFromButtonCommand,
 		"keepTab":true,
 		"condition":function(device){
 			return device.deviceType == DEVICE_TYPE_ANDROID_PHONE && UtilsDevices.isNotDeviceShare(device);
@@ -132,6 +132,11 @@ var deviceCommands = [
 		"condition":function(device){
 			return device.deviceType == DEVICE_TYPE_ANDROID_PHONE && UtilsDevices.isNotDeviceShare(device);
 		}
+	},
+	{
+		"label":"Check Device's Push History",
+		"commandId":"pushhistory",
+		"func":back.showPushHistory
 	},
 ];
 var commandSortOrder = {};

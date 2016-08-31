@@ -482,7 +482,7 @@ var GCMNotification = function(notification, senderId){
 				return actionId && actionId == SMS_ACTION_ID;
 			}
 			not.cancel = function(){
-				if(not.isSmsNotification(me.actionId)){
+				if(not.isSmsNotification(not.actionId)){
 					back.dispatch(EVENT_SMS_HANDLED,{"text":not.text,"deviceId":not.senderId});
 				}
 				notifications.removeNotificationsWithSameId(this.id);

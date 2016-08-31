@@ -215,11 +215,12 @@ var writeNotifications = function(){
 				var shouldPrompt = !not.noPrompt;
 				return Promise.resolve()
 				.then(Dialog.showNotificationReplyDialog(not,shouldPrompt))
+				.catch(UtilsObject.ignoreError)
 				.then(function(input){
 					console.log("Doing reply action: ");
 					console.log(not);
 					not.doAction(id, input, true);
-				}).catch(UtilsObject.ignoreError);
+				});
 			};
 		}
 		notificationsElement.appendChild(notificationElement);

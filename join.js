@@ -1083,7 +1083,7 @@ var noteToSelf = function(deviceId, notify){
         }
 		var push = new GCMPush();
 		push.title = "Note To Self";
-		push.text = noteText;
+        push.text = noteText;
         push.send(deviceId)
         .then(function(){
             if(notify){
@@ -1171,6 +1171,9 @@ var selectContactForCall = function(deviceId){
     if(!popupWindow && !popupWindowClipboard){
         showSmsPopup(deviceId);
     }
+}
+var showPushHistory = function(deviceId){
+    openTab("components/push-history.html?deviceId=" + deviceId);
 }
 var pushCall = function(deviceId, notify, contact){
     var number = contact.number;
@@ -1291,8 +1294,8 @@ addEventListener(EVENT_SMS_HANDLED,function(event){
 	gcm.text = text;
 	gcm.send(deviceId);
 });
-var sendSms = function(deviceId, number){
-	showSmsPopup(deviceId, number);
+var sendSmsFromButtonCommand = function(deviceId){
+	showSmsPopup(deviceId);
 	/*if(smsWindow != null){
 		chrome.windows.update(smsWindowId,{"focused":true});
 		return;
@@ -1458,7 +1461,10 @@ var setDevices = function(devicesToSet){
 			var device = devicesToSet[i];
 			if(!localStorage.deviceId || localStorage.deviceId != device.deviceId){
 				devices.push(device);
-			}
+			}else{
+                device.deviceName = "This Device";
+                devices.unshift(device);
+            }
 		}
 		console.log("After setting devices: " + localStorage.deviceId);
 		if(localStorage.deviceId){
@@ -1470,7 +1476,7 @@ var setDevices = function(devicesToSet){
 		}
 		if(localStorage.deviceName){
 			devices.doForAll(function(storedDevice){
-				if(storedDevice.deviceName == localStorage.deviceName){
+				if(storedDevice.deviceName == localStorage.deviceName && storedDevice.deviceId != localStorage.deviceId){
 					var newName = prompt("One of your Join devices is already named '" + localStorage.deviceName + "'. What do you want to name this Chrome installation?");
 					var message = "You can always rename your devices by long-touching them in the Android app.";
 					if(newName){

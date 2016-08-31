@@ -128,17 +128,21 @@ var ContactsGetter = function(deviceId){
 			return UtilsObject.errorPromise("Error downloading SMS files: " + error);
 		});
 	}
-	me.getContactForNumber = function(numberToFind, callback,callbackError, local){
-		me.getInfo(function(info){
-			var contact = info.contacts.first(function(contact){
-				return contact.number == numberToFind;
-			});
-			if(!contact){
-				contact = {"name":numberToFind,"number":numberToFind};
-			}
-			callback(contact);
-		},callbackError,null,false,local);
-	}
+	me.getContactForNumber = UtilsObject.async(function* (numberToFind, local){
+		var info = null;
+		if(local){
+			info = yield me.getLocalInfo(null,false);
+		}else{
+			info = yield me.getInfo(null,false);
+		}
+		var contact = info.contacts.first(function(contact){
+			return contact.number == numberToFind;
+		});
+		if(!contact){
+			contact = {"name":numberToFind,"number":numberToFind};
+		}
+		return contact;
+	});
 	me.getLastSms = function(){
 		return googleDriveManager.downloadContent({
 			fileName: "lastsms=:=" + me.deviceId
@@ -292,14 +296,16 @@ var SmsApp = function(){
 	me.clearSmsNotification = function(){
 		back.getCurrentTabPromise()
 		.then(function(currentTab){
-			if(!currentTab){
-				return;
-			}
-			if(!currentTab.url){
-				return;
-			}
-			if(currentTab.url != window.location.toString()){
-				return;
+			if(isPopup){
+				if(!currentTab){
+					return;
+				}
+				if(!currentTab.url){
+					return;
+				}
+				if(currentTab.url != window.location.toString()){
+					return;
+				}
 			}
 			if(localStorage.selectedTab != "sms"){
 				return;
@@ -645,12 +651,13 @@ var refreshSms = function(){
 }
 var sendSms = function(event){
 	var sms = event.sms;
-	if(sms){
+	if(sms && sms.number){
 		var contactsGetter = new ContactsGetter(event.deviceId);
-		contactsGetter.getContactForNumber(sms.number,function(contact){
+		contactsGetter.getContactForNumber(sms.number,true)
+		.then(function(contact){
 			smsApp.writeContactMessages(event.deviceId,contact,false);
 			smsReceived(event);
-		},null,true);
+		});
 	} else {
 		smsApp.writeSms(event.deviceId);
 	}

@@ -145,6 +145,7 @@ chrome.notifications.onButtonClicked.addListener(function(id,index){
 	var shouldPrompt = !notification.noPrompt;
 	return Promise.resolve()
 	.then(Dialog.showNotificationReplyDialog(notification,isReplyAction && shouldPrompt))
+	.catch(UtilsObject.ignoreError)
 	.then(function(input){	
 		if(isReplyAction){
 			notification.doAction(notification.replyId, input, true);
@@ -163,5 +164,5 @@ chrome.notifications.onButtonClicked.addListener(function(id,index){
 			return;
 		}
 		notification.doAction(buttons[index].actionId);
-	}).catch(UtilsObject.ignoreError);
+	});
 });

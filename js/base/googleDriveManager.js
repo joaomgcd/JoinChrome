@@ -16,9 +16,29 @@ var GoogleDriveManager = function(){
 		var url = "https://www.googleapis.com/drive/v3/files?q="+ encodeURIComponent(query);	
 		return url;
 	}
+	me.getFileMetadata = function(options){
+		if(!options.fileId){
+			return UtilsObject.errorPromise("Couldn't get file metada. No fileId");
+		}
+		var url = "https://www.googleapis.com/drive/v3/files/" + options.fileId;
+		if(options.fields){
+			url += "?fields=";
+			for (var i = 0; i < options.fields.length; i++) {
+				if(i>0){
+					url += "%2C"
+				}
+				var field = options.fields[i];
+				url += field;
+			}			
+		}
+		return doGetWithAuthPromise(url);
+	}
 	me.getFile = function(options){
 		if(options.fileId){
-			return {id:options.fileId};
+			return Promise.resolve()
+			.then(function(){
+				return {id:options.fileId};
+			});
 		}
 		return Promise.resolve()
 		.then(function(){
@@ -337,9 +357,12 @@ var GoogleDriveManager = function(){
 		.catch(function(error){
 			return {};
 		}).then(function(device){
+
+			delete device.fileId;
 			if(!device.pushes){
 				device.pushes = [];
 			}
+			push.date = new Date().getTime();
 			device.pushes.push(push);
 			var maxLength = 100;
 			if(device.pushes.length > maxLength){
@@ -381,4 +404,24 @@ GoogleDriveManager.getBaseFolderForMyDevice = function(){
 }
 GoogleDriveManager.getBaseFolder = function(){	
 	return "Join Files";
+}
+GoogleDriveManager.getFileIdFromUrl = function(fileUrl){	
+	if(fileUrl.indexOf("drive.google.com/file/d")<0){
+		return null;
+	}
+	var match = fileUrl.match(/[^/\\.\\?&=]{20,}/);
+	if(!match || match.length==0){
+		return null;
+	}
+	return match[0];
+}
+GoogleDriveManager.baseDriveUrlFiles = "https://www.googleapis.com/drive/v2/files/";
+GoogleDriveManager.getDownloadUrlFromFileId = function(fileId){
+	if(!fileId){
+		return null;
+	}
+	if(fileId.indexOf(".")>=0){
+		return fileId;
+	}
+	return  GoogleDriveManager.baseDriveUrlFiles + fileId + "?alt=media";
 }

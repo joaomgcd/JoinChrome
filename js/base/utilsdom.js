@@ -48,5 +48,11 @@ var UtilsDom = {
 	},
 	"waitForEscKey": function(element){
 		return UtilsDom.waitForKey(element, 27);
+	},
+	"hideElement": function(element){
+		element.style.display = "none";
+	},
+	"setElementDisplay": function(element,display){
+		element.style.display = display;
 	}
 }
