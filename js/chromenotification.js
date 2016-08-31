@@ -75,7 +75,12 @@ var ChromeNotification = function(notificationFromGcm){
 				}else{
 					options.isClickable = false;
 				}
-				chrome.notifications.create(me.id, options,function(){});
+				try{
+					chrome.notifications.create(me.id, options,function(){});	
+				}catch(error){
+					delete options.requireInteraction;
+					chrome.notifications.create(me.id, options,function(){});	
+				}
 				if(back.getPlayNotificationSound()){
 					var notificationSound = back.getNotificationSound();
 					if(!notificationSound){
