@@ -267,6 +267,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		var htmlDevicesAutoClipboard = "";
 		for (var i = 0; i < devices.length; i++) {
 				var device = devices[i];
+				if(device.deviceId == localStorage.deviceId){
+					continue;
+				}
 				htmlDevicesAutoClipboard = htmlDevicesAutoClipboard + replaceAll(replaceAll(replaceAll(replaceAll(deviceAutoClipboardHtml,"DEVICE_NAME",device.deviceName),"DEVICE_ICON","icons/"+deviceImages[""+device.deviceType](device)),"DEVICE_CLASS","clipboardDevice"),"DEVICE_ID",device.deviceId);
 				selectFavoriteCommandDevices.options.add(new Option(device.deviceName, device.deviceId));
 		}

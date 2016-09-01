@@ -680,6 +680,9 @@ var getDeviceIdsToSendAutoClipboard = function(){
 	var deviceIds = [];
 	for (var i = 0; i < devices.length; i++) {
 		var device = devices[i];
+        if(device.deviceId == localStorage.deviceId){
+            continue;
+        }
 		var key = device.deviceId + deviceSufix;
 		var enabled = localStorage[key] == null || localStorage[key] == "true";
 		if(enabled){
