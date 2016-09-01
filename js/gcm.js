@@ -24,13 +24,18 @@ var GCM = function(){
 		}
 	}
 	this.fromJsonString = function(str) {
-		str = decryptString(str);
+		try{
+			str = decryptString(str);
+		}catch(error){
+			console.log("Wasn't encrypted: " + str);
+		}
 		if(str.indexOf("{") < 0){
 			showNotification("Decryption Error","Please check that your encryption password matches the one on other devices.")
 			return;
 		}
 		var json = JSON.parse(str);
 		this.fromJson(json);
+
 	}
 	this.getCommunicationType = function() {
 		return "GCM";
