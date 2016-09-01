@@ -1462,7 +1462,6 @@ var setDevices = function(devicesToSet){
 			if(!localStorage.deviceId || localStorage.deviceId != device.deviceId){
 				devices.push(device);
 			}else{
-                device.deviceName = "This Device";
                 devices.unshift(device);
             }
 		}
