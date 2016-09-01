@@ -412,6 +412,9 @@ var GCMRequestNotifications = function(){
 GCMRequestNotifications.prototype = new GCMGenericPush();
 var Notifications = function(){
 	this.removeNotificationsWithSameId = function(id){
+		if(!id){
+			return;
+		}
 		var removed = this.removeIf(function(notification){
 			return notification.id == id;
 		});
