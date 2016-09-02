@@ -61,10 +61,10 @@ var ContextMenu = function(){
 	//Notifications
 	var notificationForUrl = function(device, info, tab, url, title, text){
 		if(!title){
-			title = "Saved Page";
+			title = tab.title;
 		}
 		if(!text){
-			text = tab.title;
+			text = url;
 		}
 		push(device, {"url": url,"text": text,"title": title});
 	}
@@ -85,7 +85,7 @@ var ContextMenu = function(){
 			console.log("Couldn't get title for link. Using current title instead");
 		})
 		.then(function(title){
-			notificationForUrl(device, info, tab, url, null, title);
+			notificationForUrl(device, info, tab, url, title);
 		});
 	}
 	var notificationSelection = function(device, info, tab){
