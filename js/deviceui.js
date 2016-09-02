@@ -79,7 +79,7 @@ var writeDevices = function(){
 		var deviceElement = deviceHtml.cloneNode(true);
 		deviceElement.onclick = deviceHover;
 		deviceElement.device = device;
-		deviceElement.querySelector("#devicename").textContent = device.deviceId == localStorage.deviceId ? "This Device" : device.deviceName;
+		deviceElement.querySelector("#devicename").textContent = device.deviceId == localStorage.deviceId ? "This device" : device.deviceName;
 		var deviceIcon = deviceImages[""+device.deviceType](device);
 		if(!deviceIcon && device.deviceType == DEVICE_TYPE_GROUP){
 			deviceIcon = device.deviceId.substring(6) + ".png";

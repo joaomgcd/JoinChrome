@@ -4,7 +4,7 @@ var Dialog = function(htmlPath, input){
 	var me = this;
 	me.show = function(options){
 		return new Promise(function(resolve,reject){
-			if(options.shouldShow === undefined || !options.shouldShow){
+			if(options.shouldShow == false){
 				return reject("Should not show dialog");
 			}
 			var query = "";
