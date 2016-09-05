@@ -1594,12 +1594,14 @@ handleAutoClipboard();
 
 
 contextMenu.update(devices);
-UtilsObject.wait(2000,function(timeOut){
+/*UtilsObject.wait(2000,function(timeOut){
    // clearTimeout(timeOut);
 })
-.then(function(){
-    console.log("done waiting");
-})
+.then(()=>{
+
+    var test = "aaaa";
+    console.log(`done waiting ${test}`)
+})*/
 /*var result = Dialog.showInputDialog({
     text:"Something",
     title:"Input stuffs",

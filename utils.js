@@ -143,7 +143,8 @@ var notificationPages = {
 	"com.google.android.talk":"https://hangouts.google.com/",
 	"com.whatsapp":"https://web.whatsapp.com/",
 	"com.google.android.youtube":"https://www.youtube.com/feed/subscriptions",
-	"com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all"
+	"com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all",
+ 	"reddit.news": "https://www.reddit.com/message/inbox/"
 };
 var copyUserNotificationPages = function(){
 	try{
