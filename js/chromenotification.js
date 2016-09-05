@@ -157,6 +157,9 @@ chrome.notifications.onButtonClicked.addListener(function(id,index){
 		return;
 	}
 	var isReplyAction = notification.replyId && index == 0;
+	if(!isReplyAction){
+		isReplyAction = false;
+	}
 	var shouldPrompt = !notification.noPrompt;
 	return Promise.resolve()
 	.then(Dialog.showNotificationReplyDialog(notification,isReplyAction && shouldPrompt))
