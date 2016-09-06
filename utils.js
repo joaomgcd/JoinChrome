@@ -144,7 +144,8 @@ var notificationPages = {
 	"com.whatsapp":"https://web.whatsapp.com/",
 	"com.google.android.youtube":"https://www.youtube.com/feed/subscriptions",
 	"com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all",
- 	"reddit.news": "https://www.reddit.com/message/inbox/"
+ 	"reddit.news": "https://www.reddit.com/message/inbox/",
+	"com.google.android.apps.playconsole":"https://play.google.com/apps/publish/"
 };
 var copyUserNotificationPages = function(){
 	try{
@@ -158,11 +159,12 @@ var copyUserNotificationPages = function(){
 	}
 }
 var getNotificationPage = function(notification){
-	if(notification.url){
-		return notification.url;
-	}
 	copyUserNotificationPages();
-	return notificationPages[notification.appPackage];
+	var url = notificationPages[notification.appPackage];
+	if(!url && notification.url){
+		url = notification.url;
+	}
+	return url;
 }
 var openNotificationPage = function(notification){
 	copyUserNotificationPages();
