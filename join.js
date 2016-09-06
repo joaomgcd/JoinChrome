@@ -802,6 +802,7 @@ var defaultValues = {
     "autoopenlinks": true,
     "notificationrequireinteraction": false
 };
+setShowChromeNotifications(true);
 /******************************************************************************/
 
 /*************************************************************************************/

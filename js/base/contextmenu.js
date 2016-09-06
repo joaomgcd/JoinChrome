@@ -192,6 +192,7 @@ var ContextMenu = function(){
 			"title":"Mute Notifications",
 			"contexts":["browser_action"],
 			"onclick":function(info, tab) {
+				var shouldMute = true;
 				return Promise.resolve()
 				.then(Dialog.showMultiChoiceDialog({
 				    items:[
@@ -201,7 +202,7 @@ var ContextMenu = function(){
 				        {id:180,text:"3 Hours"},
 				        {id:360,text:"6 Hours"},
 				    ],
-				    title:"Mute Fotifications For"
+				    title:"Mute Notifications For"
 				},{
 				    shouldShow:info.checked
 				}))
@@ -209,7 +210,6 @@ var ContextMenu = function(){
 					console.log("Mute cancelled")
 				})
 				.then(function(item){
-					var shouldMute = true;
 					if(!item){
 						shouldMute = false;
 					}
@@ -228,9 +228,11 @@ var ContextMenu = function(){
 					});
 				})
 				.then(function(){
-					showNotification("Join", "Notifications Unmuted");
+					if(shouldMute){
+						showNotification("Join", "Notifications Unmuted");
+						console.log("Mute ended");
+					}
 					setShowChromeNotifications(true);
-					console.log("Mute ended");
 					if(timeOut){
 						clearTimeout(timeOut);
 						timeOut = null;
