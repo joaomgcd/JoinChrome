@@ -66,7 +66,7 @@ var ChromeNotification = function(notificationFromGcm){
 					"message": text,
 					"contextMessage": me.subText,
 					"buttons": notificationButtons,
-					"eventTime": Date.now(),
+					"eventTime": me.date,
 					"requireInteraction": requireInteraction
 			};
 			if(me.image){

@@ -70,6 +70,7 @@ var PushHistory = function(deviceId){
 	}
 	var savedFilter = "";
 	var cachedHistory = {};
+	var contactInfo = null;
 	this.render = function(targetElement,forceDownload,history){
 		var resetTargetElement = function(){
 			targetElement.innerHTML = "";
@@ -111,13 +112,25 @@ var PushHistory = function(deviceId){
 			}
 		}
 		resetTargetElement();
-		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"100px","height":"100px"})
+		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"100px","height":"100px"});
 		return Promise.resolve()
 		.then(function(){
 			if(!history){
 				return me.get(forceDownload)
 				.then(function(history){
 					cachedHistory = history;
+					return history;
+				});
+			}else{
+				return history;
+			}
+		})
+		.then(history =>{
+			if(!contactInfo && history && history.pushes && history.pushes.first(push=>push.smstext && push.smsnumber)){
+				return googleDriveManager
+				.getDeviceContacts(deviceId,true)
+				.then(contactsFromDrive=>{
+					contactInfo = contactsFromDrive;
 					return history;
 				});
 			}else{
@@ -172,6 +185,7 @@ var PushHistory = function(deviceId){
 				var dateElement = pushElement.querySelector("#date");
 				var clipboardElement = pushElement.querySelector("#clipboard");
 				var clipboardHolderElement = pushElement.querySelector("#clipboardholder");
+				var smsElement = pushElement.querySelector("#sms");
 
 				setImgSrcOrHide(iconElement,pushItem.icon);
 				setTextOrHide(textElement,pushItem.text);
@@ -210,6 +224,21 @@ var PushHistory = function(deviceId){
 						}
 						pushElement.querySelector("#files").appendChild(fileElement);
 					}
+				}
+				if(pushItem.smstext && pushItem.smsnumber){
+					var smsTextElement = smsElement.querySelector("#smstext");
+					var smsNumberElement = smsElement.querySelector("#smsnumber");
+					var smsName = pushItem.smsnumber;
+					if(contactInfo && contactInfo.contacts){
+						var contact = contactInfo.contacts.first(contact=>contact.number == pushItem.smsnumber);
+						if(contact){
+							smsName = contact.name;
+						}
+					}
+					setTextOrHide(smsTextElement,pushItem.smstext);
+					setTextOrHide(smsNumberElement,"To: " + smsName);
+				}else{
+					UtilsDom.hideElement(smsElement);
 				}
 				pushElement.onclick = function(event){
 					var pushElement = event.target;

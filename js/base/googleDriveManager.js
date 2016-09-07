@@ -322,14 +322,17 @@ var GoogleDriveManager = function(){
 	var getDevicePushFileName = function(deviceId){
 		return "pushes=:="+deviceId;
 	}
+	var getDeviceContactsFileName = function(deviceId){
+		return "contacts=:="+deviceId;
+	}
 	var getFileParents = function(fileId){		
 		if(!fileId){
 			return UtilsObject.errorPromise("No file Id to look for parents");
 		}
 		return doGetWithAuthPromise("https://www.googleapis.com/drive/v3/files/"+fileId+"?fields=parents");
 	}
-	me.getDevicePushes = function(deviceId, forceDownload){		
-		var options = {fileName:getDevicePushFileName(deviceId),getParents:true};
+	var getDeviceFile = function(fileName, forceDownload){
+		var options = {fileName:fileName,getParents:true};
 		return Promise.resolve()
 		.then(function(){
 			if(!forceDownload){
@@ -347,6 +350,12 @@ var GoogleDriveManager = function(){
 			device.folderId = options.folderId;
 			return device;
 		});
+	}
+	me.getDevicePushes = function(deviceId, forceDownload){	
+		return 	getDeviceFile(getDevicePushFileName(deviceId),forceDownload);
+	}
+	me.getDeviceContacts = function(deviceId, forceDownload){	
+		return 	getDeviceFile(getDeviceContactsFileName(deviceId),forceDownload);
 	}
 	me.getMyDevicePushes = function(forceDownload){		
 		return me.getDevicePushes(localStorage.deviceId, forceDownload);

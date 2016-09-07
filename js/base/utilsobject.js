@@ -162,3 +162,13 @@ var UtilsObject = {
 		win.focus();
 	}
 };
+
+Array.prototype.first = function(func) {
+	for (var i = 0; i < this.length; i++) {
+		var item = this[i];
+		if(func(item)){
+			return item;
+		}
+	};
+	return null;
+};

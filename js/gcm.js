@@ -598,8 +598,11 @@ var GCMNotification = function(notification, senderId){
 					shouldNotify = true;
 				//}
 			}
-			if(not.priority >= 1){
+			if(not.priority >= 0){
 				shouldNotify = true;
+			}
+			if(!not.date){
+				not.date = Date.now();
 			}
 			var notificationNoPopupPackages = back.getNotificationNoPopupPackages().split("\n");
 			if(notificationNoPopupPackages.indexOf(not.appPackage) >= 0){
@@ -610,14 +613,34 @@ var GCMNotification = function(notification, senderId){
 			}
 			notifications.push(not);
 			notifications.sort(function(left,right){
-				if(left.priority && right.priority){
-					return left.priority - right.priority;
+				var leftPriority = left.priority;
+				var rightPriority = right.priority;
+				if(!leftPriority){
+					leftPriority = 0;
 				}
-				if(left.priority){
-					return 1;
+				if(!rightPriority){
+					rightPriority = 0;
 				}
-				if(right.priority){
+				if(leftPriority || leftPriority == 0){
+					leftPriority += 5;
+				}
+				if(rightPriority || rightPriority == 0){
+					rightPriority += 5;
+				}
+				if(leftPriority && rightPriority){
+					if(leftPriority > rightPriority){
+						return -1;
+					}else if(rightPriority > leftPriority){
+						return 1;
+					}else{
+						return right.date - left.date;
+					}
+				}
+				if(leftPriority){
 					return -1;
+				}
+				if(rightPriority){
+					return 1;
 				}
 				return 0;
 			});
