@@ -1425,7 +1425,14 @@ var refreshDevices = function(callback){
 getToken();
 chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 	if (registrationId == null || registrationId == "") {
-		console.log("Error getting key: " + chrome.runtime.lastError);
+        var errorMessage = null;
+        if(chrome.runtime.lastError){
+            errorMessage = chrome.runtime.lastError.message;
+        }
+        if(!errorMessage){
+            errorMessage = "unknown error";
+        }
+		console.log("Error getting key: " + errorMessage);
 	} else {
 		console.log("Got key: " + registrationId);
 		localStorage.regIdLocal = registrationId;
