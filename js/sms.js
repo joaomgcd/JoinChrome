@@ -124,6 +124,7 @@ var ContactsGetter = function(deviceId){
 			return me.processResults(sortFieldGetter,sortDescending);
 		})
 		.catch(function(error){
+			console.error(error);
 			setRefreshing(false);
 			return UtilsObject.errorPromise("Error downloading SMS files: " + error);
 		});
@@ -387,7 +388,7 @@ var SmsApp = function(){
 		return contact;
 	}
 	var writeContactsInfo = function(deviceId, contactsInfo){
-		if(contactsInfo.contacts){
+		if(contactsInfo && contactsInfo.contacts){
 			var contacts = contactsInfo.contacts;
 			smsContainerElement.innerHTML = "";
 			for (var i = 0; i < contacts.length; i++) {
@@ -447,6 +448,7 @@ var SmsApp = function(){
 				writeContactsInfo(deviceId, yield contactsGetter.getInfo(sortFunc,sortDescending));
 			}
 		}catch(error){
+			console.error(error);
 			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
 	});

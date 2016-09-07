@@ -771,7 +771,9 @@ var getFavoriteCommandText = function(){
 }
 var onautoclipboardsave = function(option, value){
     console.log("Auto clipboard: " + value);
-    handleAutoClipboard();
+    if(handleAutoClipboard){
+        handleAutoClipboard();   
+    }
 }
 var onchromenotificationssave = function(option, value){
     console.log("Changed chrome notification popup setting: " + value);
