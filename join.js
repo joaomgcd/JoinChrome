@@ -1504,9 +1504,7 @@ var setDevices = function(devicesToSet){
 				}
 			});
 		}
-		devices.removeIf(function(device){
-			return device.deviceType == DEVICE_TYPE_GROUP;
-		});
+		devices.removeIf(device=>device.deviceType == DEVICE_TYPE_GROUP);
 		var groups = joindevices.groups.deviceGroups.getGroups(devices);
 		for (var i = 0;i < groups.length;i++) {
 			var group = groups[i];
@@ -1517,6 +1515,7 @@ var setDevices = function(devicesToSet){
 			};
 			devices.push(deviceFromGroup);
 		}
+        UtilsObject.sort(devices,true,device=>device.deviceType,device=>device.deviceId.indexOf("share")>=0,device=>device.deviceName);
 		localStorage["devices"] = JSON.stringify(devices);
 	}
 	contextMenu.update(devices);

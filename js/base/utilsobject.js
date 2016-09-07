@@ -23,6 +23,12 @@ var UtilsObject = {
 	"isArray": function(obj){
 	  return UtilsObject.toClass(obj) == "[object Array]";
 	},
+	"isNumber": function(obj){
+	  return UtilsObject.toClass(obj) == "[object Number]";
+	},
+	"isBoolean": function(obj){
+	  return UtilsObject.toClass(obj) == "[object Boolean]";
+	},
 	"getArrayIfNot": function(obj){
 		if(UtilsObject.isArray(obj)){
 			return obj;
@@ -160,6 +166,46 @@ var UtilsObject = {
 	"openTab" : function(url){
 		var win = window.open(url, '_blank');
 		win.focus();
+	},
+	"sort" : function(array,invert,...compareFieldFuncs){
+		if(compareFieldFuncs.length == 0){
+			array.sort();
+		}else{
+			var invertIfNeeded = value=> invert ? value * -1 : value;
+			array.sort((left,right)=>{
+				var comparisonResult = 0;
+				for(var compareFieldFunc of compareFieldFuncs){
+					var leftValue = compareFieldFunc(left);
+					var rightValue = compareFieldFunc(right);
+					if(leftValue == null){
+						if(rightValue != null){
+							return invertIfNeeded(1);
+						}
+					}					
+					if(rightValue == null){
+						if(leftValue != null){
+							return invertIfNeeded(-1);
+						}
+					}
+					if(rightValue == null && rightValue == null){
+						return 0;
+					}
+					if(UtilsObject.toClass(leftValue) == UtilsObject.toClass(rightValue)){
+						if(UtilsObject.isString(leftValue)){
+							comparisonResult = leftValue.toLowerCase().localeCompare(rightValue.toLowerCase()) * -1;
+						}else if(UtilsObject.isNumber(leftValue)){
+							comparisonResult =  rightValue - leftValue;
+						}else if(UtilsObject.isBoolean(leftValue)){
+							comparisonResult =  leftValue ? (rightValue ? 0 : -1) : (!rightValue ? 0 : 1);
+						}						
+					}
+					if(comparisonResult != 0){
+						return invertIfNeeded(comparisonResult);
+					}
+				}
+				return invertIfNeeded(comparisonResult);
+			});	
+		}
 	}
 };
 
