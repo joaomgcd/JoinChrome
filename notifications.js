@@ -55,6 +55,9 @@ var writeNotifications = function(){
 		back.resetNotifications();
 		writeNotifications();
 	}
+	if(notifications.length == 0){
+		UtilsDom.hideElement(clearNotificationsFAB);
+	}
 
 	for (var i = 0; i < notifications.length; i++) {
 		var not = notifications[i];
