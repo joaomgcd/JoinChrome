@@ -683,6 +683,9 @@ var getDeviceIdsToSendAutoClipboard = function(){
         if(device.deviceId == localStorage.deviceId){
             continue;
         }
+        if(UtilsDevices.isDeviceGroup(device) || UtilsDevices.isDeviceShare(device)){
+            continue;
+        }
 		var key = device.deviceId + deviceSufix;
 		var enabled = localStorage[key] == null || localStorage[key] == "true";
 		if(enabled){
