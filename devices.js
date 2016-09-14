@@ -151,7 +151,7 @@ addEventListener("unload", function (event) {
 	back.console.log("Unloading popup devices...");
 	back.removeEventListener("sendsms",sendSmsDevices,false);
 	back.removeEventListener("phonecall",sendSmsDevices,false);
-	if(isPopup){    		
+	if(isPopup){
         localStorage.popoutWidth = window.outerWidth;
         localStorage.popoutHeight = window.outerHeight;
 	}else{

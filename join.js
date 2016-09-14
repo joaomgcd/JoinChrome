@@ -807,7 +807,7 @@ var defaultValues = {
     "autoopenlinks": true,
     "notificationrequireinteraction": false
 };
-setShowChromeNotifications(true);
+//setShowChromeNotifications(true);
 /******************************************************************************/
 
 /*************************************************************************************/
@@ -1031,6 +1031,7 @@ var renameDevice = function(deviceId, notify){
 	if(!device){
 		return;
 	}
+	var oldName = device.deviceName;
     return Promise.resolve()
     .then(Dialog.showInputDialog({
             title:"What do you want to name " + device.deviceName + "?",
@@ -1053,7 +1054,7 @@ var renameDevice = function(deviceId, notify){
               setDevices(devices);
               refreshDevicesPopup();
               if(showNotification){
-                showNotification("Renamed",device.deviceName + " renamed to " +confirm);
+                showNotification("Renamed",oldName + " renamed to " +confirm);
               }
             },function(error){
                 console.log("Error: " + error);

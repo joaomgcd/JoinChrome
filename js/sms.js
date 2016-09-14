@@ -284,6 +284,14 @@ var SmsApp = function(){
 	contactFindInputElement.addEventListener("input",function(e){
 		me.writeContactListFunction(contactFindInputElement.value);
 	});
+	me.contactFindInputElementEnterFunc = null;
+	contactFindInputElement.addEventListener("keyup",function(e){
+		if(e.keyCode == 13){
+			if(me.contactFindInputElementEnterFunc){
+				me.contactFindInputElementEnterFunc();
+			}
+		}
+	});
 	var deviceIdFromUrl = getURLParameter("deviceId");
 	var numberFromUrl = getURLParameter("number");
 	var textFromUrl = getURLParameter("text");
@@ -558,6 +566,12 @@ var SmsApp = function(){
 						callback(me.deviceId, contact)
 					});
 					smsContainerElement.appendChild(contactElement);
+					me.contactFindInputElementEnterFunc = ()=>{
+						if(smsContainerElement.children.length > 0){
+							var contact = smsContainerElement.children[0].contact;
+							callback(me.deviceId, contact);
+						}
+					}
 			}
 			for (var i = 0; i < contacts.length; i++) {
 					var contact = contacts[i];

@@ -83,11 +83,21 @@ var deviceCommands = [
 	{
 		"label":"Send a Tasker command",
 		"commandId":"tasker",
-		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
+		"showForGroups":joindevices.groups.deviceGroups.androidGroups,
 		"func":back.pushTaskerCommand,
 		"hasText":true,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);
+			return (device.deviceType == DEVICE_TYPE_ANDROID_PHONE || device.deviceType == DEVICE_TYPE_ANDROID_TABLET) && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);
+		}
+	},
+	{
+		"label":"Send an EventGhost command",
+		"commandId":"eventghost",
+		"showForGroups":joindevices.groups.deviceGroups.pcGroups,
+		"func":back.pushTaskerCommand,
+		"hasText":true,
+		"condition":function(device){
+			return (device.deviceType == DEVICE_TYPE_CHROME_BROWSER || device.deviceType == DEVICE_TYPE_WIDNOWS_PC|| device.deviceType == DEVICE_TYPE_FIREFOX) && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);
 		}
 	},
 	{
