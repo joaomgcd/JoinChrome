@@ -29,6 +29,9 @@ var UtilsObject = {
 	"isBoolean": function(obj){
 	  return UtilsObject.toClass(obj) == "[object Boolean]";
 	},
+	"isFunction": function(obj){
+	  return UtilsObject.toClass(obj) == "[object Function]";
+	},
 	"getArrayIfNot": function(obj){
 		if(UtilsObject.isArray(obj)){
 			return obj;

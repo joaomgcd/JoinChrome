@@ -143,6 +143,10 @@ var sendSmsDevices = function(event){
 	localStorage.smsDeviceId = event.deviceId;
 	refreshTabVisibility();
 	selectTab("sms");
+	if(isPopup){
+		chrome.windows.getCurrent({},win=>chrome.windows.update(win.id,{"focused":true}));
+	}
+	
 };
 
 back.addEventListener("sendsms",sendSmsDevices,false);
