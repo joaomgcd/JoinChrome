@@ -72,7 +72,8 @@ var writeNotifications = function(){
 					return;
 				}
 				if(iconUrl.indexOf("http")==0){
-					iconElement.src = iconUrl;
+					doGetBase64Images([{url:iconUrl,element : iconElement}])
+					//iconElement.src = iconUrl;
 				}else{
 					if(iconElement.src.indexOf("data:image/png")<0){
 						iconsToDownload.push({"url":getDriveUrlFromFileId(iconUrl),"element":iconElement});
