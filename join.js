@@ -799,7 +799,7 @@ var defaultValues = {
 	"autoclipboardnotification":true,
 	"chromenotifications":true,
 	"notificationwebsites":JSON.stringify(notificationPages,null,1),
-	"notificationnopopuppackages":"com.google.android.music",
+	"notificationnopopuppackages":"",
 	"prefixtaskercommands":false,
 	"hidenotificationtext": false,
 	"playnotificationsound": true,
