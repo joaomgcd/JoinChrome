@@ -301,7 +301,11 @@ var SmsApp = function(){
 	me.contact = numberFromUrl ? {"number":numberFromUrl,"name":getURLParameter("name")} : (localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null);
 	this.number = null;
 	me.contactsScroll = null;
-
+	me.onTabSelected = function(tabSelected){
+		if(tabSelected.tabId == "sms"){
+			me.clearSmsNotification();
+		}
+	}
 	me.clearSmsNotification = function(){
 		back.getCurrentTabPromise()
 		.then(function(currentTab){
@@ -316,6 +320,7 @@ var SmsApp = function(){
 					return;
 				}
 			}
+			back.console.log("Selected tab from clear sms notification: " + localStorage.selectedTab);
 			if(localStorage.selectedTab != "sms"){
 				return;
 			}
@@ -695,10 +700,11 @@ var smsReceived = function(event){
 	smsApp.clearSmsNotification();
 }
 back.addEventListener('smsreceived', smsReceived, false);
-
+back.eventBus.register(smsApp);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading sms...");
 	back.removeEventListener("sendsms",sendSms,false);
 	back.removeEventListener("phonecall",phoneCall,false);
 	back.removeEventListener('smsreceived',smsReceived,false);
+	back.eventBus.unregister(smsApp);
 }, true);

@@ -108,7 +108,10 @@ back.Events = {
 	},
 	"FilePicked" : function(){		
 	},
-	"FileResponse" : function(fileId){
-		this.fileId = fileId;		
-	}
+  "FileResponse" : function(fileId){
+    this.fileId = fileId;   
+  },
+  "TabSelected" : function(tabId){
+    this.tabId = tabId;   
+  }
 }

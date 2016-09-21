@@ -111,6 +111,7 @@ var selectTab = function(idToShow){
 		}
    }
 	localStorage.selectedTab = idToShow;
+	back.eventBus.post(new back.Events.TabSelected(idToShow));
 	document.body.className = idToShow + "body";
 
 	function getUrlParameter(sParam) {
@@ -178,20 +179,25 @@ if(onlyTabToShow){
 	// CHANGE NOTE: I can't tell what it does. Hope it's not important.
 	// document.getElementById("tabscontaineroutter").style.display ="none";
 }else{
-	if(back.localStorage.areNotificationsUnread == "true"){
-		back.console.log("yes notifications")
-		var previousTab = back.localStorage.selectedTab;
-		selectTab("notifications");
-		back.localStorage.selectedTab = previousTab;
-	}else{
-		if(localStorage.selectedTab){
-			selectTab(localStorage.selectedTab);
-		}else{
-			var idToShow = tabs[0].id.replace("tab-","");
-			selectTab(idToShow);
-			console.log("Showed tab " + idToShow + " by default");
+	var tabToShow = null;
+	/*for(var notification of notifications){
+		if(notification.id==UtilsSMS.getNotificationId())
+	}*/
+	if(!tabToShow){
+		if(back.localStorage.areNotificationsUnread == "true"){
+			back.console.log("yes notifications")
+			var previousTab = back.localStorage.selectedTab;
+			tabToShow = "notifications";
+			back.localStorage.selectedTab = previousTab;
+		}else if(localStorage.selectedTab){		
+			tabToShow = localStorage.selectedTab;		
 		}
 	}
+	if(!tabToShow){
+		tabToShow = tabs[0].id.replace("tab-","");
+		console.log("Showed tab " + idToShow + " by default");
+	}
+	selectTab(tabToShow);
 }
 var topBarElement = document.getElementById("topBar");
 
