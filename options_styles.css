@@ -138,6 +138,18 @@ h5 { color: #FF7A00; }
 	width: 40%;
 	align-self: center;
 }
+#featurerequests {
+	min-width: 600px;
+	width: 40%;
+	align-self: center;
+	margin: 8px;	
+    font-size: 1.2em;    
+    text-align: center;
+    font-weight: bold;
+}
+#featurerequests a{
+	color: var(--global-color);
+}
 [tab] :first-child {
 		/*margin-top: 10px;*/
 }
@@ -226,7 +238,7 @@ h5 { color: #FF7A00; }
 div.optionContainer {
 	padding: 24px;
 	background-color: white;
-	margin: 16px;
+	margin-top: 16px;
 	border-radius: 4px;
 	box-shadow: 0 2px 6px -3px black;
 }
