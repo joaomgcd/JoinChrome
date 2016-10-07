@@ -5,6 +5,7 @@ var ContextMenu = function(){
 	var PASTE = "Paste";
 	var CREATE_NOTIFICATION = "Create Notification";
 	var SET_AS_WALLPAPER = "Set As Wallpaper";
+	var SET_AS_LOCK_WALLPAPER = "Set As Lockscreen Wallpaper";
 	var SEND_TASKER_COMMAND = "Send Tasker Command";
 	var CALL = "Call";
 	var WITH = "With";
@@ -107,8 +108,14 @@ var ContextMenu = function(){
 	var setWallpaper = function(device, url){
 		push(device, {"wallpaper": url});
 	}
+	var setLockWallpaper = function(device, url){
+		push(device, {"lockWallpaper": url});
+	}
 	var setWallpaperSourceUrl = function(device, info, tab){
 		setWallpaper(device, info.srcUrl);
+	}
+	var setLockWallpaperSourceUrl = function(device, info, tab){
+		setLockWallpaper(device, info.srcUrl);
 	}
 
 	//Tasker Commands
@@ -170,6 +177,7 @@ var ContextMenu = function(){
 		    "editable":[],
 		    "image":[
 		    	new ContextMenuItem(SET_AS_WALLPAPER,setWallpaperSourceUrl),
+		    	new ContextMenuItem(SET_AS_LOCK_WALLPAPER,setLockWallpaperSourceUrl,null,null,device=>device.apiLevel>=24),
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
 		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
@@ -283,6 +291,11 @@ var ContextMenu = function(){
 		        			}
 			        		actionTitle = actionTitle + joiner + contextName;
 		        		}
+		        		if(contextMenuItem.conditionFunc){
+		        			if(!contextMenuItem.conditionFunc(device)){
+		        				return;
+		        			}
+		        		}
 			        	chrome.contextMenus.create({
 			        		"parentId": contextForDevice,
 			        		"contexts": [contextId],
@@ -297,7 +310,7 @@ var ContextMenu = function(){
 			}
 	    });
 	}
-	var ContextMenuItem = function(title,handler, joiner, patterns){
+	var ContextMenuItem = function(title,handler, joiner, patterns, conditionFunc){
 		this.title = title;
 		this.handler = handler;
 		this.joiner = joiner;
@@ -305,5 +318,6 @@ var ContextMenu = function(){
 			patterns = [patterns];
 		}
 		this.patterns = patterns;
+		this.conditionFunc = conditionFunc;
 	}
 }

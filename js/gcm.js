@@ -3,7 +3,7 @@ var SMS_ACTION_ID = "SMS_ACTION_ID";
 var COPY_NUMBER = "COPY_NUMBER";
 var HANG_UP = "HANG_UP";
 var CALL_BACK = "CALL_BACK";
-var regexNumbers = /[0-9]{4,}/;
+var regexNumbers = /[0-9]{4,}/g;
 
 var Request = function(){
 	this.getParams = function() {
@@ -509,10 +509,30 @@ var GCMNotification = function(notification, senderId){
 				
 				if(actionId == COPY_NUMBER){
 					var matches = notification.text.match(regexNumbers);
-					if(matches && matches.length > 0){
-						var number = matches[0];
-						directCopy(number);
-						showNotification("Clipboard Set To Number", number,5000);
+					if(matches){
+						Promise.resolve()
+						.then(()=>{
+							if(matches.length == 1){
+								return matches[0];
+							}else{
+								var items = matches.select(match => ( {"id":match,"text":match}));
+								return Dialog.showMultiChoiceDialog({
+								    items:items,
+								    title:"Which Number?"
+								})();
+							}
+						})
+						.then(result=>{
+							if(result.id){
+								return result.id;
+							}else{
+								return result;
+							}
+						})
+						.then(number=>{
+							directCopy(number);
+							showNotification("Clipboard Set To Number", number,5000);
+						});
 					}else{
 						showNotification("Couldn't copy number", notification.text,5000);
 					}
