@@ -143,19 +143,15 @@ h5 { color: #FF7A00; }
 	width: 40%;
 	align-self: center;
 	margin: 8px;
-    font-size: 1.2em;
-/*    text-align: center;*/
-    font-weight: 400;
+	font-size: 1.2em;
+	font-weight: 400;
 }
 #help a{
 	color: var(--global-color);
 	text-decoration: none;
 }
-#help a:hover {
-	font-weight: 600;
-}
 .help-option {
-	line-height: 1.5;
+	line-height: 1.75;
 }
 .help-links, .help-icon {
 	display: inline-block;
