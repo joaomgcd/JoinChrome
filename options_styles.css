@@ -138,17 +138,27 @@ h5 { color: #FF7A00; }
 	width: 40%;
 	align-self: center;
 }
-#featurerequests {
+#help {
 	min-width: 600px;
 	width: 40%;
 	align-self: center;
-	margin: 8px;	
-    font-size: 1.2em;    
-    text-align: center;
-    font-weight: bold;
+	margin: 8px;
+	font-size: 1.2em;
+	font-weight: 400;
 }
-#featurerequests a{
+#help a{
 	color: var(--global-color);
+	text-decoration: none;
+}
+.help-option {
+	line-height: 1.75;
+}
+.help-links, .help-icon {
+	display: inline-block;
+		vertical-align: middle;
+}
+.help-icon {
+	padding-right: 20px;
 }
 [tab] :first-child {
 		/*margin-top: 10px;*/
