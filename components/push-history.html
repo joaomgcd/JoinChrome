@@ -1,31 +1,35 @@
 <html>
+
 <head>
-	<title>Push History</title>
-	<style type="text/css">
-		body{
-			font-family: "Roboto", sans-serif;
-		}
-		#pushhistory{
-			display: flex;
-    		flex-wrap: wrap;
-		    justify-content: space-around;
-		    margin-left: 16px;
-		    margin-right: 16px;
-		}
-	</style>
-	<link rel="import" href="push-item.html" />
-	<link rel="import" href="push-item-file.html" />
-	<script src="../js/base/utilsdom.js"></script>
-	<script src="../js/base/utilsobject.js"></script>
-	<script src="../js/base/googleDriveManager.js"></script>
-	<script src="../js/base/web.js"></script>
-	<script src="../js/pushhistory.js"></script>
-	<script src="../js/pushhistoryloader.js"></script>
-	<link type="text/css" rel="stylesheet" href="../materialize/css/materialize.min.css"  media="screen,projection"/>
+		<title>Push History</title>
+		<link rel="import" href="push-item.html" />
+		<link rel="import" href="push-item-file.html" />
+		<script src="../js/base/utilsobject.js"></script>
+		<script src="../js/base/utilsdom.js"></script>
+		<script src="../js/base/utilsobject.js"></script>
+		<script src="../js/base/googleDriveManager.js"></script>
+		<script src="../js/base/web.js"></script>
+		<script src="../js/pushhistory.js"></script>
+		<script src="../js/pushhistoryloader.js"></script>
+		<link type="text/css" rel="stylesheet" href="../materialize/css/materialize.min.css" media="screen,projection" />
+		<link rel="stylesheet" href="../options_styles.css">
 </head>
+
 <body>
-	<div id="pushhistory">
-			
-	</div>
+		<div id="topbar">
+				<div id="appinfo">
+						<span id="appiconandname">
+						<img id="appicon" src="../icons/icon.png" />
+						<span id="appname">Join</span>
+						</span>
+
+				</div>
+		</div>
+		<div class="history-wrap">
+				<div id="pushhistory" class="optionContainer">
+				</div>
+		</div>
+
 </body>
+
 </html>

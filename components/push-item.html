@@ -1,90 +1,86 @@
 <html>
-<head>
-<style type="text/css">
 
-	#filter{
-		width: 30%;
-	    background-color: #FF9800;
-	    color: white;
-	    flex-direction: row;
-	    position: fixed;
-	    transition: all 0.3s ease;
-	    z-index: 80;
-	    display: flex;
-	    font-size: large;
-	    margin: 1em 1em 1em 1em;
-	    right: 30px;
-	    padding: 8px;
-	    opacity: 0.7;			
-	}
-	#filter:focus{
-	    opacity: 1;
-	}
-	.pushitem{
-		padding: 16px;
-		margin: 16px !important;
-    	word-wrap: break-word;
-    	font-size: 200%;
-    	width: 100%;
-    	//max-width: 500px;
-    	min-width: 300px;
-    	display: flex;
-	}
-	#nohistoryerror{
-		font-size: 300%;
-	}
-	.clickable{
-		cursor: pointer;
-	}
-	#left{
-	    flex-grow: 1;
-	}
-	#right{
-	    display: flex;
-	    flex-direction:column;
-	    margin-left: 16px;
-	}
-	#title{
-		font-weight: bold;
-		//max-width: 380px;
-	}
-	#icon{
-		width: 100px;
-		height: 100px;
-	}
-	#text{    
-		//max-width: 380px;
-	}
-	#url{    
-		//max-width: 280px;
-	}
-	#date{
-		font-size: 70%;
-	}
-	#clipboard{
-		margin-left: 16px;
-		height: auto;	
-	}
-	#clipboardholder{
-		display: flex;	
-	}
-	#clipboardword{
-		font-size: 70%;	
-	}
-	#smstitle{
-		font-weight: bold;	
-	}
-</style>
-	
+<head>
 </head>
+<style type="text/css">
+#filter {
+	width: 25%;
+	background-color: #FF9800;
+	position: fixed;
+	transition: all 0.3s ease;
+	z-index: 80;
+	font-size: large;
+	right: 30px;
+	padding: 8px;
+	opacity: 0.7;
+}
+
+#filter:focus {
+	opacity: 1;
+}
+
+#filter::-webkit-input-placeholder {
+	color: #fff;
+}
+
+.history-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#pushhistory {
+	width: 40%;
+}
+
+#pushitem {
+	display: flex;
+	flex-direction: row;
+	padding: 14px;
+}
+
+#left {
+	flex-grow: 2;
+}
+
+#right {
+	justify-content: flex-end;
+}
+
+#text,
+#smstitle {
+	font-weight: bold;
+}
+
+img#image {
+	width: 100%;
+	padding: 10px;
+}
+
+#date {
+	font-weight: bold;
+}
+#loading{
+	margin-top: 10px;
+	height: 50px;
+	width: 50px;
+}
+</style>
+
 <body>
 	<div id="pushitem" class="pushitem card">
 		<div id="left">
 			<div id="title"></div>
 			<div id="text"></div>
 			<div id="files"></div>
-			<span id="clipboardholder"><span id="clipboardword">Clipboard:</span><input type="text" disabled="true" id="clipboard"></input></span>	
-			<div id="sms"><div id="smstitle">SMS Message</div><div id="smsnumber"></div><div id="smstext"></div>
+			<span id="clipboardholder"><span id="clipboardword">Clipboard:</span>
+			<input type="text" disabled="true" id="clipboard"></input>
+			</span>
+			<div id="sms">
+				<div id="smstitle">SMS Message</div>
+				<div id="smsnumber"></div>
+				<div id="smstext"></div>
+			</div>
 		</div>
 		<div id="right">
 			<div id="date"></div>
@@ -92,4 +88,5 @@
 		</div>
 	</div>
 </body>
+
 </html>
