@@ -195,7 +195,7 @@ if(onlyTabToShow){
 	}
 	if(!tabToShow){
 		tabToShow = tabs[0].id.replace("tab-","");
-		console.log("Showed tab " + idToShow + " by default");
+		console.log("Showed tab " + tabToShow + " by default");
 	}
 	selectTab(tabToShow);
 }

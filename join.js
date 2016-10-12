@@ -1519,7 +1519,7 @@ var setDevices = function(devicesToSet){
 			};
 			devices.push(deviceFromGroup);
 		}
-        UtilsObject.sort(devices,true,device=>device.deviceType,device=>device.deviceId.indexOf("share")>=0,device=>device.deviceName);
+        UtilsObject.sort(devices,true,device=>device.deviceId.indexOf("group")>=0,device=>device.deviceId.indexOf("share")>=0,device=>device.deviceType,device=>device.deviceName);
 		localStorage["devices"] = JSON.stringify(devices);
 	}
 	contextMenu.update(devices);
