@@ -11,7 +11,8 @@ html, body {
 }
 body {
 	height: 600px;
-	width: 410px;
+	width: 100%;
+	min-width: 410px;
 	font-family: "Roboto", sans-serif;
 	display: flex;
 	flex-direction: column;
