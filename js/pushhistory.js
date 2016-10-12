@@ -112,7 +112,7 @@ var PushHistory = function(deviceId){
 			}
 		}
 		resetTargetElement();
-		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"100px","height":"100px"});
+		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"50px","height":"50px"});
 		return Promise.resolve()
 		.then(function(){
 			if(!history){
