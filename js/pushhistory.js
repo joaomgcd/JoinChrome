@@ -194,7 +194,7 @@ var PushHistory = function(deviceId){
 				if(!date){
 					date = "Unknown Date";
 				}else{
-					date = UtilsObject.formatDate(date,true);
+					date = UtilsObject.formatDate(date,true,back.get12HourFormat());
 				}
 				setTextOrHide(dateElement,date);
 				//setTextOrHide(urlElement,pushItem.url,"<a href='"+pushItem.url+"'  target='_blank'>"+pushItem.text+"</a>");
