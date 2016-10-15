@@ -199,7 +199,7 @@ var PushHistory = function(deviceId){
 				setTextOrHide(dateElement,date);
 				//setTextOrHide(urlElement,pushItem.url,"<a href='"+pushItem.url+"'  target='_blank'>"+pushItem.text+"</a>");
 				if(pushItem.url){
-					pushElement.classList.add("clickable");
+					pushElement.classList.add("clickable", "url");
 				}
 				if(pushItem.clipboard){
 					setInputTextOrHide(clipboardElement,pushItem.clipboard);
