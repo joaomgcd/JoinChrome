@@ -14,15 +14,22 @@ var PushHistory = function(deviceId){
 		}
 		return googleDriveManager.getDevicePushes(deviceId, forceDownload);
 	}
-	var setValueOrHide = function(element,value,valueToSet,prop){
-		if(value){
-			if(!valueToSet){
-				valueToSet = value;
-			}
-			element[prop] = valueToSet;
-		}else{
-			UtilsDom.hideElement(element);
+	var setValueOrHide = function(element,value,valueToSet,prop){		
+		if(!valueToSet){
+			valueToSet = value;
 		}
+		var values = value;
+		if(!UtilsObject.isArray(values)){
+			values = [values];
+		}
+		for(var valueFinal of values){
+			if(valueFinal){
+				element[prop] = valueFinal;
+				return;
+			}
+		}
+		UtilsDom.hideElement(element);
+	
 	}
 	var setTextOrHide = function(element,value,valueToSet){
 		setValueOrHide(element,value,valueToSet,"innerHTML");
@@ -188,7 +195,7 @@ var PushHistory = function(deviceId){
 				var smsElement = pushElement.querySelector("#sms");
 
 				setImgSrcOrHide(iconElement,pushItem.icon);
-				setTextOrHide(textElement,pushItem.text);
+				setTextOrHide(textElement,[pushItem.text,pushItem.url]);
 				setTextOrHide(titleElement,pushItem.title);
 				var date = pushItem.date;
 				if(!date){
