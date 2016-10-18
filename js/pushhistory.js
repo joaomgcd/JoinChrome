@@ -14,15 +14,22 @@ var PushHistory = function(deviceId){
 		}
 		return googleDriveManager.getDevicePushes(deviceId, forceDownload);
 	}
-	var setValueOrHide = function(element,value,valueToSet,prop){
-		if(value){
-			if(!valueToSet){
-				valueToSet = value;
-			}
-			element[prop] = valueToSet;
-		}else{
-			UtilsDom.hideElement(element);
+	var setValueOrHide = function(element,value,valueToSet,prop){		
+		if(!valueToSet){
+			valueToSet = value;
 		}
+		var values = value;
+		if(!UtilsObject.isArray(values)){
+			values = [values];
+		}
+		for(var valueFinal of values){
+			if(valueFinal){
+				element[prop] = valueFinal;
+				return;
+			}
+		}
+		UtilsDom.hideElement(element);
+	
 	}
 	var setTextOrHide = function(element,value,valueToSet){
 		setValueOrHide(element,value,valueToSet,"innerHTML");
@@ -112,7 +119,7 @@ var PushHistory = function(deviceId){
 			}
 		}
 		resetTargetElement();
-		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"100px","height":"100px"});
+		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"50px","height":"50px"});
 		return Promise.resolve()
 		.then(function(){
 			if(!history){
@@ -188,13 +195,13 @@ var PushHistory = function(deviceId){
 				var smsElement = pushElement.querySelector("#sms");
 
 				setImgSrcOrHide(iconElement,pushItem.icon);
-				setTextOrHide(textElement,pushItem.text);
+				setTextOrHide(textElement,[pushItem.text,pushItem.url]);
 				setTextOrHide(titleElement,pushItem.title);
 				var date = pushItem.date;
 				if(!date){
 					date = "Unknown Date";
 				}else{
-					date = UtilsObject.formatDate(date,true);
+					date = UtilsObject.formatDate(date,true,back.get12HourFormat());
 				}
 				setTextOrHide(dateElement,date);
 				//setTextOrHide(urlElement,pushItem.url,"<a href='"+pushItem.url+"'  target='_blank'>"+pushItem.text+"</a>");
