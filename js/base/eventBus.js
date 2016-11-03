@@ -104,8 +104,10 @@ back.Events = {
 	},
 	"TestPopup" : function(){		
 	},
-	"PopupUnloaded" : function(){		
-	},
+  "PopupUnloaded" : function(){   
+  },
+  "PopupLoaded" : function(){   
+  },
 	"FilePicked" : function(){		
 	},
   "FileResponse" : function(fileId){
@@ -113,5 +115,9 @@ back.Events = {
   },
   "TabSelected" : function(tabId){
     this.tabId = tabId;   
+  },
+  "SMSReceived" : function(sms, senderId){
+    this.sms = sms;   
+    this.deviceId = senderId;
   }
 }

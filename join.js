@@ -721,6 +721,9 @@ var get12HourFormat = function(){
 var getAutoClipboard = function(){
 	return getOptionValue("checkbox","autoclipboard");
 }
+var getClipboardNotificationShowContents = function(){
+	return getOptionValue("checkbox","clipboardnotificationshowcontents");
+}
 var getAutoClipboardNotification = function(){
 	return getOptionValue("checkbox","autoclipboardnotification");
 }
@@ -796,6 +799,7 @@ var defaultValues = {
 	"downloadvideos":false,
 	"12hrformat":false,
 	"autoclipboard":false,
+	"clipboardnotificationshowcontents":true,
 	"autoclipboardnotification":true,
 	"chromenotifications":true,
 	"notificationwebsites":JSON.stringify(notificationPages,null,1),
@@ -1602,8 +1606,6 @@ var handleAutoClipboard = function(){
 	}
 }
 handleAutoClipboard();
-
-
 
 
 contextMenu.update(devices);

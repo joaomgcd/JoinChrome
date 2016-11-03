@@ -217,7 +217,11 @@ var GCMPush = function(){
 		}
 		if(this.push.clipboard){
 			directCopy(this.push.clipboard);
-			showNotification("Clipboard Set", this.push.clipboard ,5000);
+			var notificationText = this.push.clipboard;
+			if(!back.getClipboardNotificationShowContents()){
+				notificationText = "Clipboard content hidden";
+			}
+			showNotification("Clipboard Set",  notificationText,5000);
 		}
 		if(!this.push.url){
 			this.push.url = getUrlIfTextMatches([this.push.text,this.push.clipboard]);
@@ -773,8 +777,10 @@ var GCMNewSmsReceived = function(){
 		var gcmNtification = new GCMNotification();
 		gcmNtification.requestNotification = {notifications:[not], senderId:this.senderId};
 		gcmNtification.execute();
-		var sms = {"number":this.number,"text":this.text};
+		var sms = {"number":this.number,"text":this.text,"date":this.date,"received":true};
 		dispatch('smsreceived',{"sms":sms,"deviceId":this.senderId});
+
+		back.eventBus.post(new back.Events.SMSReceived(sms,this.senderId));
 	}
 }
 GCMNewSmsReceived.prototype = new GCM();

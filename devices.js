@@ -150,6 +150,7 @@ var sendSmsDevices = function(event){
 	
 };
 
+back.eventBus.post(new back.Events.PopupLoaded());
 back.addEventListener("sendsms",sendSmsDevices,false);
 back.addEventListener("phonecall",sendSmsDevices,false);
 addEventListener("unload", function (event) {

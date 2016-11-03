@@ -198,9 +198,21 @@ var ContactMessagesGetter = function(deviceId, contact){
 		me.messages.smses.push(sms);
 		me.saveLocalMessages();
 	}
+	var addStoredSmsToMyMessages = function(purge){		
+		var storedSmses = back.backgroundEventHandler.getSmsWhilePopupClosed(me.deviceId,purge);
+		for(var storedSms of storedSmses){
+			if(!me.messages.smses.first((sms)=>{
+				return Math.abs(sms.date - storedSms.date) < 1000 && sms.text == storedSms.text;
+			})){
+				me.messages.smses.push(storedSms);
+			}
+		}
+	}
 	this.getInfo = UtilsObject.async(function* (callback,callbackProgress,callbackError,sortFieldGetter, sortDescending, local){
 		setRefreshing(true);
-		if(me.messages){
+		
+		if(me.messages){			
+			addStoredSmsToMyMessages(false);
 			callback(me.messages);
 		}else if(me.contact.lastsms){
 			callback({"smses":[me.contact.lastsms]});
@@ -221,6 +233,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 			if(me.messages.smses){
 				me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
 			}
+			addStoredSmsToMyMessages(true);
 			callback(me.messages);
 			me.saveLocalMessages();
 			setRefreshing(false);
@@ -304,6 +317,8 @@ var SmsApp = function(){
 	me.onTabSelected = function(tabSelected){
 		if(tabSelected.tabId == "sms"){
 			me.clearSmsNotification();
+			me.scrollSmsListToBottom();
+			me.focusSmsInput();
 		}
 	}
 	me.clearSmsNotification = function(){
@@ -335,6 +350,12 @@ var SmsApp = function(){
 				},2000);
 			});
 		});
+	}
+	me.scrollSmsListToBottom = function(){
+		smsContainerElement.scrollTop = smsContainerElement.scrollHeight;
+	}
+	me.focusSmsInput = function(){
+		smsInputElement.focus();
 	}
 	var setPlaceholderText = function(text){
 		smsContainerElement.innerHTML = "<h5 id='tabsplaceholder'>"+text+"</h5>";
@@ -390,7 +411,7 @@ var SmsApp = function(){
 		me.addSms(deviceId,sms);
 	}
 	if(textFromUrl){
-		me.receiveSms(deviceIdFromUrl,{"number":numberFromUrl,"text":textFromUrl});
+		//me.receiveSms(deviceIdFromUrl,{"number":numberFromUrl,"text":textFromUrl});
 	}
 	var findContactForElement = function(element){
 		var element = event.target;
@@ -482,7 +503,7 @@ var SmsApp = function(){
 
 		me.clearSmsNotification();
 		smsInputElement.placeholder = "Send message to " + number;
-		smsInputElement.focus();
+		me.focusSmsInput();
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
 		contactMessagesGetter.getInfo(function(contactMessages){
 			var smses = contactMessages.smses;
@@ -522,7 +543,7 @@ var SmsApp = function(){
 				}
 				smsContainerElement.appendChild(smsMessageContainerElement);
 			}
-			smsContainerElement.scrollTop = smsContainerElement.scrollHeight;
+			me.scrollSmsListToBottom();
 		},function(progress){
 			setPlaceholderText(progress);
 		},function(error){
@@ -530,6 +551,7 @@ var SmsApp = function(){
 		},function(sms){
 			return sms.date;
 		},false,local);
+
 	}
 	me.writeContactListForSms = function(filter){
 		me.writeContactList(filter,function(deviceId, contact){
@@ -699,6 +721,7 @@ var smsReceived = function(event){
 	smsApp.refresh(true);
 	smsApp.clearSmsNotification();
 }
+
 back.addEventListener('smsreceived', smsReceived, false);
 back.eventBus.register(smsApp);
 addEventListener("unload", function (event) {

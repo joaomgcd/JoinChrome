@@ -256,6 +256,7 @@ var ContextMenu = function(){
 		for(var contextName in contexts){
 			contextNames.push(contextName);
 		}
+		
 		devices.doForAll(function(device){
 	        chrome.contextMenus.create({
 	            "id": device.deviceId,
