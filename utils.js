@@ -254,7 +254,7 @@ var getDeviceFileIdFromUrl = function(fileUrl){
 	return match[0];
 }
 var showPopup = function(url, height, width){
-	chrome.windows.create({"focused":false, url: url, type: 'detached_panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height});
+	chrome.windows.create({"focused":false, url: url, type: 'panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height});
 }
 var jump = function(h){
   if(!h){
