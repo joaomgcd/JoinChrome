@@ -39,7 +39,7 @@ var showNotificationsPopup = function(tab){
 	}
 	var height = getNotificationPopupHeight();
 	var width = getNotificationPopupWidth();
-	chrome.windows.create({"focused":false, url: 'devices.html?tab='+tab+'&closeOnEmpty=true', type: 'detached_panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
+	chrome.windows.create({"focused":false, url: 'devices.html?tab='+tab+'&closeOnEmpty=true', type: 'popup' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
 			notificationsWindow = win;
 	});
 }
@@ -87,7 +87,7 @@ var createPushClipboardWindow = function(tab,params,paramsIfClosed,closeAfterCom
         if(!height){
             height = 606;
         }
-		chrome.windows.create({ url: url, type: 'detached_panel' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
+		chrome.windows.create({ url: url, type: 'popup' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
 				popupWindowClipboard = clipboardWindow;
 				popupWindowClipboardId = clipboardWindow.id;
 		});
@@ -1321,7 +1321,7 @@ var sendSmsFromButtonCommand = function(deviceId){
 	if(number){
 		url += "#" + number;
 	}
-	chrome.windows.create({ url: url, type: 'detached_panel' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
+	chrome.windows.create({ url: url, type: 'popup' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
 		smsWindow = win;
 		smsWindowId = win.id;
 	});*/

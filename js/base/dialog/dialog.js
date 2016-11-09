@@ -20,12 +20,12 @@ var Dialog = function(htmlPath, input){
 				width = 500;
 			}
 			chrome.windows.create({
-				"focused":true, 
-				url: htmlPath + query, 
-				type: 'detached_panel' , 
-				width : width, 
-				height: height, 
-				left: Math.round((screen.width / 2) - (width /2)), 
+				"focused":true,
+				url: htmlPath + query,
+				type: 'popup' ,
+				width : width,
+				height: height,
+				left: Math.round((screen.width / 2) - (width /2)),
 				top: Math.round((screen.height / 2) - (height /2))
 			});
 			var resultListener = function(event){
