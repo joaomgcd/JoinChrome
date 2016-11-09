@@ -352,7 +352,9 @@ var SmsApp = function(){
 		});
 	}
 	me.scrollSmsListToBottom = function(){
-		smsContainerElement.scrollTop = smsContainerElement.scrollHeight;
+		if(me.number){
+			smsContainerElement.scrollTop = smsContainerElement.scrollHeight;	
+		}
 	}
 	me.focusSmsInput = function(){
 		smsInputElement.focus();
@@ -631,6 +633,8 @@ var SmsApp = function(){
 				var push = new back.GCMPush();
 				push.smsnumber = me.number;
 				push.smstext = text;
+				/*push.mmssubject = "First MMS from Join!";
+				push.mmsfile = "https://dl.dropboxusercontent.com/u/9787157/com.joaomgcd.join300.png";*/
 				push.senderId = me.deviceId;
 				push.responseType = 0;
 				push.requestId = "SMS";

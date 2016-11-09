@@ -256,6 +256,10 @@ var GCMPush = function(){
 					var gcmLocation = new GCMLocation();
 					gcmLocation.latitude = location.coords.latitude;
 					gcmLocation.longitude = location.coords.longitude;
+					if(me.push.fromTasker){
+						gcmLocation.forTasker = true;
+					}
+					gcmLocation.requestId = me.push.requestId;
 					gcmLocation.send(me.push.senderId);
 				});
 			}
