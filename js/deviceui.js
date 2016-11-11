@@ -121,13 +121,13 @@ var writeDevices = function(){
 
 		back.getCurrentTab(function(tab){
 			if(!tab || isPopup){
-				link.command.func(selectedDevice.deviceId,true, tab);
+				link.command.func(selectedDevice.deviceId,back.getShowInfoNotifications(), tab);
 				if(tab && !link.command.keepTab && closeAfterCommand)
 				{
 					chrome.tabs.remove(tab.id,function(){});
 				}
 			}else{
-				link.command.func(selectedDevice.deviceId,true);
+				link.command.func(selectedDevice.deviceId,back.getShowInfoNotifications());
 			}
 		});
 	}

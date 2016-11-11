@@ -204,7 +204,14 @@ var ContactMessagesGetter = function(deviceId, contact){
 			if(!me.messages.smses.first((sms)=>{
 				return Math.abs(sms.date - storedSms.date) < 1000 && sms.text == storedSms.text;
 			})){
-				me.messages.smses.push(storedSms);
+				if(storedSms.number == me.number){
+					back.console.log("Adding stored sms:");
+					back.console.log(storedSms);
+					me.messages.smses.push(storedSms);
+				}else{
+					back.console.log("Not Adding stored sms because different number:");
+					back.console.log(storedSms);
+				}
 			}
 		}
 	}
