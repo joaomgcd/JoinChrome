@@ -3,8 +3,6 @@ var emojRange = [
 ];
 document.addEventListener('DOMContentLoaded', function() {
 	var initResult = Dialog.init();
-	var divs = window.document.querySelectorAll("div");
-	console.log(divs);
 	var emojisElement = document.querySelector("#emojis");
 	for (var i = 0; i < emojRange.length; i++) {
 	  var range = emojRange[i];
@@ -13,7 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	  	div.innerHTML = "&#" + x + ";";
 	  }
 	}
-	for(var div of divs){
-		div.onclick = e => Dialog.setResult(e.target.innerHTML);
+
+	for(var emojiElement of window.document.querySelectorAll(".emoji")){
+		emojiElement.onclick = e => Dialog.setResult(e.target.innerHTML);
 	}
 });
