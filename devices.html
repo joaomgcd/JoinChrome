@@ -9,6 +9,7 @@
 	<script src="js/base/utilsdom.js"></script>
 	<script src="js/base/utilsbadge.js"></script>
 	<script src="js/base/utilsdevices.js"></script>
+    <script src="js/base/web.js"></script>
 	<!--<script src="js/base/eventBus.js"></script>-->
 	<script src="js/base/googleDriveManager.js"></script>
 	<script src="utils.js"></script>
@@ -60,8 +61,17 @@
 				</div>
 		<div id="smscontainer"></div>
 		<div id="smssendcontainer" class="input-field col s6">
+					<div  id="mmsextras" class="hidden">
+						<textarea placeholder="Subject" type="text" class="validate materialize-textarea" id="smssubject"></textarea>
+						<input type="checkbox" id="smsurgent" /><div id="smsurgenttext">Urgent</div>
+					</div>
+					<div id="smsattachment">
+						<img id="smsattachmentimage" src="icons/attachment.png"  class="waves-effect"/>
+						<img id="smsattachmentimageloading" src="icons/loading.gif" class="hidden" />
+						<div id="smsemoji"  class="waves-effect">😃</div>
+					</div>
 					<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
-					<div id="smssend" class="waves-effect"><img src="icons/send.png" style="opacity: 0.6"/></div>
+					<div id="smssend" class="waves-effect" title="Long-click for Subject"><img src="icons/send.png" style="opacity: 0.6"/></div>
 				</div>
 	</div>
 	<div id="devices"></div>

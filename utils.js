@@ -241,6 +241,9 @@ var getDriveUrlFromFileId = function(fileId){
 	if(fileId.indexOf(".")>=0){
 		return fileId;
 	}
+	if(fileId.indexOf("data:image")>=0){
+		return fileId;
+	}
 	return  baseDriveUrlFiles + fileId + "?alt=media";
 }
 var getDeviceFileIdFromUrl = function(fileUrl){
@@ -492,7 +495,7 @@ Array.prototype.first = function(func) {
 	};
 	return null;
 };
-Array.prototype.joinJoaomgcd = function(joiner) {
+Array.prototype.joinJoaomgcd = function(joiner,selectFunc) {
 	if(!joiner){
 		joiner=",";
 	}
@@ -501,6 +504,9 @@ Array.prototype.joinJoaomgcd = function(joiner) {
 		var item = this[i];
 		if(i>0){
 			joined += joiner;
+		}
+		if(selectFunc){
+			item = selectFunc(item);
 		}
 		joined += item;
 	};

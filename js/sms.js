@@ -82,7 +82,19 @@ var ContactsGetter = function(deviceId){
 				return contact.number == lastsms.address;
 			});
 			if(!contact){
-				contact = {"name":lastsms.address,"number":lastsms.address}
+				if(lastsms.address.indexOf(",") > -1){
+					var numberSplit = lastsms.address.split(",");
+					var contactsForNumbers = numberSplit.select(number=>{
+						var contactForNumber = me.contactsInfo.contacts.first(contact=>contact.number == number);
+						if(!contactForNumber){
+							contactForNumber =  {"name":number,"number":number};
+						}
+						return contactForNumber;
+					});
+					contact = {"name":contactsForNumbers.joinJoaomgcd(", ",contact=>contact.name),"number":contactsForNumbers.joinJoaomgcd(",",contact=>contact.number)};
+				}else{
+					contact = {"name":lastsms.address,"number":lastsms.address}
+				}
 				me.contactsInfo.contacts.push(contact);
 			}
 			contact.lastsms = lastsms;
@@ -247,7 +259,8 @@ var ContactMessagesGetter = function(deviceId, contact){
 		}catch(error){
 			console.log("Error downloading lastsms file: " + error);
 			delete localStorage[fileKey];
-			var response = yield doPostWithAuthPromise(joinserver + "requestfile/v1/request?alt=json",
+			fileResponse = yield requestFileAsync(me.deviceId, me.number, 4);
+			/*var response = yield doPostWithAuthPromise(joinserver + "requestfile/v1/request?alt=json",
 			{
 				"deviceId":me.deviceId,
 				"payload":me.number,
@@ -258,7 +271,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 			if(!response.success){
 				throw new Error(response.errorMessage);
 			}
-			var fileResponse = yield back.eventBus.waitFor(back.Events.FileResponse,60000);
+			var fileResponse = yield back.eventBus.waitFor(back.Events.FileResponse,60000);*/
 			console.log("Response File");
 			console.log(fileResponse.fileId);
 			me.getInfo(callback,callbackProgress,callbackError,sortFieldGetter, sortDescending,false);
@@ -269,8 +282,16 @@ var ContactMessagesGetter = function(deviceId, contact){
 var SmsApp = function(){
 
 	var me = this;
+	var googleDriveManager = new GoogleDriveManager();
 	var smsTitleContainerElement = document.getElementById("smstitlecontainer");
 	var smsInputContainerElement = document.getElementById("smssendcontainer");
+	var smsAttachFileElement = document.getElementById("smsattachment");
+	var smsAttachFileImageElement = document.getElementById("smsattachmentimage");
+	var smsSubjectElement = document.getElementById("smssubject");
+	var smsUrgentElement = document.getElementById("smsurgent");
+	var smsMmsExtrasElement = document.getElementById("mmsextras");
+	var smsEmojiElement = document.getElementById("smsemoji");
+	var smsAttachFileImageLoadingElement = document.getElementById("smsattachmentimageloading");
 	var smsInputElement = document.getElementById("smsinput");
 	var smsTitleElement = document.getElementById("smstitle");
 	var contactFindContainerElement = document.getElementById("contactfindcontainer");
@@ -279,6 +300,57 @@ var SmsApp = function(){
 	var newSmsButton = document.getElementById("newsmsbutton");
 	var newSmsButtonIcon = document.getElementById("newsmsbuttonicon");
 	var newCallButtonIcon = document.getElementById("newcallbuttonicon");
+	var mmsAttachment = null;
+	if(!back.getBetaEnabled()){
+		smsAttachFileImageElement.classList.add("hidden");
+	}
+	var highlightColor = "#FF9800";
+	var lowlightColor = "#757575";
+	var setButtonColor = function(e, color){
+		//tintImage(e.target,color);
+	}
+	var buttonHover = function(e){
+		setButtonColor(e,highlightColor);
+	};
+	var buttonHoverOut = function(e){
+		setButtonColor(e,lowlightColor);
+	};
+	smsEmojiElement.onclick = e => Dialog.showEmojiDialog()().then(emoji=>{
+		var index = smsInputElement.selectionStart;
+		smsInputElement.value = UtilsObject.spliceString(smsInputElement.value,index,0,emoji);
+		smsInputElement.focus();
+		smsInputElement.selectionStart = index+1;
+		smsInputElement.selectionEnd = index+1;
+	});
+	smsAttachFileImageElement.onclick = e =>{
+		return back.UtilsDom.pickFile()
+	   .then(files => {
+	   		if(!files){
+	   			files = back.UtilsDom.fileInput.files;
+	   		}
+	   		if(!files || files.length == 0){
+	   			return;
+	   		}
+	   		UtilsDom.readPickedFile(files[0])
+	   		.then(result=>smsAttachFileImageElement.src = result)
+	   		.then(()=>{
+	   			smsAttachFileImageLoadingElement.classList.remove("hidden");
+	   			return googleDriveManager.uploadFiles({
+		            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
+		            notify: false
+		        }, files);
+		   	})
+	        .then(uploadResults => {
+	   			smsAttachFileImageLoadingElement.classList.add("hidden");
+	        	if(uploadResults && uploadResults.length > 0){
+	        		mmsAttachment = GoogleDriveManager.getDownloadUrlFromFileId(uploadResults[0]);
+	        		//return setImageFromUrl(uploadedImageUrl,smsAttachFileImageElement);	
+	        	}
+	        });
+	   	});
+	}
+	smsAttachFileElement.onmouseover = buttonHover;
+	smsAttachFileElement.onmouseout = buttonHoverOut;
 	smsInputElement.addEventListener("keydown",function(e){
 		if(e.keyCode == 13 && !e.shiftKey){
 			e.preventDefault();
@@ -415,7 +487,9 @@ var SmsApp = function(){
 		contactMessagesGetter.addSms(sms);
 	}
 	me.receiveSms= function(deviceId, sms){
-		sms.date = Date.now();
+		if(!sms.date){
+			sms.date = Date.now();
+		}
 		sms.received = true;
 		me.addSms(deviceId,sms);
 	}
@@ -495,8 +569,30 @@ var SmsApp = function(){
 			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
 	});
-
-	me.writeContactMessages = function(deviceId, contact, local){
+	var revealMmsAttachment = function(smsAttachmentElement, askForFileRemotely){
+		var attachmentId = smsAttachmentElement.sms.attachmentPartId;
+		var imageElementId = "mmsattachment=:=" + attachmentId;
+		smsAttachmentElement.innerHTML = ``;
+		var imageElement = UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":"icons/loading.gif","class":"loading"});
+		var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
+		return firstStep.
+		then(()=>googleDriveManager.getFile({fileName:imageElementId}))		
+		.then(file=>{
+			return setImageFromUrl(file.url,imageElement);
+		})
+		.then(()=>imageElement.classList.remove("loading"))
+		.catch(error=>{
+			if(!askForFileRemotely){
+				return revealMmsAttachment(smsAttachmentElement,true);	
+			}else{
+				imageElement.src = "error.png"
+			}
+			/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
+			linkToReveal.innerHTML = " Try Again";
+			linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement, true);	*/
+		});
+	}
+	me.writeContactMessages = function (deviceId, contact, local){
 		me.deviceId = deviceId;
 		me.contact = contact;
 		localStorage.smsDeviceContact = JSON.stringify(me.contact);
@@ -529,6 +625,9 @@ var SmsApp = function(){
 				var triangleElementReceived = smsMessageContainerElement.querySelector("#smsbubbletrianglereceived");
 				var smsMessageElement = smsMessageContainerElement.querySelector("#smsmessage");
 				var smsTextElement = smsMessageElement.querySelector("#smsmessagetext");
+				var smsSubjectElement = smsMessageElement.querySelector("#smsmessagesubject");
+				var smsUrgentElement = smsMessageElement.querySelector("#smsmessageurgent");
+				var smsAttachmentElement = smsMessageElement.querySelector("#smsmessageattachment");
 				var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
 				var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
 
@@ -537,6 +636,30 @@ var SmsApp = function(){
 					smsText = smsText.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>")	
 				}
 				smsTextElement.innerHTML = Autolinker.link(smsText);
+				if(sms.subject){
+					smsSubjectElement.innerHTML = `Subject: ${sms.subject}`;
+				}else{
+					smsSubjectElement.classList.add("hidden");
+				}
+				if(sms.urgent){
+					smsUrgentElement.classList.remove("hidden");
+				}else{
+					smsUrgentElement.classList.add("hidden");
+				}
+				if(sms.attachmentPartId){
+					var imageElementId = "mmsattachment=:=" + sms.attachmentPartId;
+					if(!sms.attachment){
+						smsAttachmentElement.sms = sms;
+						var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
+						linkToReveal.innerHTML = "See Image";
+						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);		
+					}else{
+						UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":sms.attachment});
+					}			
+				}else{
+					smsAttachmentElement.classList.add("hidden");
+				}						
+				
 				smsDateElement.innerHTML = sms.date.formatDate(true);
 				if(sms.received){
 					smsMessageElement.classList.add("received");
@@ -637,36 +760,48 @@ var SmsApp = function(){
 		if(!text){
 			return;
 		}
-				var push = new back.GCMPush();
-				push.smsnumber = me.number;
-				push.smstext = text;
-				/*push.mmssubject = "First MMS from Join!";
-				push.mmsfile = "https://dl.dropboxusercontent.com/u/9787157/com.joaomgcd.join300.png";*/
-				push.senderId = me.deviceId;
-				push.responseType = 0;
-				push.requestId = "SMS";
-		var sms = {"text": text,"number":me.number,"progress":true};
-				var sendSmsResult = function(event){
-					sms.progress = false;
-					back.removeEventListener("smssent",sendSmsResult,false);
-					if(event.success){
-							// console.log("SMS pushed");
-							//back.showNotification("Join","SMS sent!");
-					}else{
-							var error = "Error sending SMS: " + event.errorMessage;
-							console.log(error);
-							back.showNotification("Join",error);
-					}
+		var subject = smsSubjectElement.value;
+		var urgent = smsUrgentElement.checked;
+		var push = new back.GCMPush();
+		push.smsnumber = me.number;
+		push.smstext = text;
+		push.mmssubject = subject;
+		push.mmsfile = mmsAttachment;
+		push.mmsurgent = urgent;
+		//push.mmsfile = "https://dl.dropboxusercontent.com/u/9787157/battery_half_drive.png";
+		push.senderId = me.deviceId;
+		push.responseType = 0;
+		push.requestId = "SMS";
+		var sms = {
+			"text": text,
+			"number":me.number,
+			"progress":true,
+			"attachment":smsAttachFileImageElement.src,
+			"attachmentPartId":mmsAttachment ? "sentAttachment": null,
+			"subject": subject,
+			"urgent": urgent
+		};
+		var sendSmsResult = function(event){
+			sms.progress = false;
+			back.removeEventListener("smssent",sendSmsResult,false);
+			if(event.success){
+					// console.log("SMS pushed");
+					//back.showNotification("Join","SMS sent!");
+			}else{
+					var error = "Error sending SMS: " + event.errorMessage;
+					console.log(error);
+					back.showNotification("Join",error);
+			}
 			me.addSms(me.deviceId,sms);
 			me.refresh(true);
 			var isReply = getURLParameter("reply");
 			if(isReply){
 				window.close();
 			}
-				};
-				back.addEventListener("smssent",sendSmsResult,false);
-				push.send(me.deviceId);
-				//back.showNotification("Join","SMS pushed. Waiting for response...");
+		};
+		back.addEventListener("smssent",sendSmsResult,false);
+		push.send(me.deviceId);
+		//back.showNotification("Join","SMS pushed. Waiting for response...");
 		sms.date = Date.now();
 		sms.received = false;
 		me.addSms(me.deviceId,sms);
@@ -676,7 +811,12 @@ var SmsApp = function(){
 	}
 	this.newInput = function(){
 		smsInputElement.value = "";
-		smsInputElement.focus();		
+		smsSubjectElement.value = "";
+		smsUrgentElement.checked = false;
+		smsMmsExtrasElement.classList.add("hidden")
+		smsInputElement.focus();
+		mmsAttachment = null;
+		smsAttachFileImageElement.src ="icons/attachment.png";		
 		delete localStorage.smsDraft;
 	}
 	this.refresh = function(local){
@@ -690,9 +830,8 @@ var SmsApp = function(){
 	document.querySelector("#smstitlecontainer").addEventListener("click",function(){
 		me.writeSms(me.deviceId);
 	});
-	document.querySelector("#smssend").addEventListener("click",function(){
-		me.sendSms();
-	});
+	UtilsDom.onClickAndLongClick(document.querySelector("#smssend"),e=>me.sendSms(),e=>{if(back.getBetaEnabled())smsMmsExtrasElement.classList.toggle("hidden")});
+	
 	if(me.deviceId){
 		me.refresh(false);
 	}

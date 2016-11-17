@@ -740,16 +740,21 @@ var GCMNotificationClear = function(){
 GCMNotificationClear.prototype = new GCM();
 
 var GCMNewSmsReceived = function(){
-
+	var me = this;
 	this.getCommunicationType = function() {
 		return "GCMNewSmsReceived";
 	}
-	this.execute = function() {
-		var title = "New SMS from " + this.name;
+	this.execute = UtilsObject.async(function* () {
+		
+		var SMSorMMS = "SMS";
+		if(me.subject || me.attachmentPartId || me.number.indexOf(",")>-1){
+			SMSorMMS = "MMS";
+		}
+		var title = `New ${SMSorMMS} from ${me.name}`;
 		/*var chromeNotification = new ChromeNotification({
-				"id":"sms=:=" + this.senderId + "=:=" + this.number + "=:=" + this.text,
+				"id":"sms=:=" + me.senderId + "=:=" + me.number + "=:=" + me.text,
 				"title":title,
-				"text":this.text,"actionId":"newsms",
+				"text":me.text,"actionId":"newsms",
 				"buttons":[{
 					"text": Constants.REPLY_DIRECTLY,
 					"icon": "icons/reply.png"
@@ -758,34 +763,51 @@ var GCMNewSmsReceived = function(){
 		chromeNotification.notify(); */
 
 		var not = {};
-		not.id = UtilsSMS.getNotificationId(this.senderId, this.number);
+		not.id = UtilsSMS.getNotificationId(me.senderId, me.number);
 		not.title= title;
-		not.text = this.text;
+		not.text = me.text;
 		not.priority = 2;
 		not.appName = "Join";
 		not.replyId = SMS_ACTION_ID;
 		not.noPrompt = true;
-		not.actionDescription = "Sending SMS to " + this.name + "...";
+		not.actionDescription = "Sending SMS to " + me.name + "...";
 		not.cancelOnAction = true;
-		not.smsnumber = this.number;
-		not.smsname = this.name;
-		not.smstext = this.text;
+		not.smsnumber = me.number;
+		not.smsname = me.name;
+		not.smstext = me.text;
 		not.actionId = SMS_ACTION_ID;
 		not.buttons = [];
-		if(this.text.match(regexNumbers)){
+		if(me.attachmentPartId){
+			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName("mmsattachment=:="+me.attachmentPartId);
+			not.image = yield doGetBase64ImagePromise(imageUrl);
+		}
+		if(me.text.match(regexNumbers)){
 			not.buttons.push({
 				text: "Copy Number",
 				actionId: COPY_NUMBER
 			});
 		}
 		var gcmNtification = new GCMNotification();
-		gcmNtification.requestNotification = {notifications:[not], senderId:this.senderId};
+		gcmNtification.requestNotification = {notifications:[not], senderId:me.senderId};
 		gcmNtification.execute();
-		var sms = {"number":this.number,"text":this.text,"date":this.date,"received":true};
-		dispatch('smsreceived',{"sms":sms,"deviceId":this.senderId});
+		var sms = {
+			"number":me.number,
+			"text":me.text,
+			"date":me.date,
+			"received":true,
+			"subject":me.subject,
+			"urgent":me.urgent,
+			"attachmentPartId":me.attachmentPartId, 
+			"attachment":not.image
+		};
+		console.log(`Received ${SMSorMMS}`);
+		console.log(sms);
+		dispatch('smsreceived',{"sms":sms,"deviceId":me.senderId});
 
-		back.eventBus.post(new back.Events.SMSReceived(sms,this.senderId));
-	}
+		back.eventBus.post(new back.Events.SMSReceived(sms,me.senderId));
+				
+		
+	});
 }
 GCMNewSmsReceived.prototype = new GCM();
 var GCMSmsSentResult = function(){
@@ -859,6 +881,13 @@ var GCMPhoneCall = function(){
 	}
 }
 GCMPhoneCall.prototype = new GCM();
+var GCMRequestFile = function(){
+	this.getCommunicationType = function() {
+		return "GCMRequestFile";
+	}
+}
+GCMRequestFile.prototype = new GCM();
+
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){
 		directCopy(lastTextPushed);

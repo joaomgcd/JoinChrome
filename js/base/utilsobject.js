@@ -170,6 +170,14 @@ var UtilsObject = {
 		var win = window.open(url, '_blank');
 		win.focus();
 	},
+	"spliceString" : function(original, idx, rem, str) {
+		var start = original.slice(0, idx);
+		var end = original.slice(idx + Math.abs(rem));
+		/*console.log("start: " + start);
+		console.log("end: " + end);
+		console.log("adding: " + str);*/
+	    return  start + str + end;
+	},
 	"sort" : function(array,invert,...compareFieldFuncs){
 		if(compareFieldFuncs.length == 0){
 			array.sort();

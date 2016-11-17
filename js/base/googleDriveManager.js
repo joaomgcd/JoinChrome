@@ -81,6 +81,12 @@ var GoogleDriveManager = function(){
 			else{
 				return file;
 			}
+		})
+		.then(file=>{
+			if(file && file.id){
+				file.url = GoogleDriveManager.getDownloadUrlFromFileId(file.id);
+			}
+			return file;
 		});
 		
 	}
@@ -147,7 +153,7 @@ var GoogleDriveManager = function(){
 		return uploadNewContent(options)
 		.then(function(uploadedFile){
 			if(options.notify){
-				showNotification("Join","Uploaded " + options.fileName);
+				back.showNotification("Join","Uploaded " + options.fileName);
 			}
 			options.fileId = uploadedFile.id;
 			return options;
@@ -429,8 +435,21 @@ GoogleDriveManager.getDownloadUrlFromFileId = function(fileId){
 	if(!fileId){
 		return null;
 	}
+	if(fileId.indexOf("http")>=0){
+		fileId = GoogleDriveManager.getFileIdFromUrl(fileId);
+	}
 	if(fileId.indexOf(".")>=0){
 		return fileId;
 	}
 	return  GoogleDriveManager.baseDriveUrlFiles + fileId + "?alt=media";
+}
+GoogleDriveManager.getDownloadUrlFromFileName = function(fileName){
+	if(!fileName){
+		return null;
+	}
+	console.log("Getting download url for " + fileName);
+	return new GoogleDriveManager()
+	.getFile({"fileName":fileName})
+	.then(file=>GoogleDriveManager.getDownloadUrlFromFileId(file.id))
+	.catch(error=>console.log("Couldn't get download url for file name " + fileName));
 }

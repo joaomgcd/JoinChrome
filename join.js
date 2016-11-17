@@ -739,6 +739,9 @@ var getNotificationSeconds = function(){
 var getNotificationRequireInteraction = function(){
     return getOptionValue("checkbox","notificationrequireinteraction");
 }
+var getBetaEnabled = function(){
+    return getOptionValue("checkbox","showbetafeatures");
+}
 var getNotificationSound = function(){
 	return getOptionValue("text","notificationsound");
 }
@@ -809,7 +812,8 @@ var defaultValues = {
 	"playnotificationsound": true,
     "showinfonotifications": true,
     "autoopenlinks": true,
-    "notificationrequireinteraction": false
+    "notificationrequireinteraction": false,
+    "showbetafeatures": false
 };
 //setShowChromeNotifications(true);
 /******************************************************************************/
@@ -1220,34 +1224,14 @@ var pushCall = function(deviceId, notify, contact){
 }
 var fileInput = null;
 var pushFile = function(deviceId, notify, tab){
-	if(!fileInput){
-		return;
-	}
-    var fileInputListener = null;
+	
 
-    //check if the popup closes before the user is able to select the file
-    new Promise(function(resolve,reject){
-        fileInputListener = {
-            "onPopupUnloaded":function(){
-                reject();
-            },
-            "onFilePicked":function(){
-                resolve();
-            }
-        }
-        eventBus.register(fileInputListener);
-    })
-    .catch(function(){
-        alert("Seems that the Join popup was closed by your system before you selected the file, which will make file sending not work.\n\nPlease popout the window using the popout button inside the Join popup and try again.");        
-    })
-    .then(function(){
-        if(fileInputListener){
-            eventBus.unregister(fileInputListener);
-        }
-    });
-
-	fileInput.onchange = function(){
-		eventBus.post(new Events.FilePicked());
+   return UtilsDom.pickFile()
+   .then(files => {
+   		if(!files){
+   			files = back.UtilsDom.fileInput.files;
+   		}
+   		var fileInput = {"files" : files};
 		if(tab){
 			chrome.tabs.remove(tab.id,function(){
 			});
@@ -1266,7 +1250,7 @@ var pushFile = function(deviceId, notify, tab){
         if(device){
             accountToShareTo = device.userAccount;
         }
-        googleDriveManager.uploadFiles({
+        return googleDriveManager.uploadFiles({
             folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
             accountToShareTo:accountToShareTo,
             notify: getShowInfoNotifications()
@@ -1283,6 +1267,11 @@ var pushFile = function(deviceId, notify, tab){
             setLastPush(deviceId, "pushFile");
         })
         .catch(UtilsObject.handleError);
+   });
+
+	fileInput.onchange = function(){
+		eventBus.post(new Events.FilePicked());
+		
 	}
 	fileInput.click();
 }
@@ -1671,3 +1660,4 @@ contextMenu.update(devices);
 }).catch(function(error){
     console.log("Didn't upload file: " + error);
 });*/
+//Dialog.showEmojiDialog()();

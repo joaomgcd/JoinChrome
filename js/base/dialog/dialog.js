@@ -95,6 +95,21 @@ Dialog.showOkCancelDialog = function(input,options){
 		return Dialog.show("okcancel",input,options);	
 	}
 }
+Dialog.showEmojiDialog = function(input,options){
+	return function(){
+		if(!input){
+			input = {
+				"title":"Choose Emoji"
+			};
+		}
+		if(!options){
+			options = {};
+		}
+		options.width = 600;
+		options.height = 405;
+		return Dialog.show("emoji",input,options);	
+	}
+}
 Dialog.confirm = function(title,subtitle){
 	 return Promise
     .resolve()

@@ -108,7 +108,8 @@ back.Events = {
   },
   "PopupLoaded" : function(){   
   },
-	"FilePicked" : function(){		
+	"FilePicked" : function(files){
+    this.files = files;	
 	},
   "FileResponse" : function(fileId){
     this.fileId = fileId;   

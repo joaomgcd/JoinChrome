@@ -188,12 +188,33 @@ var doGetBase64Image = function(url, callback) {
 		callback(base64);
 	});
 }
-var setImageFromUrl =function(url, imageElement){
+
+var doGetBase64ImagePromise = function(url) {
 	return new Promise(function(resolve, reject){
 		doGetBase64Image(url,resolve);
-	})
+	});
+}
+var setImageFromUrl =function(url, imageElement){
+	return doGetBase64ImagePromise(url)
 	.then(function(base64){
 		imageElement.src = base64;
 		return base64;
 	});
 }
+var requestFileAsync = UtilsObject.async(function* (deviceId, payload, requestType){
+	console.log("Asking for file remotely");
+	console.log(payload);
+	var response = yield doPostWithAuthPromise(joinserver + "requestfile/v1/request?alt=json",
+	{
+		"deviceId":deviceId,
+		"payload":payload,
+		"requestType":requestType,
+		"senderId": localStorage.deviceId
+	});
+	console.log(response);
+	if(!response.success){
+		throw new Error(response.errorMessage);
+	}
+	var fileResponse = yield back.eventBus.waitFor(back.Events.FileResponse,60000);
+	return fileResponse;
+});

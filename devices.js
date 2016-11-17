@@ -22,6 +22,7 @@ var refreshDevices = function(callback){
 		}
 	});
 }
+
 var clearClipboardWindows = function(){
 	return chrome.extension.getBackgroundPage().clearClipboardWindows();
 }
@@ -228,7 +229,8 @@ var setRefreshing = function(refreshing){
 		refreshElement.classList.remove("rotating");
 	}
 }
-back.fileInput = document.getElementById("uploadfile");
+back.UtilsDom.fileInput = document.getElementById("uploadfile");
+//back.fileInput = document.getElementById("uploadfile");
 
 var devicesUpdated = function(event){
 	writeDevices();
