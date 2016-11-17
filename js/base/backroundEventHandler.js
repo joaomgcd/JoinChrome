@@ -36,5 +36,5 @@ if(back.eventBus){
 	}
 	back.backgroundEventHandler = new BackgroundEventHandler();
 
-	back.eventBus.register(backgroundEventHandler);
+	back.eventBus.register(back.backgroundEventHandler);
 }
