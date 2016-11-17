@@ -1,4 +1,4 @@
-if(eventBus){
+if(back.eventBus){
 	var BackgroundEventHandler = function(){
 		var trackReceivedSms = true;
 		var smsWhilePopupClosed = {};
@@ -36,5 +36,5 @@ if(eventBus){
 	}
 	back.backgroundEventHandler = new BackgroundEventHandler();
 
-	eventBus.register(backgroundEventHandler);
+	back.eventBus.register(backgroundEventHandler);
 }

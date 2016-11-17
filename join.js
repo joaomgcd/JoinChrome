@@ -1268,12 +1268,6 @@ var pushFile = function(deviceId, notify, tab){
         })
         .catch(UtilsObject.handleError);
    });
-
-	fileInput.onchange = function(){
-		eventBus.post(new Events.FilePicked());
-		
-	}
-	fileInput.click();
 }
 var smsWindow = null;
 var smsWindowId = null;

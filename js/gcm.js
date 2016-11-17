@@ -747,7 +747,7 @@ var GCMNewSmsReceived = function(){
 	this.execute = UtilsObject.async(function* () {
 		
 		var SMSorMMS = "SMS";
-		if(me.subject || me.attachmentPartId || me.number.indexOf(",")>-1){
+		if(me.subject || me.attachmentPartId || me.number.indexOf(",")>-1 || me.urgent){
 			SMSorMMS = "MMS";
 		}
 		var title = `New ${SMSorMMS} from ${me.name}`;
