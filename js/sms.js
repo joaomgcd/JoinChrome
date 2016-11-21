@@ -466,6 +466,9 @@ var SmsApp = function(){
 		smsTitleElement.innerHTML = text;
 	}
 	var showTitle = function(show){
+		if(!show){
+			me.contactListShowing = false;
+		}
 		showNewSmsButton(!show);
 		if(!show){
 			smsTitleContainerElement.classList.add("hidden");
@@ -763,6 +766,7 @@ var SmsApp = function(){
 			if(filter && filter.match(/[0-9]+/) == filter){
 				addContactToList({"name":"Unlisted Contact","number": filter});
 			}
+			me.contactListShowing = true;
 		}
 	}
 	me.writeContactList = function(filter,callback){

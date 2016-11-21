@@ -1185,10 +1185,18 @@ var pushTaskerCommand = function(deviceId, notify,text){
     setLastPush(deviceId, "pushTaskerCommand"); 
 }
 var selectContactForCall = function(deviceId){
-    dispatch("phonecall",{"deviceId":deviceId});
     if(!popupWindow && !popupWindowClipboard){
         showSmsPopup(deviceId);
-    }
+        back.console.log("Waiting for popup to open...");
+		back.eventBus.waitFor(back.Events.PopupLoaded,5000)
+		.then(()=>UtilsObject.wait(500))
+		.then(()=>{
+        	back.console.log("Popup opened!");
+			dispatch("phonecall",{"deviceId":deviceId})
+		});
+    }else{
+		dispatch("phonecall",{"deviceId":deviceId});
+	}
 }
 var showPushHistory = function(deviceId){
     openTab("components/push-history.html?deviceId=" + deviceId);
