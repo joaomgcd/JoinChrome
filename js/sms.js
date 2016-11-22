@@ -214,7 +214,12 @@ var ContactMessagesGetter = function(deviceId, contact){
 		var storedSmses = back.backgroundEventHandler.getSmsWhilePopupClosed(me.deviceId,purge);
 		for(var storedSms of storedSmses){
 			if(!me.messages.smses.first((sms)=>{
-				return Math.abs(sms.date - storedSms.date) < 1000 && sms.text == storedSms.text;
+				if(sms.text != storedSms.text){
+					return false;
+				}
+				var timeDifference = Math.abs(sms.date - storedSms.date);
+				console.log("Same text, time difference: " + timeDifference);
+				return timeDifference < 10000;
 			})){
 				if(storedSms.number == me.number){
 					back.console.log("Adding stored sms:");
