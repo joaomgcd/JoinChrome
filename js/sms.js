@@ -162,7 +162,7 @@ var ContactsGetter = function(deviceId){
 		})
 		.then(function(lastsms){
 			if(lastsms.error){
-				var message = "Error getting lastsms: " + contacts.error.message;				
+				var message = "Error getting lastsms: " + lastsms.error.message;				
 				return UtilsObject.errorPromise(message);
 			}
 			me.lastsms = lastsms;
@@ -590,16 +590,18 @@ var SmsApp = function(){
 			}
 		}catch(error){
 			console.error(error);
-			var deviceSelected = yield me.assureDeviceIdSelected();
-			setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");			
-			setRefreshing(true);
-			var fileResponse = yield requestFileAsync(me.deviceId, "", 3);			
-			setRefreshing(false);
-			if(!fileResponse){
-				setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");			
-			}else{
-				me.refresh(false);
+			if(back.getBetaEnabled()){
+				var deviceSelected = yield me.assureDeviceIdSelected();
+				setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");			
+				setRefreshing(true);
+				var fileResponse = yield requestFileAsync(me.deviceId, "", 3);			
+				setRefreshing(false);
+				if(fileResponse){
+					me.refresh(false);
+					return;
+				}
 			}
+			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
 	});
 	var revealMmsAttachment = function(smsAttachmentElement, askForFileRemotely){
