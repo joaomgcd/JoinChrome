@@ -24,7 +24,7 @@ var deviceCommands = [
 		"func":back.writeText,
 		"showForGroups":joindevices.groups.deviceGroups.androidGroups,
 		"condition":function(device){
-			return (device.deviceType == DEVICE_TYPE_ANDROID_PHONE || device.deviceType == DEVICE_TYPE_ANDROID_TABLET) && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_CLIPBOARD);
+			return UtilsDevices.canSendSMS(device);
 		},
 		"hasText":true
 	},

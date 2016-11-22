@@ -175,7 +175,7 @@ var ContactsGetter = function(deviceId){
 		})
 		.then(function(contactsInfo){
 			if(contactsInfo.error){
-				var message = "Error getting contacts: " + contacts.error.message;
+				var message = "Error getting contacts: " + contactsInfo.error.message;
 				return UtilsObject.errorPromise(message);
 			}
 			me.contactsInfo = contactsInfo;
@@ -590,7 +590,16 @@ var SmsApp = function(){
 			}
 		}catch(error){
 			console.error(error);
-			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
+			var deviceSelected = yield me.assureDeviceIdSelected();
+			setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");			
+			setRefreshing(true);
+			var fileResponse = yield requestFileAsync(me.deviceId, "", 3);			
+			setRefreshing(false);
+			if(!fileResponse){
+				setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");			
+			}else{
+				me.refresh(false);
+			}
 		}
 	});
 	var revealMmsAttachment = function(smsAttachmentElement, askForFileRemotely){
@@ -844,13 +853,36 @@ var SmsApp = function(){
 		smsAttachFileImageElement.src ="icons/attachment.png";		
 		delete localStorage.smsDraft;
 	}
-	this.refresh = function(local){
+	this.assureDeviceIdSelected = UtilsObject.async(function* (){
+		if(!me.deviceId || !back.devices.first(device=>device.deviceId == me.deviceId)){
+			console.error("SMS Device doesn't exist!");
+			var devicesForSms = back.devices.where(UtilsDevices.canSendSMS);
+			var choices = devicesForSms.select(device=>({"id":device.deviceId,"text":device.deviceName}));
+			try{
+				var chosen = yield Dialog.showMultiChoiceDialog({
+				    items:choices,
+				    title:"Which device for SMS?"
+				})();
+				console.log("chosen device: " + chosen.id);
+				localStorage.smsDeviceId = chosen.id;
+				me.deviceId = chosen.id;
+				return true;
+			}catch(error){
+				delete localStorage.smsDeviceId;
+				selectTab("devices");
+				return false;
+			}		
+		}
+		return true;
+	});
+	this.refresh = UtilsObject.async(function* (local){
+		yield me.assureDeviceIdSelected();
 		if(me.contact){
 			me.writeContactMessages(me.deviceId,me.contact,local);
 		}else{
 			me.writeSms(me.deviceId,local);
 		}
-	}
+	});
 
 	document.querySelector("#smstitlecontainer").addEventListener("click",function(){
 		me.writeSms(me.deviceId);

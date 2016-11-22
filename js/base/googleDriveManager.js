@@ -9,7 +9,7 @@ var GoogleDriveManager = function(){
 		if(!fileName){
 			return UtilsObject.errorPromise("No file name provided");
 		}
-		var query = "name = '" + fileName + "'";
+		var query = "name = '" + fileName + "' and trashed = false";
 		if(folderId){
 			query = "'" + folderId + "' in parents and " + query;
 		}
@@ -91,7 +91,7 @@ var GoogleDriveManager = function(){
 		
 	}
 	var getFolderIdForNameAndParentId = function(name, parentId){
-		var query = "name='"+name+"'";
+		var query = "name='"+name+"' and trashed = false";
 		if(parentId){
 			query += " and '"+parentId+"' in parents";
 		}

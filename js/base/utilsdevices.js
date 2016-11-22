@@ -31,6 +31,9 @@ var UtilsDevices = {
 		}else{
 			return canCreateNotifications;
 		}
+	},
+	"canSendSMS":function(device){
+		return device.deviceType == DEVICE_TYPE_ANDROID_PHONE && UtilsDevices.isNotDeviceShare(device);
 	}
 };
 UtilsDevices.PERMISSION_NONE = 0b0; //0

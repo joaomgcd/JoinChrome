@@ -92,6 +92,8 @@ for (var i = 0; i < tabs.length; i++) {
 };
 var tabTitleElement = document.getElementById("currenttabtitle");
 var selectTab = function(idToShow){
+	
+	refreshTabVisibility();
 	 for (var i = 0; i < tabs.length; i++) {
 		var tab = tabs[i];
 		var currentId = tab.id.replace("tab-","");
