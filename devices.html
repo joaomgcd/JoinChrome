@@ -62,21 +62,22 @@
 				</div>
 		<div id="smscontainer"></div>
 		<div id="smssendcontainer" class="input-field col s6">
-					<div  id="mmsextras" class="hidden">
-						<textarea placeholder="Subject" type="text" class="validate materialize-textarea" id="smssubject"></textarea>
-						<input type="checkbox" id="smsurgent" /><div id="smsurgenttext">Urgent</div>
-					</div>
-					<div id="smsattachment">
-						<img id="smsattachmentimage" src="icons/attachment.png"  class="waves-effect"/>
-						<img id="smsattachmentimageloading" src="icons/loading.gif" class="hidden" />
-						<div id="smsemoji"  class="waves-effect">😃</div>
-					</div>
-					<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
-					<div id="smssend" class="waves-effect" title="Long-click for Subject"><img src="icons/send.png" style="opacity: 0.6"/></div>
-				</div>
+			<div id="dropzonemms" class="dropzone hidden"><div class="small">Drop files here</div></div>
+			<div  id="mmsextras" class="hidden">
+				<textarea placeholder="Subject" type="text" class="validate materialize-textarea" id="smssubject"></textarea>
+				<input type="checkbox" id="smsurgent" /><div id="smsurgenttext">Urgent</div>
+			</div>
+			<div id="smsattachment">
+				<img id="smsattachmentimage" src="icons/attachment.png"  class="waves-effect"/>
+				<img id="smsattachmentimageloading" src="icons/loading.gif" class="hidden" />
+				<div id="smsemoji"  class="waves-effect">😃</div>
+			</div>
+			<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
+			<div id="smssend" class="waves-effect" title="Long-click for Subject"><img src="icons/send.png" style="opacity: 0.6"/></div>
+		</div>
 	</div>
 	<div id="devices"></div>
-
+		<div id="dropzonedevices" class="dropzone hidden"><div>Drop files here</div></div>
 		<input type="file" id="uploadfile" style="display:none;" multiple/>
 		<script type="text/javascript" src="materialize/js/jquery-2.1.1.min.js"></script>
 		<script type="text/javascript" src="materialize/js/materialize.min.js"></script>

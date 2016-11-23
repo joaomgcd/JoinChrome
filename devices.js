@@ -243,3 +243,34 @@ addEventListener("unload", function (event) {
 	back.console.log("Unloading devices...");
 	back.removeEventListener("devicesupdated",devicesUpdated,false);
 }, true);
+
+var makeDropZoneReady = function(dropzoneElement, optionalText){
+	return new Promise(function(resolve,reject){
+		dropzoneElement.classList.remove("hidden");
+		var dropzoneTextElement = dropzoneElement.querySelector("div");
+		var selectedDevice = back.devices.first(device=>device.deviceId == localStorage.lastHoveredDeviceId);
+		if(!optionalText){
+			optionalText = "Drop files here to send to " + selectedDevice.deviceName;
+		}
+		dropzoneTextElement.innerHTML = optionalText + ". <a href='#'>Cancel</a>";
+		dropzoneElement.querySelector("a").onclick = e => {
+			dropzoneElement.classList.add("hidden");
+			reject("File Drop Zone Cancelled");
+		}
+		dropzoneElement.ondragover = e => {
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'copy';
+		}
+		dropzoneElement.ondrop = e => {
+			if(e.dataTransfer.getData("index")){
+				return;
+			}
+			e.preventDefault();
+	    	e.stopPropagation();
+	    	dropzoneElement.classList.add("hidden");
+			back.console.log(e.dataTransfer.files);
+			resolve(e.dataTransfer.files);
+		}
+	})
+	.catch(back.UtilsObject.ignoreError);
+}

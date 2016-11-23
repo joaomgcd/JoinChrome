@@ -95,6 +95,19 @@ Dialog.showOkCancelDialog = function(input,options){
 		return Dialog.show("okcancel",input,options);	
 	}
 }
+Dialog.showOkDialog = function(input,options){
+	return function(){
+		if(!options){
+			options = {};
+		}
+		options.width = 600;
+		options.height = 405;
+		if(!input.subtitle){
+			options.height = 205;
+		}
+		return Dialog.show("ok",input,options);	
+	}
+}
 Dialog.showEmojiDialog = function(input,options){
 	return function(){
 		if(!input){

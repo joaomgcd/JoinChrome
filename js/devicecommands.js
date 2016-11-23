@@ -40,7 +40,30 @@ var deviceCommands = [
 	{
 		"label":"Send a file to your device",
 		"commandId":"file",
-		"func":back.pushFile,
+		"func": (deviceId, notify, tab) => {
+			var dropzoneElement = document.getElementById("dropzonedevices");
+			var showedFileUploadTip = "showedFileUploadTip";
+			return Promise.resolve()
+			.then(()=>{				
+				console.log("WHAAAAA")
+				if(!localStorage[showedFileUploadTip]){
+					localStorage[showedFileUploadTip] = true;
+					makeDropZoneReady(dropzoneElement);
+					return Dialog.showOkDialog({
+						"title": "Drag And Drop",
+						"subtitle": "You can also drop files in the Join window at any time to send them to the selected device."
+					})()
+					.then(()=>dropzoneElement.classList.add("hidden"));
+				}
+			})
+			.then(()=>{
+				return back.pushFile(deviceId,notify,tab)
+				.catch(error=>{
+					makeDropZoneReady(dropzoneElement)
+					.then(files=>back.pushFile(deviceId,null,null,files));
+				});
+			})
+		},
 		"keepTab":true,
 		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
 		"condition":function(device){

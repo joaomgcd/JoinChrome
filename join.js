@@ -1231,51 +1231,54 @@ var pushCall = function(deviceId, notify, contact){
     });
 }
 var fileInput = null;
-var pushFile = function(deviceId, notify, tab){
-	
+var pushFile = function(deviceId, notify, tab, files){
+	try{
+		var initialAction = files ? Promise.resolve(files) : UtilsDom.pickFile();
+	   return initialAction
+	   .then(files => {
+	   		if(!files){
+	   			files = back.UtilsDom.fileInput.files;
+	   		}
+	   		var fileInput = {"files" : files};
+			if(tab){
+				chrome.tabs.remove(tab.id,function(){
+				});
+			}
+			if(!fileInput.files || fileInput.files.length == 0){
+				return;
+			}
 
-   return UtilsDom.pickFile()
-   .then(files => {
-   		if(!files){
-   			files = back.UtilsDom.fileInput.files;
-   		}
-   		var fileInput = {"files" : files};
-		if(tab){
-			chrome.tabs.remove(tab.id,function(){
-			});
-		}
-		if(!fileInput.files || fileInput.files.length == 0){
-			return;
-		}
-
-		var filesLength = fileInput.files.length;
-		var whatsUploading = filesLength == 1 ? fileInput.files[0].name : filesLength + " files";
-		showNotification("Join", "Uploading " + whatsUploading);
-        var googleDriveManager = new GoogleDriveManager();
-        var filesToUpload = fileInput.files;
-        var device = devices.first(function(device){return device.deviceId == deviceId});
-        var accountToShareTo = null;
-        if(device){
-            accountToShareTo = device.userAccount;
-        }
-        return googleDriveManager.uploadFiles({
-            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
-            accountToShareTo:accountToShareTo,
-            notify: getShowInfoNotifications()
-        }, filesToUpload)
-        .then(function(uploadResults){
-            var push = new GCMPush();
-            push.files = uploadResults;
-            push.send(deviceId,function(){
-                console.log("pushed files");
-                //showNotification("Join", "Sent " + whatsUploading);
-            },function(error){
-                showNotification("Join", "Couldn't send file: " + error);
-            });
-            setLastPush(deviceId, "pushFile");
-        })
-        .catch(UtilsObject.handleError);
-   });
+			var filesLength = fileInput.files.length;
+			var whatsUploading = filesLength == 1 ? fileInput.files[0].name : filesLength + " files";
+			showNotification("Join", "Uploading " + whatsUploading);
+	        var googleDriveManager = new GoogleDriveManager();
+	        var filesToUpload = fileInput.files;
+	        var device = devices.first(function(device){return device.deviceId == deviceId});
+	        var accountToShareTo = null;
+	        if(device){
+	            accountToShareTo = device.userAccount;
+	        }
+	        return googleDriveManager.uploadFiles({
+	            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
+	            accountToShareTo:accountToShareTo,
+	            notify: getShowInfoNotifications()
+	        }, filesToUpload)
+	        .then(function(uploadResults){
+	            var push = new GCMPush();
+	            push.files = uploadResults;
+	            push.send(deviceId,function(){
+	                console.log("pushed files");
+	                //showNotification("Join", "Sent " + whatsUploading);
+	            },function(error){
+	                showNotification("Join", "Couldn't send file: " + error);
+	            });
+	            setLastPush(deviceId, "pushFile");
+	        })
+	        .catch(UtilsObject.handleError);
+	   });
+	}catch(error){
+		return Promise.reject(error);
+	}
 }
 var smsWindow = null;
 var smsWindowId = null;
@@ -1663,3 +1666,8 @@ contextMenu.update(devices);
     console.log("Didn't upload file: " + error);
 });*/
 //Dialog.showEmojiDialog()();
+/*navigator.webkitTemporaryStorage.requestQuota(1024*1024, function(grantedBytes) {
+  window.requestFileSystem(PERSISTENT, grantedBytes, function(){},  function(){});
+}, function(e) {
+  console.log('Error', e);
+});*/

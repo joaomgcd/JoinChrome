@@ -57,7 +57,7 @@ var UtilsDom = {
 	},
 	"pickFile": function(){
 		if(!back.UtilsDom.fileInput){
-			return UtilsObject.errorPromise("No file input. Please set UtilsDom.fileInput to the file input element.");
+			return back.UtilsObject.errorPromise("No file input. Please set UtilsDom.fileInput to the file input element.");
 		}
 	    var fileInputListener = null;
 	     //check if the popup closes before the user is able to select the file
@@ -72,9 +72,9 @@ var UtilsDom = {
 	        }
 	        back.eventBus.register(fileInputListener);
 	    })
-	    .catch(function(){
+	    /*.catch(function(){
 	        alert("Seems that the Join popup was closed by your system before you selected the file, which will make file sending not work.\n\nPlease popout the window using the popout button inside the Join popup and try again.");        
-	    })
+	    })*/
 	    .then(function(){
 	        if(fileInputListener){
 	            back.eventBus.unregister(fileInputListener);
@@ -82,7 +82,7 @@ var UtilsDom = {
 	    });
 	    if(!back.UtilsDom.fileInput.onchange){	    
 		    back.UtilsDom.fileInput.onchange = function(){
-				back.eventBus.post(new Events.FilePicked(back.UtilsDom.fileInput.files));
+				back.eventBus.post(new back.Events.FilePicked(back.UtilsDom.fileInput.files));
 			}	
 	    }
 		back.UtilsDom.fileInput.click();

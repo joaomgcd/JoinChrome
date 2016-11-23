@@ -305,6 +305,7 @@ var SmsApp = function(){
 	var newSmsButton = document.getElementById("newsmsbutton");
 	var newSmsButtonIcon = document.getElementById("newsmsbuttonicon");
 	var newCallButtonIcon = document.getElementById("newcallbuttonicon");
+	var dropzoneElement = document.getElementById("dropzonemms");
 	var mmsAttachment = null;
 	if(!back.getBetaEnabled()){
 		smsAttachFileImageElement.classList.add("hidden");
@@ -327,53 +328,67 @@ var SmsApp = function(){
 		smsInputElement.selectionStart = index+1;
 		smsInputElement.selectionEnd = index+1;
 	});
+	smsInputContainerElement.ondragover = e =>{
+		makeDropZoneReady(dropzoneElement)
+		.then(files=>attachFile(files));
+	}
+	var attachFile = function(files){
+		try{
+			var publiclyUrl = "Publicly accessible image URL";
+			var initialAction = files ? Promise.resolve(files) : UtilsDom.pickFile();
+			return initialAction
+			/*return Dialog.showMultiChoiceDialog({
+									    items:[{"id":"file","text":"Local File"},{"id":"url","text":publiclyUrl}],
+									    title:"Which Number?"
+									})()
+		    .then(typeOfFile=>{
+		    	if(typeOfFile.id == "file"){
+			    	return back.UtilsDom.pickFile()
+			    }else{
+			    	return Dialog.showInputDialog({
+						title: publiclyUrl,
+						subtitle:"Make sure that the url corresponds to an image and is a URL accessible from anywhere",
+						placeholder:"Image URL"
+					});
+			    }
+		    })*/
+		   .then(files => {
+		   		if(!files){
+		   			files = back.UtilsDom.fileInput.files;
+		   		}
+		   		if(!files || files.length == 0){
+		   			return;
+		   		}
+		   		var readFile = null;
+		   		if(UtilsObject.isString(files)){
+		   			readFile = Promise.resolve().then(()=>files);
+		   		}else{
+		   			readFile = UtilsDom.readPickedFile(files[0]);
+		   		}
+		   		readFile.then(result=>smsAttachFileImageElement.src = result)
+		   		.then(()=>{
+		   			smsAttachFileImageLoadingElement.classList.remove("hidden");
+		   			return googleDriveManager.uploadFiles({
+			            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
+			            notify: false
+			        }, files);
+			   	})
+		        .then(uploadResults => {
+		   			smsAttachFileImageLoadingElement.classList.add("hidden");
+		        	if(uploadResults && uploadResults.length > 0){
+		        		mmsAttachment = GoogleDriveManager.getDownloadUrlFromFileId(uploadResults[0]);
+		        		//return setImageFromUrl(uploadedImageUrl,smsAttachFileImageElement);	
+		        	}
+		        });
+		   	});
+		}catch(error){
+			return Promise.reject(error);
+		}
+	}
 	smsAttachFileImageElement.onclick = e =>{
-		var publiclyUrl = "Publicly accessible image URL";
-		return back.UtilsDom.pickFile()
-		/*return Dialog.showMultiChoiceDialog({
-								    items:[{"id":"file","text":"Local File"},{"id":"url","text":publiclyUrl}],
-								    title:"Which Number?"
-								})()
-	    .then(typeOfFile=>{
-	    	if(typeOfFile.id == "file"){
-		    	return back.UtilsDom.pickFile()
-		    }else{
-		    	return Dialog.showInputDialog({
-					title: publiclyUrl,
-					subtitle:"Make sure that the url corresponds to an image and is a URL accessible from anywhere",
-					placeholder:"Image URL"
-				});
-		    }
-	    })*/
-	   .then(files => {
-	   		if(!files){
-	   			files = back.UtilsDom.fileInput.files;
-	   		}
-	   		if(!files || files.length == 0){
-	   			return;
-	   		}
-	   		var readFile = null;
-	   		if(UtilsObject.isString(files)){
-	   			readFile = Promise.resolve().then(()=>files);
-	   		}else{
-	   			readFile = UtilsDom.readPickedFile(files[0]);
-	   		}
-	   		readFile.then(result=>smsAttachFileImageElement.src = result)
-	   		.then(()=>{
-	   			smsAttachFileImageLoadingElement.classList.remove("hidden");
-	   			return googleDriveManager.uploadFiles({
-		            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
-		            notify: false
-		        }, files);
-		   	})
-	        .then(uploadResults => {
-	   			smsAttachFileImageLoadingElement.classList.add("hidden");
-	        	if(uploadResults && uploadResults.length > 0){
-	        		mmsAttachment = GoogleDriveManager.getDownloadUrlFromFileId(uploadResults[0]);
-	        		//return setImageFromUrl(uploadedImageUrl,smsAttachFileImageElement);	
-	        	}
-	        });
-	   	});
+		attachFile()
+		.catch(error=>makeDropZoneReady(dropzoneElement,"Drop file to attach"))
+		.then(files=>attachFile(files));
 	}
 	smsAttachFileElement.onmouseover = buttonHover;
 	smsAttachFileElement.onmouseout = buttonHoverOut;

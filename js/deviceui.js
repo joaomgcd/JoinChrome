@@ -1,5 +1,6 @@
 
 var back = chrome.extension.getBackgroundPage();
+
 var writeDevices = function(){
 	var commandContainerElement = document.getElementById("devices");
 	commandContainerElement.innerHTML = "";
@@ -8,7 +9,7 @@ var writeDevices = function(){
 	var deviceButtonHtml = document.querySelector('link[href="components/device-button.html"]').import.querySelector('#devicebutton');
 	var deviceButtonsHtml = document.querySelector('link[href="components/device-buttons.html"]').import.querySelector('#devicebuttons');
 	var buttonsElement = null;
-	var selectedDevice = null;
+	var selectedDevice = back.devices.first(device=>device.deviceId == localStorage.lastHoveredDeviceId);
 
 	var deviceHover = function(e){
 		var element = e.target;
@@ -133,12 +134,16 @@ var writeDevices = function(){
 	}
 	var buttonScroll = 0;
 	var buttonDragStart = function(e){
+		//e.preventDefault();
 		var buttonElement = findButtonElement(e);
 		e.dataTransfer.setData("index",buttonElement.commandIndex);
 		console.log(buttonElement);
 	}
 	var buttonDragDrop = function(e){
 
+		if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0){
+			return;
+		}
 		var buttonScroll = commandsElement.scrollTop;
 		//console.log(e.target);
 		var buttonElement = findButtonElement(e);
@@ -190,6 +195,26 @@ var writeDevices = function(){
 	deviceCommandsElement.appendChild(commandsElement);
 	commandsElement.appendChild(buttonsElement);
 	sortDeviceCommands();
+	var dropzoneElement = document.getElementById("dropzonedevices");
+	var isButtonDrag = e => e.dataTransfer.types[0] && e.dataTransfer.types[0] == "index";
+	commandsElement.ondragstart = e =>{ 
+		if(isButtonDrag(e)){
+			return;
+		}
+		back.console.log("Drag start");
+		back.console.log(e);
+	};
+	commandsElement.ondragover = e => {
+		if(isButtonDrag(e)){
+			return;
+		}
+		e.preventDefault();
+    	e.stopPropagation();
+    	makeDropZoneReady(dropzoneElement)
+    	.then(files=>back.pushFile(selectedDevice.deviceId,null,null,files));
+	}
+	/*var dropzoneElement = UtilsDom.createElement(commandsElement,"div","dropzone",{"class":"dropzone"});
+	dropzoneElement.innerHTML = "Drop files here";*/
 	for (var e = 0; e < deviceCommands.length; e++) {
 		var command = deviceCommands[e];
 		var buttonElement = deviceButtonHtml.cloneNode(true);
