@@ -196,7 +196,17 @@ var writeDevices = function(){
 	commandsElement.appendChild(buttonsElement);
 	sortDeviceCommands();
 	var dropzoneElement = document.getElementById("dropzonedevices");
-	var isButtonDrag = e => e.dataTransfer.types[0] && e.dataTransfer.types[0] == "index";
+	var isButtonDrag = e => {
+		if(!e.dataTransfer.items){
+			return false;
+		}
+		for(item of e.dataTransfer.items){
+			if(item.type == "index"){
+				return true;
+			}
+		}
+		return false;
+	};
 	commandsElement.ondragstart = e =>{ 
 		if(isButtonDrag(e)){
 			return;
@@ -211,7 +221,11 @@ var writeDevices = function(){
 		e.preventDefault();
     	e.stopPropagation();
     	makeDropZoneReady(dropzoneElement)
-    	.then(files=>back.pushFile(selectedDevice.deviceId,null,null,files));
+    	.then(files=>{
+    		if(files){
+    			back.pushFile(selectedDevice.deviceId,null,null,files)
+    		}
+    	});
 	}
 	/*var dropzoneElement = UtilsDom.createElement(commandsElement,"div","dropzone",{"class":"dropzone"});
 	dropzoneElement.innerHTML = "Drop files here";*/

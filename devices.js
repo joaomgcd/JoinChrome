@@ -268,7 +268,7 @@ var makeDropZoneReady = function(dropzoneElement, optionalText){
 			e.preventDefault();
 	    	e.stopPropagation();
 	    	dropzoneElement.classList.add("hidden");
-			back.console.log(e.dataTransfer.files);
+			back.console.log(e.dataTransfer.files);			
 			resolve(e.dataTransfer.files);
 		}
 	})
