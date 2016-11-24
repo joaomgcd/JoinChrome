@@ -345,7 +345,9 @@ var GCMDeviceRegistered = function(){
 			refreshDevices();
 		}else{
 			devices.removeIf(funcSameDevice);
-			devices.push(this.device);
+			if(!this.deleted){
+				devices.push(this.device);
+			}
 			setDevices(devices);
 		}
 	}
