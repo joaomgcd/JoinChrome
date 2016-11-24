@@ -1415,7 +1415,6 @@ var refreshDevices = function(callback){
 	  if(callback != null){
 		callback(result.records);
 	  }
-	  refreshDevicesPopup();
 	},function(error){
 		console.log("Error: " + error);
 		if(callback != null){
@@ -1521,6 +1520,7 @@ var setDevices = function(devicesToSet){
 		localStorage["devices"] = JSON.stringify(devices);
 	}
 	contextMenu.update(devices);
+  	refreshDevicesPopup();
 }
 function directCopy(str,setLastClipboard){
 	if(!str){

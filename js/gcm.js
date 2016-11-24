@@ -336,7 +336,18 @@ var GCMDeviceRegistered = function(){
 		return "GCMDeviceRegistered";
 	}
 	this.execute = function() {
-		refreshDevices();
+		if(!this.device || !devices){
+			return;
+		}
+		var funcSameDevice = device => device.deviceId == this.device.deviceId;
+		var existingDevice = devices.first(funcSameDevice);
+		if(!existingDevice){
+			refreshDevices();
+		}else{
+			devices.removeIf(funcSameDevice);
+			devices.push(this.device);
+			setDevices(devices);
+		}
 	}
 }
 GCMDeviceRegistered.prototype = new GCM();

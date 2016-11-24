@@ -185,7 +185,7 @@ if(onlyTabToShow){
 }else{
 	var tabToShow = null;
 	/*for(var notification of notifications){
-		if(notification.id==UtilsSMS.getNotificationId())
+		if(notification.id==back.UtilsSMS.getNotificationId())
 	}*/
 	if(!tabToShow){
 		if(back.localStorage.areNotificationsUnread == "true"){

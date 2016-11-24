@@ -2,7 +2,7 @@
 	"name": "Join by joaoapps",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.0.43",
+	"version": "1.0.45",
 	"permissions": [
 		"identity",
 		"identity.email",

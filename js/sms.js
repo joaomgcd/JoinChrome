@@ -734,7 +734,8 @@ var SmsApp = function(){
 						linkToReveal.innerHTML = "See Image";
 						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);
 						if(back.UtilsSMS.isAttachmentCached(sms.attachmentPartId)){
-							revealMmsAttachment(smsAttachmentElement);
+							revealMmsAttachment(smsAttachmentElement)
+							.then(()=>me.scrollSmsListToBottom());
 						}
 					}else{
 						UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":sms.attachment});
@@ -856,12 +857,13 @@ var SmsApp = function(){
 		push.senderId = me.deviceId;
 		push.responseType = 0;
 		push.requestId = "SMS";
+		var tempAttachId = "sentAttachment";
+		back.UtilsSMS.setCachedAttachment(tempAttachId,smsAttachFileImageElement.src);
 		var sms = {
 			"text": text,
 			"number":me.number,
 			"progress":true,
-			"attachment":smsAttachFileImageElement.src,
-			"attachmentPartId":mmsAttachment ? "sentAttachment": null,
+			"attachmentPartId":mmsAttachment ? tempAttachId : null,
 			"subject": subject,
 			"urgent": urgent
 		};
