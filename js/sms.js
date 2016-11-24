@@ -386,9 +386,14 @@ var SmsApp = function(){
 		}
 	}
 	smsAttachFileImageElement.onclick = e =>{
-		attachFile()
+		var promise = isPopup ? attachFile() : Promise.reject("Not in popup");
+		promise
 		.catch(error=>makeDropZoneReady(dropzoneElement,"Drop file to attach"))
-		.then(files=>attachFile(files));
+		.then(files=>{
+			if(files){
+				attachFile(files);
+			}
+		});
 	}
 	smsAttachFileElement.onmouseover = buttonHover;
 	smsAttachFileElement.onmouseout = buttonHoverOut;
@@ -463,7 +468,7 @@ var SmsApp = function(){
 				return;
 			}
 			back.notifications.where(function(notification){
-				return notification.id == UtilsSMS.getNotificationId(me.deviceId, me.number);
+				return notification.id == back.UtilsSMS.getNotificationId(me.deviceId, me.number);
 			}).doForAll(function(notification){
 				setTimeout(function(){
 					notification.cancel();
@@ -624,17 +629,26 @@ var SmsApp = function(){
 			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
 	});
+
 	var revealMmsAttachment = function(smsAttachmentElement, askForFileRemotely){
 		var attachmentId = smsAttachmentElement.sms.attachmentPartId;
-		var imageElementId = "mmsattachment=:=" + attachmentId;
+		var imageElementId = back.UtilsSMS.getAttachmentString(attachmentId);
 		smsAttachmentElement.innerHTML = ``;
 		var imageElement = UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":"icons/loading.gif","class":"loading"});
-		var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
-		return firstStep.
-		then(()=>googleDriveManager.getFile({fileName:imageElementId}))		
-		.then(file=>{
-			return setImageFromUrl(file.url,imageElement);
-		})
+		var start = null;
+		if(back.UtilsSMS.isAttachmentCached(attachmentId)){
+			imageElement.src = localStorage[imageElementId];
+			start = Promise.resolve();
+		}else{
+			var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
+			start = firstStep.
+			then(()=>googleDriveManager.getFile({fileName:imageElementId}))		
+			.then(file=>{
+				return setImageFromUrl(file.url,imageElement);
+			})
+			.then(()=>localStorage[imageElementId] = imageElement.src)
+		}
+		return start
 		.then(()=>imageElement.classList.remove("loading"))
 		.catch(error=>{
 			if(!askForFileRemotely){
@@ -681,6 +695,7 @@ var SmsApp = function(){
 				var smsMessageElement = smsMessageContainerElement.querySelector("#smsmessage");
 				var smsTextElement = smsMessageElement.querySelector("#smsmessagetext");
 				var smsSubjectElement = smsMessageElement.querySelector("#smsmessagesubject");
+				var smsSenderElement = smsMessageElement.querySelector("#smsmessagesender");
 				var smsUrgentElement = smsMessageElement.querySelector("#smsmessageurgent");
 				var smsAttachmentElement = smsMessageElement.querySelector("#smsmessageattachment");
 				var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
@@ -690,7 +705,7 @@ var SmsApp = function(){
 				if(smsText){
 					smsText = smsText.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>")	
 				}
-				smsTextElement.innerHTML = Autolinker.link(smsText);
+				smsTextElement.innerHTML = Autolinker.link(smsText,{"stripPrefix" : false});
 				if(sms.subject){
 					smsSubjectElement.innerHTML = `Subject: ${sms.subject}`;
 				}else{
@@ -701,13 +716,26 @@ var SmsApp = function(){
 				}else{
 					smsUrgentElement.classList.add("hidden");
 				}
+
+				if(number.indexOf(",")>0){
+					if(sms.sender){
+						smsSenderElement.innerHTML = sms.sender;
+					}else{
+						smsSenderElement.innerHTML = "You";
+					}					
+				}else{
+					smsSenderElement.classList.add("hidden");
+				}
 				if(sms.attachmentPartId){
-					var imageElementId = "mmsattachment=:=" + sms.attachmentPartId;
+					var imageElementId = back.UtilsSMS.getAttachmentString(sms.attachmentPartId);
 					if(!sms.attachment){
 						smsAttachmentElement.sms = sms;
 						var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 						linkToReveal.innerHTML = "See Image";
-						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);		
+						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);
+						if(back.UtilsSMS.isAttachmentCached(sms.attachmentPartId)){
+							revealMmsAttachment(smsAttachmentElement);
+						}
 					}else{
 						UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":sms.attachment});
 					}			

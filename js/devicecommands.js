@@ -45,7 +45,6 @@ var deviceCommands = [
 			var showedFileUploadTip = "showedFileUploadTip";
 			return Promise.resolve()
 			.then(()=>{				
-				console.log("WHAAAAA")
 				if(!localStorage[showedFileUploadTip]){
 					localStorage[showedFileUploadTip] = true;
 					makeDropZoneReady(dropzoneElement);
@@ -57,10 +56,15 @@ var deviceCommands = [
 				}
 			})
 			.then(()=>{
-				return back.pushFile(deviceId,notify,tab)
+				var promise = isPopup ? back.pushFile(deviceId,notify,tab) : Promise.reject("can't select file if not in popup");
+				return promise
 				.catch(error=>{
 					makeDropZoneReady(dropzoneElement)
-					.then(files=>back.pushFile(deviceId,null,null,files));
+					.then(files=>{
+						if(files){
+							back.pushFile(deviceId,null,null,files)
+						}
+					});
 				});
 			})
 		},

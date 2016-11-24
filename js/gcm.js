@@ -763,7 +763,7 @@ var GCMNewSmsReceived = function(){
 		chromeNotification.notify(); */
 
 		var not = {};
-		not.id = UtilsSMS.getNotificationId(me.senderId, me.number);
+		not.id = back.UtilsSMS.getNotificationId(me.senderId, me.number);
 		not.title= title;
 		not.text = me.text;
 		not.priority = 2;
@@ -778,8 +778,9 @@ var GCMNewSmsReceived = function(){
 		not.actionId = SMS_ACTION_ID;
 		not.buttons = [];
 		if(me.attachmentPartId){
-			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName("mmsattachment=:="+me.attachmentPartId);
+			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));
 			not.image = yield doGetBase64ImagePromise(imageUrl);
+			back.UtilsSMS.setCachedAttachment(me.attachmentPartId,not.image);
 		}
 		if(me.text.match(regexNumbers)){
 			not.buttons.push({
