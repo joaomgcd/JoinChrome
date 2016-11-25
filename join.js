@@ -1742,7 +1742,7 @@ contextMenu.update(devices);
 });*/
 //UtilsVoice.doVoiceCommand("screenshot my chrome");
 
-/*UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt))
+UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt),"locate my nexus 6")
 .then(result=>{
 	console.log("Done recognizing!")
 	console.log(result);
@@ -1751,5 +1751,5 @@ contextMenu.update(devices);
 .catch(error=>{
 	console.log("Error recognizing!")
 	console.log(error);
-});*/
+});
 

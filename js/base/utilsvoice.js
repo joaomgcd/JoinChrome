@@ -14,7 +14,7 @@ var UtilsVoice = {
 		var deviceEntities = [];
 		for(device of devices){
 			deviceEntities.push({
-               "value":device.deviceId,
+               "value":device.deviceName,
                "synonyms":[
                   device.deviceName
                ]
@@ -89,7 +89,11 @@ var VoiceRecognizer = function(continuous, wakeUp){
 	var continuous = continuous ? true : false;
 	var wakeUp = wakeUp ? wakeUp.toLowerCase() : null;
 	var timeoutWakeup = null;
-	var defaultSessionId = "defaultsession";
+	var defaultSessionId = localStorage.apiaiSessionId;
+	if(!defaultSessionId){
+		defaultSessionId = back.UtilsObject.guid();
+		localStorage.apiaiSessionId = defaultSessionId;
+	}
 	var stopped = true;
 	me.doVoiceCommand = UtilsObject.async(function* (input) {
 		if(!input.retries){
@@ -117,7 +121,7 @@ var VoiceRecognizer = function(continuous, wakeUp){
 			sendEntities &= true;
 		}else{
 			var lastEntitySend = parseInt(localStorage.lastEntitySend);
-			if(new Date().getTime() - lastEntitySend > 1500000){
+			if(new Date().getTime() - lastEntitySend < 1500000){
 				sendEntities &= false;
 			}
 		}
