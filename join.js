@@ -1742,7 +1742,7 @@ contextMenu.update(devices);
 });*/
 //UtilsVoice.doVoiceCommand("screenshot my chrome");
 
-UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt),"locate my nexus 6")
+/*UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt),"locate my lg g4")
 .then(result=>{
 	console.log("Done recognizing!")
 	console.log(result);
@@ -1752,4 +1752,4 @@ UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt),"locate my nexus 6
 	console.log("Error recognizing!")
 	console.log(error);
 });
-
+*/
