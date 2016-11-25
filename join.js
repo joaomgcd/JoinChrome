@@ -17,6 +17,20 @@ chrome.commands.onCommand.addListener(function(command) {
 		}
 	}else if(command == "notifications-popup"){
 		showNotificationsPopup();
+	}else if(command == "voice-command"){
+		if(back.UtilsVoice.voiceRecognizer != null && back.UtilsVoice.voiceRecognizer.getAlwaysListeningEnabled()){
+			back.console.log("Not starting because it's on continuous");
+			return;
+		}
+		UtilsVoice.doVoiceCommand(devices,prompt=>showNotification("Join",prompt))
+		.then(result=>{
+			result.command.func(result.device.deviceId,true,result.parameters.input);
+		})
+		.catch(error=>{
+			showNotification("Join Voice Command",`Error recognizing: ${error}`);
+			console.log("Error recognizing!")
+			console.log(error);
+		});
 	}
 });
 var getNotificationPopupHeight = function(){
@@ -778,6 +792,58 @@ var getEventghostPort = function(){
 var getFavoriteCommandText = function(){
 	return getOptionValue("text","text_favourite_command");
 }
+var getVoiceContinuous = function(){
+	return getOptionValue("checkbox","voicecontinuous");
+}
+var getVoiceWakeup = function(){
+	return getOptionValue("text","voicewakeup");
+}
+var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
+    console.log("Continuous: " + value);
+    var callbackPromptFunc =  (prompt, notificationTime)=>{
+    	return new Promise(function(resolve,reject){
+			if(UtilsObject.isString(prompt)){
+				chrome.tts.speak(prompt,{
+					"onEvent": function(event){
+						if(event.type == 'end' || event.type == 'error'|| event.type == 'interrupted'|| event.type == 'cancelled'){
+							resolve();
+						}
+					}
+				});
+				showNotification("Voice",prompt,notificationTime);	
+			}else{
+				console.error("Prompt is not text");
+				console.error(prompt);
+			}
+    	});
+	};
+	var errorFunc = error=>{
+		callbackPromptFunc(error,10000);
+	};
+	if(value){
+		try{
+			yield UtilsVoice.voiceRecognizer.isMicAvailable();
+		}catch(error){
+    		saveOptionValue("checkbox","voicecontinuous",false);
+			chrome.tts.speak("Click the generated notification to enable your mic");
+			var chromeNotification = new ChromeNotification({
+				"id":"micnotavailable",
+				"title":"Error",
+				"text":"Click here to allow Join to access your microphone",
+				"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
+			});
+			notifications.push(chromeNotification);
+			chromeNotification.notify();
+		}
+	}
+	UtilsVoice.toggleContinuous(devices, getVoiceWakeup(), getVoiceContinuous, callbackPromptFunc,result=>{
+		if(result.command){
+			result.command.func(result.device.deviceId,true,result.parameters.input)
+		}else{
+			callbackPromptFunc("Sorry, couldn't understand your command");
+		}
+	},errorFunc);
+});
 var onautoclipboardsave = function(option, value){
     console.log("Auto clipboard: " + value);
     if(handleAutoClipboard){
@@ -813,8 +879,13 @@ var defaultValues = {
     "showinfonotifications": true,
     "autoopenlinks": true,
     "notificationrequireinteraction": false,
-    "showbetafeatures": false
+    "showbetafeatures": false,
+    "voicecontinuous": false,
+    "voicewakeup": "computer"
 };
+if(getVoiceContinuous()){
+	onvoicecontinuoussave(null,true);
+}
 //setShowChromeNotifications(true);
 /******************************************************************************/
 
@@ -984,20 +1055,18 @@ var setLastPushAndNotify = function(deviceId, notify, functionName, notification
         }
     }
 }
-var writeText = function(deviceId, notify, text){
-    return Promise.resolve()
-    .then(Dialog.showInputDialog({
-        title:"Text to write",
-        placeholder:"Type some text"
-    },{
-        shouldShow:!text || (typeof text) != "string"
-    }))
-    .then(getClipboardPush)
-    .then(sendPushToDeviceId(deviceId))
-    .then(setLastPushAndNotify(deviceId, notify, "writeText","Sent Text"))
-    .catch(UtilsObject.ignoreError);
+var writeText = UtilsObject.async(function* (deviceId, notify, text){
+	if(!text || (typeof text) != "string"){
+		text = yield Dialog.showInputDialog({
+	        title:"Text to write",
+	        placeholder:"Type some text"
+	    })();
+	}
+	var push = getClipboardPush(text);
+	var pushResult = yield push.send(deviceId);
+	setLastPushAndNotify(deviceId, notify, "writeText",`Wrote ${text}`)();
 	
-}
+});
 var requestLocation = function(deviceId, notify){
 	var push = new GCMPush();
 	push.location = true;
@@ -1671,3 +1740,16 @@ contextMenu.update(devices);
 }, function(e) {
   console.log('Error', e);
 });*/
+//UtilsVoice.doVoiceCommand("screenshot my chrome");
+
+/*UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt))
+.then(result=>{
+	console.log("Done recognizing!")
+	console.log(result);
+	result.command.func(result.device.deviceId,true);
+})
+.catch(error=>{
+	console.log("Error recognizing!")
+	console.log(error);
+});*/
+

@@ -217,6 +217,15 @@ var UtilsObject = {
 				return invertIfNeeded(comparisonResult);
 			});	
 		}
+	},
+	"first" : function(array,...compareFieldFuncs){
+		for(compareFieldFunc of compareFieldFuncs){
+			var result = array.first(compareFieldFunc);
+			if(result){
+				return result;
+			}
+		}
+		return null;
 	}
 };
 

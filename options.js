@@ -114,6 +114,7 @@ var addOptionListener =function(option){
 function replaceAll(str, find, replace) {
 	return str.replace(new RegExp(find, 'g'), replace);
 }
+var voiceRecognizer = new back.VoiceRecognizer();
 if(!localStorage.optionsTab){
 	localStorage.optionsTab = "shortcuts";
 }
@@ -163,6 +164,21 @@ var updatePasswordStatus = function(){
 			passwordStatus.innerHTML = text;
 }
 document.addEventListener('DOMContentLoaded', function() {
+		var isMicAvailable = function(navigator){
+		return new Promise(function(resolve,reject){
+			    navigator.webkitGetUserMedia({
+			        audio: true,
+			    }, function(stream) {
+			        stream.stop();
+			        resolve();
+			    }, function() {
+			        reject("Mic not available");
+			    });
+			})
+		}  
+		isMicAvailable(navigator)
+		.then(command=>back.console.log("Mic YES!!"))
+		.catch(()=>back.console.log("Mic NO!!"));
 
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;

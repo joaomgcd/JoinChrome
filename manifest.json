@@ -2,7 +2,7 @@
 	"name": "Join by joaoapps",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.0.45",
+	"version": "1.0.47",
 	"permissions": [
 		"identity",
 		"identity.email",
@@ -22,7 +22,8 @@
 		"https://accounts.google.com/o/oauth2/v2/auth/",
 		"contextMenus",
 		"geolocation",
-		"activeTab"
+		"activeTab",
+		"tts"
 	],
 	"icons": {
 		"16": "icons/small.png",
@@ -62,6 +63,13 @@
 				"default": "Ctrl+Shift+P"
 			},
 			"description": "Perform Favorite Command",
+			"global": true
+		},
+		"voice-command": {
+			"suggested_key": {
+				"default": "Ctrl+Shift+V"
+			},
+			"description": "Voice Command",
 			"global": true
 		}
 	},
