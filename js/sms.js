@@ -906,6 +906,9 @@ var SmsApp = function(){
 		delete localStorage.smsDraft;
 	}
 	this.assureDeviceIdSelected = UtilsObject.async(function* (){
+		if(!localStorage.smsDeviceId){
+			return true;
+		}
 		if(!me.deviceId || !back.devices.first(device=>device.deviceId == me.deviceId)){
 			console.error("SMS Device doesn't exist!");
 			var devicesForSms = back.devices.where(UtilsDevices.canSendSMS);
