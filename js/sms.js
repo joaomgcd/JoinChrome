@@ -386,7 +386,7 @@ var SmsApp = function(){
 		}
 	}
 	smsAttachFileImageElement.onclick = e =>{
-		var promise = isPopup ? attachFile() : Promise.reject("Not in popup");
+		var promise = attachFile();//isPopup ? attachFile() : Promise.reject("Not in popup");
 		promise
 		.catch(error=>makeDropZoneReady(dropzoneElement,"Drop file to attach"))
 		.then(files=>{
