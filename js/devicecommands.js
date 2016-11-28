@@ -56,7 +56,7 @@ var deviceCommands = [
 				}
 			})
 			.then(()=>{
-				var promise = isPopup ? back.pushFile(deviceId,notify,tab) : Promise.reject("can't select file if not in popup");
+				var promise = back.pushFile(deviceId,notify,tab);//isPopup ? back.pushFile(deviceId,notify,tab) : Promise.reject("can't select file if not in popup");
 				return promise
 				.catch(error=>{
 					makeDropZoneReady(dropzoneElement)
