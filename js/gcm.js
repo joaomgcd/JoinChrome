@@ -560,10 +560,18 @@ var GCMNotification = function(notification, senderId){
 					return;
 				}
 				if(notification.isSmsNotification(actionId)){
-					var number = notification.smsnumber;
-					showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
-					notification.cancel();
-					return;
+					if(text){
+						var push = new back.GCMPush();
+						push.smsnumber = notification.smsnumber;
+						push.smstext = text;
+						push.send(me.requestNotification.senderId)
+						.then(result=>showNotification("Join",`Replied to ${notification.smsname}: ${text}`));						
+					}else{					
+						var number = notification.smsnumber;
+						showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
+						notification.cancel();
+					}
+					return;	
 				}
 				if(!actionId || (!text && isReply)){
 					return;
@@ -585,7 +593,11 @@ var GCMNotification = function(notification, senderId){
 						console.log("Sent notification action: " + notification.id);
 						var message = notification.actionDescription;
 						if(!message){
-							message = "Performed action remotely.";
+							if(text && isReply){
+								message = `Replied to ${notification.title}: ${text}`;
+							}else{
+								message = "Performed action remotely.";
+							}
 						}
 						if(back.getShowInfoNotifications()){
 							showNotification("Join",message);

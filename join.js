@@ -23,9 +23,9 @@ chrome.commands.onCommand.addListener(function(command) {
 			return;
 		}
 		UtilsVoice.doVoiceCommand(devices,prompt=>showNotification("Join",prompt))
-		.then(result=>{
+		/*.then(result=>{
 			result.command.func(result.device.deviceId,true,result.parameters.input);
-		})
+		})*/
 		.catch(error=>{
 			showNotification("Join Voice Command",`Error recognizing: ${error}`);
 			console.log("Error recognizing!")
@@ -836,13 +836,7 @@ var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
 			chromeNotification.notify();
 		}
 	}
-	UtilsVoice.toggleContinuous(devices, getVoiceWakeup(), getVoiceContinuous, callbackPromptFunc,result=>{
-		if(result.command){
-			result.command.func(result.device.deviceId,true,result.parameters.input)
-		}else{
-			callbackPromptFunc("Sorry, couldn't understand your command");
-		}
-	},errorFunc);
+	UtilsVoice.toggleContinuous(devices, getVoiceWakeup(), getVoiceContinuous, callbackPromptFunc,null,errorFunc);
 });
 var onautoclipboardsave = function(option, value){
     console.log("Auto clipboard: " + value);

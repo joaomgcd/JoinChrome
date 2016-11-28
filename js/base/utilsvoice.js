@@ -22,31 +22,79 @@ var UtilsVoice = {
 		}
 		return deviceEntities;
 	},
+	"handleVoiceCommand" : function(result){
+		if(result.command){
+			result.command.func(result.device.deviceId,true,result.parameters.input)
+		}else if(result.action == "reply"){
+			var replyId = result.parameters.replyId;
+			var name = result.parameters.name;
+			var notification = null;
+			if(!name){
+				notification = notifications.first(notification => notification.replyId == replyId);
+			}else{
+				notification = notifications.first(notification => notification.title.toLowerCase().indexOf(name.toLowerCase()) > 0);
+			}
+			if(notification){
+					notification.doAction(notification.replyId, result.parameters.input, true);
+			}else{
+				showNotification("Can't reply","Notification to reply to doesn't exist");
+			}
+		}
+	},
 	"doVoiceCommand": UtilsObject.async(function* (devices, callbackPrompt, command){
 		var deviceEntities = back.UtilsVoice.getDeviceEntities(devices);
 		if(callbackPrompt && !command){
 			callbackPrompt("Say something like 'Screenshot on my Nexus 6' or 'send this tab to my LG G4'");
 		}
 		try{
-			var result = yield UtilsVoice.voiceRecognizer.doVoiceCommand({
+			var input = {
 				"deviceEntities":deviceEntities,
 				"callbackPrompt":callbackPrompt,
-				"command": command
-			});
+				"command": command,
+				"contexts": []
+			};
+			if(localStorage.deviceCommandContexts){
+				input.contexts.push(JSON.parse(localStorage.deviceCommandContexts));
+			}
+			var lastReplyNotification = UtilsObject.whereMax(notifications.where(notification => notification.replyId), notification=>notification.date);
+			if(lastReplyNotification){
+				input.contexts.push({
+					"name":"replyInfo",
+					"parameters":{
+						"replyId": lastReplyNotification.replyId
+					}
+				});
+			}
+			var result = yield UtilsVoice.voiceRecognizer.doVoiceCommand(input);
+
 			if(!result){
 				throw "No command";
 			}
-			var foundDevice = UtilsObject.first(devices,
-				device=>device.deviceId == result.parameters.device,
-				device=>device.deviceName.toLowerCase().indexOf(result.parameters.device) >= 0);
-			if(!foundDevice){
-				throw "Device not found";
-			}		
-			result.command = deviceCommands.first(command => command.commandId == result.parameters.device_command);
-			if(!result.command.condition(foundDevice)){
-				throw `${foundDevice.deviceName} can't perform command ${result.command.label}`;
+			var contextsInOutput = false;
+			if(result.contexts){
+				var deviceAndCommandContext = result.contexts.first(context => context.name == "deviceandcommand");
+				if(deviceAndCommandContext){
+					localStorage.deviceCommandContexts = JSON.stringify(deviceAndCommandContext);
+					contextsInOutput = true;
+				}
 			}
-			result.device = foundDevice;		
+			if(!contextsInOutput){
+				delete localStorage.deviceCommandContexts;
+			}
+			if(result.parameters.device){
+				var foundDevice = UtilsObject.first(devices,
+					device=>device.deviceId == result.parameters.device,
+					device=>device.deviceName.toLowerCase().indexOf(result.parameters.device.toLowerCase()) >= 0);
+				if(!foundDevice){
+					throw "Device not found";
+				}		
+				result.command = deviceCommands.first(command => command.commandId == result.parameters.device_command);
+				if(!result.command.condition(foundDevice)){
+					throw `${foundDevice.deviceName} can't perform command ${result.command.label}`;
+				}
+				result.device = foundDevice;
+			}
+			UtilsVoice.handleVoiceCommand(result);	
 			return result;
 		}catch(error){
 			throw error;
@@ -71,7 +119,9 @@ var UtilsVoice = {
 					if(!result){
 						return;
 					}
-					callback(result);
+					if(callback){
+						callback(result);
+					}
 				}catch(error){
 					if(callbackError){
 						callbackError(error);
@@ -146,10 +196,14 @@ var VoiceRecognizer = function(continuous, wakeUp){
 		       command,
 		    ],
 		    "lang": "en",
-		    "sessionId": defaultSessionId
+		    "sessionId": defaultSessionId,
+		    "contexts":[]
 		};
-		if(previousResult){
-			content.contexts = previousResult.contexts;
+		if(previousResult && previousResult.contexts){
+			content.contexts.push(...previousResult.contexts);
+		}
+		if(input.contexts){
+			content.contexts.push(...input.contexts);
 		}
 		var response = yield back.UtilsVoice.doVoiceRequest(content);
 		back.console.log("Voice Response!");

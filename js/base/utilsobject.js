@@ -226,6 +226,23 @@ var UtilsObject = {
 			}
 		}
 		return null;
+	},
+	"whereMax" : function(array,...compareFieldFuncs){
+		if(!array || array.length == 0){
+			return null;
+		}
+		var max = Number.MIN_VALUE;
+		var result = null;
+		for(compareFieldFunc of compareFieldFuncs){			
+			for(item of array){
+				var prop = compareFieldFunc(item);
+				if(prop > max){
+					max = prop;
+					result = item;
+				}
+			}
+		}
+		return result;
 	}
 };
 

@@ -636,25 +636,25 @@ var SmsApp = function(){
 		smsAttachmentElement.innerHTML = ``;
 		var imageElement = UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":"icons/loading.gif","class":"loading"});
 		var start = null;
-		if(back.UtilsSMS.isAttachmentCached(attachmentId)){
-			imageElement.src = localStorage[imageElementId];
-			start = Promise.resolve();
-		}else{
-			var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
-			start = firstStep.
-			then(()=>googleDriveManager.getFile({fileName:imageElementId}))		
-			.then(file=>{
-				return setImageFromUrl(file.url,imageElement);
-			})
-			.then(()=>localStorage[imageElementId] = imageElement.src)
-		}
-		return start
+		return back.UtilsSMS.getCachedAttachment(attachmentId)
+		.then(attachment => {
+			if(attachment){
+				imageElement.src = attachment.data;
+			}else{
+				var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
+				return firstStep.
+				then(()=>googleDriveManager.getFile({fileName:imageElementId}))		
+				.then(file=>setImageFromUrl(file.url,imageElement))
+				.then(()=>UtilsSMS.setCachedAttachment(attachmentId,imageElement.src))
+			}
+		})
 		.then(()=>imageElement.classList.remove("loading"))
 		.catch(error=>{
 			if(!askForFileRemotely){
 				return revealMmsAttachment(smsAttachmentElement,true);	
 			}else{
 				imageElement.src = "error.png"
+				console.error(error);
 			}
 			/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 			linkToReveal.innerHTML = " Try Again";
@@ -733,10 +733,15 @@ var SmsApp = function(){
 						var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 						linkToReveal.innerHTML = "See Image";
 						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);
-						if(back.UtilsSMS.isAttachmentCached(sms.attachmentPartId)){
-							revealMmsAttachment(smsAttachmentElement)
-							.then(()=>me.scrollSmsListToBottom());
-						}
+						back.UtilsSMS.getCachedAttachment(sms.attachmentPartId)
+						.then(attachment =>{
+							if(attachment){
+								back.console.log("revealing attachment")
+								back.console.log(attachment)
+								revealMmsAttachment(document.getElementById(back.UtilsSMS.getAttachmentString(attachment.id)).parentElement)
+								.then(()=>me.scrollSmsListToBottom());	
+							}
+						});
 					}else{
 						UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":sms.attachment});
 					}			
