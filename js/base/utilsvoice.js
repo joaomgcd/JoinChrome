@@ -39,6 +39,14 @@ var UtilsVoice = {
 			}else{
 				showNotification("Can't reply","Notification to reply to doesn't exist");
 			}
+		}else if(result.action == "open.notification"){
+			var lastNotification = UtilsObject.whereMax(notifications, notification => notification.date);
+			if(lastNotification){
+				lastNotification.doAction(lastNotification.actionId);
+				showNotification("Join","Opened notification");
+			}else{
+				showNotification("Join","No notification to open");
+			}
 		}
 	},
 	"doVoiceCommand": UtilsObject.async(function* (devices, callbackPrompt, command){

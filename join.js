@@ -1157,8 +1157,14 @@ var deleteDevice = function(deviceId, notify){
 		});
 	}
 }
-var noteToSelf = function(deviceId, notify){
-		var noteText = prompt("Note to self");
+var noteToSelf = UtilsObject.async(function* (deviceId, notify, text){	
+		var noteText = text;
+		if(!noteText){
+			noteText = yield Dialog.showInputDialog({
+			    title:"Note to self",
+			    placeholder:"Note text here..."
+			})();
+		}
 		if(!noteText){
             return;
         }
@@ -1168,12 +1174,15 @@ var noteToSelf = function(deviceId, notify){
         push.send(deviceId)
         .then(function(){
             if(notify){
-                showNotification("Join", "Created note");
+            	var device = devices.first(device=>device.deviceId == deviceId);
+            	if(device){
+	                showNotification("Join", `Created note on ${device.deviceName}: "${noteText}"`);
+	            }
             }
         })
         .catch(UtilsObject.handleError);
 		setLastPush(deviceId, "noteToSelf");
-}
+});
 var getCurrentTab = function(callback){
     chrome.tabs.query({'active': true, currentWindow: true}, function (tabs) {
         if(tabs && tabs.length > 0){
