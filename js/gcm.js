@@ -674,8 +674,10 @@ var GCMNotification = function(notification, senderId){
 						if(back.getVoiceEnabled() && back.getVoiceContinuous() && back.getVoiceWakeup()){						
 							UtilsObject.doOnce("replywithvoicee",()=>showNotification("Reply With Voice",showNotification("Reply With Voice",`Say "${back.getVoiceWakeup()} reply with hello" for example to reply to this notification with your voice`,30000)));	
 						}
-						back.UtilsVoice.doVoiceCommand(devices)
-						.catch(error=>back.console.log("Error with reply voice command: " + error));	
+						if(!back.getVoiceContinuous()){
+							back.UtilsVoice.doVoiceCommand(devices)
+							.catch(error=>back.console.log("Error with reply voice command: " + error));									
+						}
 					}else{
 						UtilsObject.doOnce("replywithvoicenomiccc",()=>{
 							var chromeNotification = new ChromeNotification({
