@@ -3,11 +3,7 @@ chrome.commands.onCommand.addListener(function(command) {
 	if(command == "popup"){
 		createPushClipboardWindowAndCloseAfterCommand();
 	}else if(command == "repeat-last-command"){
-		if(localStorage["lastpush"]){
-			window[localStorage["lastpushtype"]](localStorage["lastpush"], true);
-		}else{
-			createPushClipboardWindowAndCloseAfterCommand();
-		}
+		repeatLastCommand();
 	}else if(command == "favorite-command"){
 		var favoriteCommand = getFavoriteCommand();
 		favoriteCommand = deviceCommands.first(function(command){return command.label == favoriteCommand;});
@@ -33,6 +29,13 @@ chrome.commands.onCommand.addListener(function(command) {
 		});
 	}
 });
+var repeatLastCommand = function(){	
+	if(localStorage["lastpush"]){
+		window[localStorage["lastpushtype"]](localStorage["lastpush"], true);
+	}else{
+		createPushClipboardWindowAndCloseAfterCommand();
+	}
+}
 var getNotificationPopupHeight = function(){
 	var height = Math.min(Math.round((203 * notifications.length) + 80), screen.height * 0.75);
 	if(notifications.length == 0){
