@@ -243,6 +243,12 @@ var UtilsObject = {
 			}
 		}
 		return result;
+	},
+	"doOnce" : function(controlId,func){
+		if(!localStorage[controlId]){
+			localStorage[controlId] = true;
+			func();
+		}
 	}
 };
 

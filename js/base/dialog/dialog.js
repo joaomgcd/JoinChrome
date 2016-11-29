@@ -141,6 +141,9 @@ Dialog.setResult = function(result){
 	}
 }
 Dialog.cancel = function(result){
+	if(window.dialogResultSet){
+		return;
+	}
 	back.dispatch("dialogcancel",{result:result});
 	if(window){
 		window.close();
@@ -173,6 +176,7 @@ Dialog.init = function(options, getResultFunc){
 		if(getResultFunc){
 			result = getResultFunc();
 		}
+		window.dialogResultSet = true;
 		Dialog.setResult(result);
 	};
 	if(options.showOk === undefined || options.showOk){

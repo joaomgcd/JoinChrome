@@ -1,5 +1,5 @@
 var VoiceCommandHandler = function(){
-	
+
 	this.handle = function(result){
 		if(result.action != this.getAction()){
 			return;
@@ -49,7 +49,11 @@ var VoiceCommandHandlerDeviceCommands = function(){
 			}
 			result.device = foundDevice;
 		}
-		result.command.func(result.device.deviceId,true,result.parameters.input)
+		if(result.command.commandId == "find"){
+			result.command.func(result.device.deviceId, true, true);
+		}else{
+			result.command.func(result.device.deviceId, true, result.parameters.input);	
+		}
 	}
 	this.addCommandContexts = function(contexts){
 		if(localStorage.deviceCommandContexts){

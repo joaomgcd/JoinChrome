@@ -14,6 +14,9 @@ chrome.commands.onCommand.addListener(function(command) {
 	}else if(command == "notifications-popup"){
 		showNotificationsPopup();
 	}else if(command == "voice-command"){
+		if(!getVoiceEnabled()){
+			return;
+		}
 		if(back.UtilsVoice.voiceRecognizer != null && back.UtilsVoice.voiceRecognizer.getAlwaysListeningEnabled()){
 			back.console.log("Not starting because it's on continuous");
 			return;
@@ -795,11 +798,31 @@ var getEventghostPort = function(){
 var getFavoriteCommandText = function(){
 	return getOptionValue("text","text_favourite_command");
 }
+var getVoiceEnabled = function(){
+	return getOptionValue("checkbox","voiceenabled");
+}
 var getVoiceContinuous = function(){
 	return getOptionValue("checkbox","voicecontinuous");
 }
 var getVoiceWakeup = function(){
 	return getOptionValue("text","voicewakeup");
+}
+var onvoiceenabledsave = UtilsObject.async(function* (option, value){
+	if(!option){
+		return;
+	}
+	var continuousOption = option.ownerDocument.querySelector("#voicecontinuous");
+	var continuousSection = option.ownerDocument.querySelector("#continuoussection");
+	if(!value){
+		setVoiceContinuous(false);
+		continuousOption.checked = false;
+		continuousSection.classList.add("hidden");	
+	}else{
+		continuousSection.classList.remove("hidden");	
+	}
+});
+var setVoiceContinuous = function(enabled){
+    saveOptionValue("checkbox","voicecontinuous",enabled);
 }
 var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
     console.log("Continuous: " + value);
@@ -827,7 +850,7 @@ var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
 		try{
 			yield UtilsVoice.voiceRecognizer.isMicAvailable();
 		}catch(error){
-    		saveOptionValue("checkbox","voicecontinuous",false);
+    		setVoiceContinuous(false);
 			chrome.tts.speak("Click the generated notification to enable your mic");
 			var chromeNotification = new ChromeNotification({
 				"id":"micnotavailable",
@@ -877,6 +900,7 @@ var defaultValues = {
     "autoopenlinks": true,
     "notificationrequireinteraction": false,
     "showbetafeatures": false,
+    "voiceenabled": false,
     "voicecontinuous": false,
     "voicewakeup": "computer"
 };
@@ -1018,8 +1042,8 @@ var openClipboard = function(deviceId, notify){
 		setLastPush(deviceId, "openClipboard");
 	});
 }
-var findDevice = function(deviceId, notify){
-	if(!confirm("This will make your phone play your default ringtone at full volume. Are you sure?")){
+var findDevice = function(deviceId, notify, ignorePrompt){
+	if(!ignorePrompt && !confirm("This will make your phone play your default ringtone at full volume. Are you sure?")){
 		return;
 	}
 	var push = new GCMPush();

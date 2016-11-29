@@ -1,4 +1,18 @@
 var UtilsVoice = {
+	"isMicAvailable" : function(){
+		return new Promise(function(resolve,reject){
+		    navigator.webkitGetUserMedia({
+		        audio: true,
+		    }, function(stream) {
+		    	if(stream.stop){
+			        stream.stop();
+			    }
+		        resolve();
+		    }, function() {
+		        reject("Mic not available. Open the Join popup and click on the settings icon to enable mic.");
+		    });
+		})
+	},
 	"doVoiceRequest": function(content){
 		return back.UtilsVoice.doAPIRequest("query", content);
 	},

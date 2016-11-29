@@ -665,6 +665,32 @@ var GCMNotification = function(notification, senderId){
 				chromeNotification.notify();
 			}
 			notifications.push(not);
+			if(not.replyId){
+				back.UtilsVoice.isMicAvailable()
+				.then(()=>true)
+				.catch(()=>false)
+				.then(micAvailable=>{
+					if(micAvailable){
+						if(back.getVoiceEnabled() && back.getVoiceContinuous() && back.getVoiceWakeup()){						
+							UtilsObject.doOnce("replywithvoicee",()=>showNotification("Reply With Voice",showNotification("Reply With Voice",`Say "${back.getVoiceWakeup()} reply with hello" for example to reply to this notification with your voice`,30000)));	
+						}
+						back.UtilsVoice.doVoiceCommand(devices)
+						.catch(error=>back.console.log("Error with reply voice command: " + error));	
+					}else{
+						UtilsObject.doOnce("replywithvoicenomiccc",()=>{
+							var chromeNotification = new ChromeNotification({
+								"id":"replyvoice",
+								"title":"Did you know?",
+								"text":"You can reply to notifications with your voice. Click here to allow Join to access your microphone",
+								"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
+							});
+							notifications.push(chromeNotification);
+							chromeNotification.notify();
+						})
+					}
+				});
+				
+			}
 			notifications.sort(function(left,right){
 				var leftPriority = left.priority;
 				var rightPriority = right.priority;

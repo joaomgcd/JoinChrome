@@ -125,6 +125,10 @@ var selectTab = function(e){
 	localStorage.optionsTab = currentTab.attributes["showtab"].value;
 	manageTabs();
 }
+var setSelectedTab = function(tabId){
+	localStorage.optionsTab = tabId;
+	manageTabs();
+}
 var manageTabs = function(){
 	var selectedTab = localStorage.optionsTab;
 	if(!selectedTab){
@@ -149,6 +153,51 @@ var manageTabs = function(){
 		}
 	};
 }
+var isMicAvailable = function(navigator){
+	return new Promise(function(resolve,reject){
+	    navigator.webkitGetUserMedia({
+	        audio: true,
+	    }, function(stream) {
+	        if(stream.stop){
+		        stream.stop();
+		    }
+	        resolve();
+	    }, function() {
+	        reject("Mic not available");
+	    });
+	})
+}
+var handleVoiceOption = function(){
+	var optionVoice = document.querySelector("#voiceenabled");
+	var optionVoiceContinuous = document.querySelector("#voicecontinuous");
+	if(!optionVoice.checked){
+		return;
+	}
+	return isMicAvailable(navigator)
+	.catch(Dialog.showOkCancelDialog({
+		"title": "Control Join with your voice",
+		"subtitle": "If you give Join access to your microphone you can do stuff with your voice like pushing pages or replying to texts.<br/><br/>Want to use your voice to control Join?"
+	}))
+	.then(()=>isMicAvailable(navigator))		
+	.then(command=>{
+		back.console.log("Mic YES!!");
+		return Dialog.showOkDialog({
+			"title": "Control Join with your voice",
+			"subtitle": "Try saying <b>Computer</b> and then<ul><li><b>Push this to my Nexus 5</b> while a tab is open on a web page</li><li><b>Reply with hello there!</b> after you receive a new text message</li><li><b>Ring my device</b> to make your phone ring</li><li><b>Write hello on my Nexus 6</b> to write 'hello' on your Android device</li></ul><br/>Experiment with other commands too! 😊<br/><br/>You can also trigger voice recognition with a keyboard shortcut. Configure that in the <b>Shortcuts</b> section."
+		})();
+	})
+	.then(()=>{		
+		optionVoice.checked = true;
+		getOptionSaver(optionVoice).save(optionVoice,true);
+		optionVoiceContinuous.checked = true;
+		getOptionSaver(optionVoiceContinuous).save(optionVoiceContinuous,true);
+	})
+	.catch(error=>{
+		back.console.log("Mic NO!!" + error);
+		optionVoice.checked = false;
+		getOptionSaver(optionVoice).save(optionVoice,false);
+	});
+}
 var deviceAutoClipboardHtml = "<label class='device_selection'><input type='checkbox' id='DEVICE_ID"+ chrome.extension.getBackgroundPage().deviceSufix+"'/><div class='DEVICE_CLASS'><span>DEVICE_NAME</span><img id='DEVICE_ID_icon' class='deviceicon' deviceId='DEVICE_ID' src='DEVICE_ICON'/></div></label>"
 var requestingMic = false;
 var updatePasswordStatus = function(){
@@ -164,21 +213,25 @@ var updatePasswordStatus = function(){
 			passwordStatus.innerHTML = text;
 }
 document.addEventListener('DOMContentLoaded', function() {
-		var isMicAvailable = function(navigator){
-		return new Promise(function(resolve,reject){
-			    navigator.webkitGetUserMedia({
-			        audio: true,
-			    }, function(stream) {
-			        stream.stop();
-			        resolve();
-			    }, function() {
-			        reject("Mic not available");
-			    });
+
+		var optionVoice = document.querySelector("#voiceenabled");
+		if(!back.getVoiceEnabled()){
+			back.onvoiceenabledsave(optionVoice,false);
+		}
+		UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
+			Dialog.showOkCancelDialog({
+				"title": "Control Join with your voice",
+				"subtitle": "You can control Join with your voice.<br/><br/>Want to give it a try?"
+			})()
+			.then(()=>{
+				setSelectedTab("options");
+				optionVoice.checked = true;
+				handleVoiceOption();
 			})
-		}  
-		isMicAvailable(navigator)
-		.then(command=>back.console.log("Mic YES!!"))
-		.catch(()=>back.console.log("Mic NO!!"));
+			.catch(()=>console.log("dont show voice intro"));
+		})
+		optionVoice.addEventListener("click", handleVoiceOption);
+		
 
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;

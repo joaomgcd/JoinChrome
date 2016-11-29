@@ -243,7 +243,7 @@ h5 { color: #FF7A00; }
 	height: 30px;
 }
 .hidden {
-	display: none;
+	display: none !important;
 }
 div.optionContainer {
 	padding: 24px;

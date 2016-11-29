@@ -139,7 +139,8 @@ var PushHistory = function(deviceId){
 				.then(contactsFromDrive=>{
 					contactInfo = contactsFromDrive;
 					return history;
-				});
+				})
+				.catch(errorContacts=>console.log("Couldn't get contacts from drive: " + errorContacts));
 			}else{
 				return history;
 			}
