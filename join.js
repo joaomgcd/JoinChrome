@@ -1534,8 +1534,14 @@ var refreshDevices = function(callback){
 		}
 	});
 }
-
-getToken();
+if(!localStorage.firstRunDone){
+	localStorage.firstRunDone = true;
+	if(!localStorage.accessToken){
+		getAuthToken(null,true);
+	}
+}else{		
+	getToken();
+}
 chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 	if (registrationId == null || registrationId == "") {
         var errorMessage = null;
