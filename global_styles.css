@@ -568,6 +568,9 @@ img.tabIcon {
 .smsmessageattachment.hidden  {
 	display: none;
 }
+.mmsimage {
+	cursor: pointer;
+}
 .smsmessagedate {
 	flex-grow: 1;
 	color: #999999;

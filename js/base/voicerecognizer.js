@@ -212,6 +212,7 @@ var VoiceRecognizer = function(continuous, wakeUp){
 	    }
 	    VoiceRecognizer.recognition.onend = function(){
 	        back.console.log("Speech End");
+	        back.console.log("Is stopped: " + stopped);	        
 	        me.isMicAvailable()
 	        .then(()=>{
 		        if(me.getAlwaysListeningEnabled() && !stopped){

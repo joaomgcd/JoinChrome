@@ -629,12 +629,22 @@ var SmsApp = function(){
 			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
 	});
-
+	var createLinkToRevealMmsAttachment = function(smsAttachmentElement, imageElementId){
+		var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
+		linkToReveal.innerHTML = "See Image";
+		linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);
+	}
+	var hideMmsAttachment = function(imageElement){
+		back.console.log("hiding " + imageElement.id);
+		var smsAttachmentElement = imageElement.parentElement;
+		smsAttachmentElement.innerHTML = "";
+		createLinkToRevealMmsAttachment(smsAttachmentElement, imageElement.id);
+	}
 	var revealMmsAttachment = function(smsAttachmentElement, askForFileRemotely){
 		var attachmentId = smsAttachmentElement.sms.attachmentPartId;
 		var imageElementId = back.UtilsSMS.getAttachmentString(attachmentId);
 		smsAttachmentElement.innerHTML = ``;
-		var imageElement = UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":"icons/loading.gif","class":"loading"});
+		var imageElement = UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":"icons/loading.gif","class":"loading","title":"Click to hide"});
 		var start = null;
 		return back.UtilsSMS.getCachedAttachment(attachmentId)
 		.then(attachment => {
@@ -648,7 +658,11 @@ var SmsApp = function(){
 				.then(()=>UtilsSMS.setCachedAttachment(attachmentId,imageElement.src))
 			}
 		})
-		.then(()=>imageElement.classList.remove("loading"))
+		.then(()=>{
+			imageElement.classList.remove("loading");
+			imageElement.classList.add("mmsimage");
+			imageElement.onclick = event => hideMmsAttachment(event.target);
+		})
 		.catch(error=>{
 			if(!askForFileRemotely){
 				return revealMmsAttachment(smsAttachmentElement,true);	
@@ -730,9 +744,10 @@ var SmsApp = function(){
 					var imageElementId = back.UtilsSMS.getAttachmentString(sms.attachmentPartId);
 					if(!sms.attachment){
 						smsAttachmentElement.sms = sms;
-						var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
+						createLinkToRevealMmsAttachment(smsAttachmentElement, imageElementId);
+						/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 						linkToReveal.innerHTML = "See Image";
-						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);
+						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);*/
 						back.UtilsSMS.getCachedAttachment(sms.attachmentPartId)
 						.then(attachment =>{
 							if(attachment){
