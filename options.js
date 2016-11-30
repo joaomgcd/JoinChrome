@@ -218,20 +218,24 @@ document.addEventListener('DOMContentLoaded', function() {
 		if(!back.getVoiceEnabled()){
 			back.onvoiceenabledsave(optionVoice,false);
 		}
-		UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
-			Dialog.showOkCancelDialog({
-				"title": "Control Join with your voice",
-				"subtitle": "You can control Join with your voice.<br/><br/>Want to give it a try?"
-			})()
-			.then(()=>{
-				setSelectedTab("options");
-				optionVoice.checked = true;
-				handleVoiceOption();
+		if(back.getBetaEnabled()){
+			UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
+				Dialog.showOkCancelDialog({
+					"title": "Control Join with your voice",
+					"subtitle": "You can control Join with your voice.<br/><br/>Want to give it a try?"
+				})()
+				.then(()=>{
+					setSelectedTab("options");
+					optionVoice.checked = true;
+					handleVoiceOption();
+				})
+				.catch(()=>console.log("dont show voice intro"));
 			})
-			.catch(()=>console.log("dont show voice intro"));
-		})
-		optionVoice.addEventListener("click", handleVoiceOption);
-		
+			optionVoice.addEventListener("click", handleVoiceOption);
+		}else{
+			document.querySelector("#voicesection").classList.add("hidden");
+			document.querySelector("#shortcutvoice-command").classList.add("hidden");
+		}
 
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;

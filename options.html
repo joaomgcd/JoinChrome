@@ -94,21 +94,23 @@
                 <input joaoappsoption type="checkbox" id="playnotificationsound" />
                 <div class="selection_indicator"></div>
             </label>
-            <h2>Voice Control (English Only For Now)</h2>           
-            <label class="selection">Enable Voice Control
-                <input joaoappsoption type="checkbox" id="voiceenabled" />
-                <div class="selection_indicator"></div>
-            </label>
-            <span id="continuoussection">    
-                <label class="selection">Continuous Listening
-                    <input joaoappsoption type="checkbox" id="voicecontinuous" />
+            <span id="voicesection">
+                <h2>Voice Control (English Only For Now)</h2>           
+                <label class="selection">Enable Voice Control
+                    <input joaoappsoption type="checkbox" id="voiceenabled" />
                     <div class="selection_indicator"></div>
                 </label>
-                <h4>If continuous listening is enabled you should set a wakeup command. Leave empty to have the recognizer be always awake.</h4>
-                <div>
-                    Wakeup command:
-                    <input joaoappsoption type="text" id="voicewakeup" placeholder="Something like 'hey computer'" size="40" />
-                </div>
+                <span id="continuoussection">    
+                    <label class="selection">Continuous Listening
+                        <input joaoappsoption type="checkbox" id="voicecontinuous" />
+                        <div class="selection_indicator"></div>
+                    </label>
+                    <h4>If continuous listening is enabled you should set a wakeup command. Leave empty to have the recognizer be always awake.</h4>
+                    <div>
+                        Wakeup command:
+                        <input joaoappsoption type="text" id="voicewakeup" placeholder="Something like 'hey computer'" size="40" />
+                    </div>
+                </span>
             </span>
             <h2>Customize</h2>
             <h4>Time and Date Format</h4>

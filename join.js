@@ -811,6 +811,9 @@ var onvoiceenabledsave = UtilsObject.async(function* (option, value){
 	if(!option){
 		return;
 	}
+	if(!option.ownerDocument){
+		return;
+	}
 	var continuousOption = option.ownerDocument.querySelector("#voicecontinuous");
 	var continuousSection = option.ownerDocument.querySelector("#continuoussection");
 	if(!value){
@@ -873,6 +876,16 @@ var onautoclipboardsave = function(option, value){
 var onchromenotificationssave = function(option, value){
     console.log("Changed chrome notification popup setting: " + value);
     contextMenu.update(devices);
+}
+var onshowbetafeaturessave = function(option, value){
+	if(!option){
+		return;
+	}
+	if(!option.ownerDocument){
+		return;
+	}
+    back.console.log("Changed beta setting: " + value);
+    option.ownerDocument.location.reload();
 }
 var getDefaultValue = function(option){
 	var id = null;
