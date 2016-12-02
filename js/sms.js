@@ -78,26 +78,28 @@ var ContactsGetter = function(deviceId){
 		// console.log("Contacts Getter processing now!");
 		me.initContactsIfEmpty();
 		me.lastsms.doForAll(function(lastsms){
-			var contact = me.contactsInfo.contacts.first(function(contact){
-				return contact.number == lastsms.address;
-			});
-			if(!contact){
-				if(lastsms.address.indexOf(",") > -1){
-					var numberSplit = lastsms.address.split(",");
-					var contactsForNumbers = numberSplit.select(number=>{
-						var contactForNumber = me.contactsInfo.contacts.first(contact=>contact.number == number);
-						if(!contactForNumber){
-							contactForNumber =  {"name":number,"number":number};
-						}
-						return contactForNumber;
-					});
-					contact = {"name":contactsForNumbers.joinJoaomgcd(", ",contact=>contact.name),"number":contactsForNumbers.joinJoaomgcd(",",contact=>contact.number)};
-				}else{
-					contact = {"name":lastsms.address,"number":lastsms.address}
+			if(lastsms && lastsms.address){
+				var contact = me.contactsInfo.contacts.first(function(contact){
+					return contact.number == lastsms.address;
+				});
+				if(!contact){
+					if(lastsms.address.indexOf(",") > -1){
+						var numberSplit = lastsms.address.split(",");
+						var contactsForNumbers = numberSplit.select(number=>{
+							var contactForNumber = me.contactsInfo.contacts.first(contact=>contact.number == number);
+							if(!contactForNumber){
+								contactForNumber =  {"name":number,"number":number};
+							}
+							return contactForNumber;
+						});
+						contact = {"name":contactsForNumbers.joinJoaomgcd(", ",contact=>contact.name),"number":contactsForNumbers.joinJoaomgcd(",",contact=>contact.number)};
+					}else{
+						contact = {"name":lastsms.address,"number":lastsms.address}
+					}
+					me.contactsInfo.contacts.push(contact);
 				}
-				me.contactsInfo.contacts.push(contact);
+				contact.lastsms = lastsms;
 			}
-			contact.lastsms = lastsms;
 		});
 		me.sortContacts(sortFieldGetter,sortDescending);
 		me.saveLocalContacts();
