@@ -1,5 +1,5 @@
 
-var OPTIONS_URL = "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html";
+var OPTIONS_URL = "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html?tab=1";
 var isPopup = getURLParameter("popup");
 var closeAfterCommand = getURLParameter("closeAfterCommand");
 if(!isPopup){
@@ -22,7 +22,25 @@ var refreshDevices = function(callback){
 		}
 	});
 }
-
+var isMicAvailable = function(navigator){
+	return new Promise(function(resolve,reject){
+	    window.navigator.webkitGetUserMedia({
+	        audio: true,
+	    }, function(stream) {
+	        if(stream.stop){
+		        stream.stop();
+		    }
+	        resolve();
+	    }, function() {
+	        reject("Mic not available");
+	    });
+	})
+}
+document.addEventListener('DOMContentLoaded', function() {
+	isMicAvailable()
+.then(()=>console.log("Mic in devices"))
+.catch(error=>console.log("No mic in devices: " + error));
+});
 var clearClipboardWindows = function(){
 	return chrome.extension.getBackgroundPage().clearClipboardWindows();
 }

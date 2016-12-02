@@ -1,7 +1,8 @@
 var VoiceRecognizer = function(continuous, wakeUp){
 	var me = this;
 	var continuous = continuous ? true : false;
-	var wakeUp = wakeUp ? wakeUp.toLowerCase() : null;
+	
+	var wakeUp = wakeUp;
 	var timeoutWakeup = null;
 	var defaultSessionId = localStorage.apiaiSessionId;
 	if(!defaultSessionId){
@@ -112,7 +113,12 @@ var VoiceRecognizer = function(continuous, wakeUp){
 	    }
 	}
 	var getWakeUp = function(){
-		return wakeUp;  
+		var wakeUpFinal = null;
+		if(back.UtilsObject.isFunction(wakeUp)){
+			wakeUpFinal = wakeUp();
+		}
+		wakeUpFinal = wakeUpFinal ? wakeUpFinal.toLowerCase() : null;
+		return wakeUpFinal;  
 	}
 	me.getAlwaysListeningEnabled = function(){
 		return continuous;  

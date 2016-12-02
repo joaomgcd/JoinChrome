@@ -108,6 +108,24 @@ Dialog.showOkDialog = function(input,options){
 		return Dialog.show("ok",input,options);	
 	}
 }
+Dialog.showRequestMicDialog = function(){
+	return function(){
+		var options = {};
+		options.width = 600;
+		options.height = 405;
+		input = {
+			"title": "Microphone Access",
+			"subtitle": "<br/><br/><br/><br/><br/>Please allow Join to access your microphone so that you can issue voice commands with it"
+		}
+		if(!input.subtitle){
+			options.height = 205;
+		}
+		return Dialog.show("requestmic",input,options).catch(error=>{
+			back.console.log("Couldn't get mic: " + error);
+			return false;
+		});	
+	}
+}
 Dialog.showEmojiDialog = function(input,options){
 	return function(){
 		if(!input){

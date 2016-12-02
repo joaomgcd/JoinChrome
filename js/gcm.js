@@ -665,7 +665,7 @@ var GCMNotification = function(notification, senderId){
 				chromeNotification.notify();
 			}
 			notifications.push(not);
-			if(back.getBetaEnabled() && not.replyId){
+			if(not.replyId){
 				back.UtilsVoice.isMicAvailable()
 				.then(()=>true)
 				.catch(()=>false)

@@ -2,7 +2,7 @@
 	"name": "Join by joaoapps",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.0.48",
+	"version": "1.0.49",
 	"permissions": [
 		"identity",
 		"identity.email",
@@ -81,7 +81,6 @@
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
 			"https://www.googleapis.com/auth/drive.appfolder",
-			"https://www.googleapis.com/auth/drive",
 			"https://www.googleapis.com/auth/drive.file"
 		]
 	},

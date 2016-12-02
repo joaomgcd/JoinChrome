@@ -153,19 +153,30 @@ var manageTabs = function(){
 		}
 	};
 }
+var isTab = back.UtilsDom.getURLParameter("tab", window.location.href) == "1";
 var isMicAvailable = function(navigator){
-	return new Promise(function(resolve,reject){
-	    navigator.webkitGetUserMedia({
-	        audio: true,
-	    }, function(stream) {
-	        if(stream.stop){
-		        stream.stop();
-		    }
-	        resolve();
-	    }, function() {
-	        reject("Mic not available");
-	    });
-	})
+		return new Promise(function(resolve,reject){
+			if(isTab){
+			    navigator.webkitGetUserMedia({
+			        audio: true,
+			    }, function(stream) {
+			        if(stream.stop){
+				        stream.stop();
+				    }
+			        resolve();
+			    }, function() {
+			        reject("Mic not available");
+			    });
+			}else{
+				return back.Dialog.showRequestMicDialog()().then(result=>{
+					if(result){
+						resolve();
+					}else{
+						reject();
+					}
+				});
+			}
+		})	
 }
 var handleVoiceOption = function(){
 	var optionVoice = document.querySelector("#voiceenabled");
@@ -173,12 +184,21 @@ var handleVoiceOption = function(){
 	if(!optionVoice.checked){
 		return;
 	}
-	return isMicAvailable(navigator)
-	.catch(Dialog.showOkCancelDialog({
-		"title": "Control Join with your voice",
-		"subtitle": "If you give Join access to your microphone you can do stuff with your voice like pushing pages or replying to texts.<br/><br/>Want to use your voice to control Join?"
-	}))
-	.then(()=>isMicAvailable(navigator))		
+	var initial = isMicAvailable(navigator);
+	if(isTab){
+		initial = initial
+		.catch(Dialog.showOkCancelDialog({
+			"title": "Control Join with your voice",
+			"subtitle": "If you give Join access to your microphone you can do stuff with your voice like pushing pages or replying to texts.<br/><br/>Want to use your voice to control Join?"
+		}))
+		.then(()=>isMicAvailable(navigator))		
+		
+	}
+	if(!isTab){
+		initial = initial
+		.then(()=>back.UtilsObject.wait(500));
+	}
+	return initial
 	.then(command=>{
 		back.console.log("Mic YES!!");
 		return Dialog.showOkDialog({
@@ -218,24 +238,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		if(!back.getVoiceEnabled()){
 			back.onvoiceenabledsave(optionVoice,false);
 		}
-		if(back.getBetaEnabled()){
-			UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
-				Dialog.showOkCancelDialog({
-					"title": "Control Join with your voice",
-					"subtitle": "You can control Join with your voice.<br/><br/>Want to give it a try?"
-				})()
-				.then(()=>{
-					setSelectedTab("options");
-					optionVoice.checked = true;
-					handleVoiceOption();
-				})
-				.catch(()=>console.log("dont show voice intro"));
+		UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
+			Dialog.showOkCancelDialog({
+				"title": "Control Join with your voice",
+				"subtitle": "You can control Join with your voice.<br/><br/>Want to give it a try?"
+			})()
+			.then(()=>{
+				setSelectedTab("options");
+				optionVoice.checked = true;
+				handleVoiceOption();
 			})
-			optionVoice.addEventListener("click", handleVoiceOption);
-		}else{
-			document.querySelector("#voicesection").classList.add("hidden");
-			document.querySelector("#shortcutvoice-command").classList.add("hidden");
-		}
+			.catch(()=>console.log("dont show voice intro"));
+		})
+		optionVoice.addEventListener("click", handleVoiceOption);
+	
 
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;

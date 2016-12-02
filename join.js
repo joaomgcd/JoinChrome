@@ -865,7 +865,7 @@ var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
 			chromeNotification.notify();
 		}
 	}
-	UtilsVoice.toggleContinuous(devices, getVoiceWakeup(), getVoiceContinuous, callbackPromptFunc,null,errorFunc);
+	UtilsVoice.toggleContinuous(devices, getVoiceWakeup, getVoiceContinuous, callbackPromptFunc,null,errorFunc);
 });
 var onautoclipboardsave = function(option, value){
     console.log("Auto clipboard: " + value);
@@ -1802,3 +1802,4 @@ contextMenu.update(devices);
 	console.log(error);
 });
 */
+//back.Dialog.showRequestMicDialog()().then(result=>console.log("Got mic: " + result));
