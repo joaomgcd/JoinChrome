@@ -880,42 +880,44 @@ var SmsApp = function(){
 		push.responseType = 0;
 		push.requestId = "SMS";
 		var tempAttachId = "sentAttachment";
-		back.UtilsSMS.setCachedAttachment(tempAttachId,smsAttachFileImageElement.src);
-		var sms = {
-			"text": text,
-			"number":me.number,
-			"progress":true,
-			"attachmentPartId":mmsAttachment ? tempAttachId : null,
-			"subject": subject,
-			"urgent": urgent
-		};
-		var sendSmsResult = function(event){
-			sms.progress = false;
-			back.removeEventListener("smssent",sendSmsResult,false);
-			if(event.success){
-					// console.log("SMS pushed");
-					//back.showNotification("Join","SMS sent!");
-			}else{
-					var error = "Error sending SMS: " + event.errorMessage;
-					console.log(error);
-					back.showNotification("Join",error);
-			}
+		back.UtilsSMS.setCachedAttachment(tempAttachId,smsAttachFileImageElement.src)
+		.then(()=>{			
+			var sms = {
+				"text": text,
+				"number":me.number,
+				"progress":true,
+				"attachmentPartId":mmsAttachment ? tempAttachId : null,
+				"subject": subject,
+				"urgent": urgent
+			};
+			var sendSmsResult = function(event){
+				sms.progress = false;
+				back.removeEventListener("smssent",sendSmsResult,false);
+				if(event.success){
+						// console.log("SMS pushed");
+						//back.showNotification("Join","SMS sent!");
+				}else{
+						var error = "Error sending SMS: " + event.errorMessage;
+						console.log(error);
+						back.showNotification("Join",error);
+				}
+				me.addSms(me.deviceId,sms);
+				me.refresh(true);
+				var isReply = getURLParameter("reply");
+				if(isReply){
+					window.close();
+				}
+			};
+			back.addEventListener("smssent",sendSmsResult,false);
+			push.send(me.deviceId);
+			//back.showNotification("Join","SMS pushed. Waiting for response...");
+			sms.date = Date.now();
+			sms.received = false;
 			me.addSms(me.deviceId,sms);
 			me.refresh(true);
-			var isReply = getURLParameter("reply");
-			if(isReply){
-				window.close();
-			}
-		};
-		back.addEventListener("smssent",sendSmsResult,false);
-		push.send(me.deviceId);
-		//back.showNotification("Join","SMS pushed. Waiting for response...");
-		sms.date = Date.now();
-		sms.received = false;
-		me.addSms(me.deviceId,sms);
-		me.refresh(true);
-		me.newInput();
-		me.clearSmsNotification();
+			me.newInput();
+			me.clearSmsNotification();
+		});
 	}
 	this.newInput = function(){
 		smsInputElement.value = "";

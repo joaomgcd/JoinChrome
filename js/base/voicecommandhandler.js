@@ -18,6 +18,9 @@ var VoiceCommandHandler = function(){
 	this.handleSpecific = function(result){
 
 	}
+	this.handleIncomplete = function(result){
+
+	}
 	this.getAction = function(result){
 		return null;
 	}
@@ -35,13 +38,53 @@ var VoiceCommandHandlerDeviceCommands = function(){
 	this.getAction = function(){
 		return "devicecommand";
 	}
+	var aliasForTypes = [
+		{
+			type:DEVICE_TYPE_ANDROID_PHONE,
+			alias:["phone","device","mobile","android"]
+		},
+		{
+			type:DEVICE_TYPE_ANDROID_TABLET,
+			alias:["tablet","android"]
+		},
+		{
+			type:DEVICE_TYPE_CHROME_BROWSER,
+			alias:["chrome","browser","pc"]
+		},
+		{
+			type:DEVICE_TYPE_WIDNOWS_PC,
+			alias:["windows","browser","pc"]
+		},
+		{
+			type:DEVICE_TYPE_FIREFOX,
+			alias:["browser","pc","firefox"]
+		},
+	];
+	var findDeviceForSaidCommand = function(command){
+		if(!command){
+			return;
+		}
+		command = command.toLowerCase().replace("my","").trim();
+		return UtilsObject.first(devices,
+				device=>device.deviceId == command,
+				device=>device.deviceName.toLowerCase().indexOf(command) >= 0,
+				device=>{
+					var foundFromAlias = aliasForTypes.first(alias => alias.type == device.deviceType);
+					if(foundFromAlias){
+						var foundCorrect = foundFromAlias.alias.first(alias => alias.indexOf(command) >= 0);
+						if(foundCorrect){
+							return true;
+						}else{
+							return false;
+						}
+					}
+				});
+	}
 	this.handleSpecific = function(result){
 		if(result.parameters.device){
-			var foundDevice = UtilsObject.first(devices,
-				device=>device.deviceId == result.parameters.device,
-				device=>device.deviceName.toLowerCase().indexOf(result.parameters.device.toLowerCase()) >= 0);
+			var foundDevice = findDeviceForSaidCommand(result.parameters.device);
 			if(!foundDevice){
-				throw "Device not found";
+				throw `Device not found: ${result.parameters.device}`;
 			}		
 			result.command = deviceCommands.first(command => command.commandId == result.parameters.device_command);
 			if(!result.command.condition(foundDevice)){
@@ -66,6 +109,14 @@ var VoiceCommandHandlerDeviceCommands = function(){
 	this.handleResultContext = function(context){		
 		localStorage.deviceCommandContexts = JSON.stringify(context);
 		contextsInOutput = true;
+	}
+	this.handleIncomplete = function(input){
+		if(!input.result.parameters.device){
+			var foundDevice = findDeviceForSaidCommand(input.command);
+			if(foundDevice){
+				input.command = foundDevice.deviceName.toLowerCase();
+			}
+		}
 	}
 }
 VoiceCommandHandlerDeviceCommands.prototype = new VoiceCommandHandler();
@@ -136,6 +187,11 @@ var VoiceCommandHandlers = function(){
 	this.handle = function(result){
 		for(handler of list){
 			handler.handle(result);
+		}
+	}
+	this.handleIncomplete = function(input){
+		for(handler of list){
+			handler.handleIncomplete(input);
 		}
 	}
 	this.addCommandContexts = function(contexts){

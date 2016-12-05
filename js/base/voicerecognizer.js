@@ -24,9 +24,9 @@ var VoiceRecognizer = function(continuous, wakeUp){
 		if(!command){
 			command = yield me.getVoiceCommand();
 		}
-		if(!command){
+		/*if(!command){
 			return doVoiceCommand(input);
-		}
+		}*/
 		var sendEntities = true;
 		if(!deviceEntities){
 			sendEntities &= false;
@@ -53,7 +53,7 @@ var VoiceRecognizer = function(continuous, wakeUp){
 				      }
 				   ]
 				};
-				back.UtilsVoice.doUserEntitiesRequest(entities);
+				yield back.UtilsVoice.doUserEntitiesRequest(entities);
 			}
 		}
 		var content = {
@@ -89,6 +89,13 @@ var VoiceRecognizer = function(continuous, wakeUp){
 					input.retries = 0;
 				}else{
 					input.retries++;
+				}
+				if(input.callbackIncomplete){
+					var handleIncompleteInput = {"result":result, "command":command};
+					input.callbackIncomplete(handleIncompleteInput);
+					if(handleIncompleteInput.command){
+						input.command = handleIncompleteInput.command;
+					}
 				}
 				input.previousResult = result;
 				return me.doVoiceCommand(input);

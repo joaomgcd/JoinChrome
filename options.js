@@ -27,7 +27,11 @@ var listDevices = function(callback){
 
 var deviceImages = chrome.extension.getBackgroundPage().deviceImages;
 var getDevices = function(){
-		return chrome.extension.getBackgroundPage().devices;
+	var devices = chrome.extension.getBackgroundPage().devices;
+	if(!devices){
+		devices = [];
+	}
+	return devices;
 }
 
 var closeOptions = function(){

@@ -833,6 +833,7 @@ var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
     	return new Promise(function(resolve,reject){
 			if(UtilsObject.isString(prompt)){
 				chrome.tts.speak(prompt,{
+					"lang": 'en-US',
 					"onEvent": function(event){
 						if(event.type == 'end' || event.type == 'error'|| event.type == 'interrupted'|| event.type == 'cancelled'){
 							resolve();
@@ -865,7 +866,7 @@ var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
 			chromeNotification.notify();
 		}
 	}
-	UtilsVoice.toggleContinuous(devices, getVoiceWakeup, getVoiceContinuous, callbackPromptFunc,null,errorFunc);
+	UtilsVoice.toggleContinuous(()=>devices, getVoiceWakeup, getVoiceContinuous, callbackPromptFunc,null,errorFunc);
 });
 var onautoclipboardsave = function(option, value){
     console.log("Auto clipboard: " + value);
@@ -1586,7 +1587,7 @@ var getDeviceById = function(deviceId){
 	}
 }
 var setDevices = function(devicesToSet){
-
+	UtilsVoice.resetDeviceEntities();
 	devices = [];
 	if(devicesToSet){
 		for (var i = 0; i < devicesToSet.length; i++) {

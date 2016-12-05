@@ -138,7 +138,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			directDevices = [];
 		}
 		if(directDevices.length > 0){
-			var regIds = directDevices.select(function(device){return device.regId2;});
+			var regIds = directDevices.select(device => device.regId2);
 			if(!gcmParams){
 				gcmParams = {};
 			}

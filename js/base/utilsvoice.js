@@ -28,25 +28,32 @@ var UtilsVoice = {
 		var deviceEntities = [];
 		for(device of devices){
 			deviceEntities.push({
-               "value":device.deviceName,
+               "value":device.deviceName.toLowerCase(),
                "synonyms":[
-                  device.deviceName
+                  device.deviceName.toLowerCase()
                ]
             });
 		}
 		return deviceEntities;
+	},
+	"resetDeviceEntities": function(devices){
+		delete localStorage.lastEntitySend;
+		delete localStorage.deviceCommandContexts;
+		delete localStorage.apiaiSessionId;
 	},
 	"doVoiceCommand": UtilsObject.async(function* (devices, callbackPrompt, command){
 		var deviceEntities = back.UtilsVoice.getDeviceEntities(devices);
 		if(callbackPrompt && !command){
 			callbackPrompt("Say something like 'Screenshot on my Nexus 6' or 'send this tab to my LG G4'");
 		}
+
 		try{
 			var input = {
 				"deviceEntities":deviceEntities,
 				"callbackPrompt":callbackPrompt,
 				"command": command,
-				"contexts": []
+				"contexts": [],
+				"callbackIncomplete": VoiceCommandHandlers.handlers.handleIncomplete
 			};
 			VoiceCommandHandlers.handlers.addCommandContexts(input.contexts);
 
@@ -61,7 +68,7 @@ var UtilsVoice = {
 			throw error;
 		}
 	}),
-	"toggleContinuous": UtilsObject.async(function* (devices, wakeUp, statusFunc, callbackPrompt, callback, callbackError){
+	"toggleContinuous": UtilsObject.async(function* (getDevicesFunc, wakeUp, statusFunc, callbackPrompt, callback, callbackError){
 		var status = statusFunc();
 		UtilsVoice.voiceRecognizer.stopSpeechRecognition();
 		UtilsVoice.voiceRecognizer = new VoiceRecognizer(status,wakeUp);
@@ -76,7 +83,7 @@ var UtilsVoice = {
 				}
 				UtilsVoice.voiceRecognizer = new VoiceRecognizer(false,wakeUp);
 				try{
-					var result = yield back.UtilsVoice.doVoiceCommand(devices,callbackPrompt,command);
+					var result = yield back.UtilsVoice.doVoiceCommand(getDevicesFunc(),callbackPrompt,command);
 					if(!result){
 						return;
 					}
@@ -85,6 +92,14 @@ var UtilsVoice = {
 					}
 				}catch(error){
 					if(callbackError){
+						if(command){
+							if(UtilsObject.isString(error)){
+								if(error.lastIndexOf(".") != error.length - 1){
+									error +=".";
+								}
+								error += " Command was: " + command;	
+							}
+						}
 						callbackError(error);
 					}
 				}

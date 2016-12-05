@@ -14,7 +14,7 @@ var UtilsDB = {
 		});
 	},
 	"setMmsImage": function(attachmentId,data){
-		return UtilsDB.imagesDb.images.add({id: attachmentId, data: data});
+		return UtilsDB.imagesDb.images.put({id: attachmentId, data: data});
 	},
 }
 UtilsDB.imagesDb = new Dexie("MmsImages");
