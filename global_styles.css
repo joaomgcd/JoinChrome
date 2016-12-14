@@ -338,7 +338,12 @@ img.tabIcon {
 	display: none;
 }
 #smstitle {
-	margin-left: 8px;
+	margin-left: 8px;    
+	max-height: 25px;
+    overflow: hidden;
+}
+#smstitle:hover {  
+	max-height: none;
 }
 #smssendcontainer {
 	align-items: center;

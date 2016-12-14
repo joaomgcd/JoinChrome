@@ -159,7 +159,11 @@ var manageTabs = function(){
 }
 var isTab = back.UtilsDom.getURLParameter("tab", window.location.href) == "1";
 var isMicAvailable = function(navigator){
-		return new Promise(function(resolve,reject){
+		return new Promise(function(resolve,reject){			
+			if(!back.getVoiceEnabled()){
+				reject("Voice not enabled");
+				return;
+			}
 			if(isTab){
 			    navigator.webkitGetUserMedia({
 			        audio: true,

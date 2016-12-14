@@ -24,6 +24,10 @@ var refreshDevices = function(callback){
 }
 var isMicAvailable = function(navigator){
 	return new Promise(function(resolve,reject){
+		if(!back.getVoiceEnabled()){
+			reject("Voice not enabled");
+			return;
+		}
 	    window.navigator.webkitGetUserMedia({
 	        audio: true,
 	    }, function(stream) {

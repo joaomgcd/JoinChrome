@@ -145,7 +145,11 @@ var VoiceRecognizer = function(continuous, wakeUp){
 		});
 	}
 	me.isMicAvailable = function(){
-		return new Promise(function(resolve,reject){
+		return new Promise(function(resolve,reject){			
+			if(!back.getVoiceEnabled()){
+				reject("Voice not enabled");
+				return;
+			}
 		    navigator.webkitGetUserMedia({
 		        audio: true,
 		    }, function(stream) {
