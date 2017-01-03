@@ -1200,7 +1200,7 @@ var deleteDevice = function(deviceId, notify){
 }
 var noteToSelf = UtilsObject.async(function* (deviceId, notify, text){	
 		var noteText = text;
-		if(!noteText){
+		if(!noteText || !UtilsObject.isString(text)){
 			noteText = yield Dialog.showInputDialog({
 			    title:"Note to self",
 			    placeholder:"Note text here..."
