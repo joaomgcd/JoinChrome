@@ -200,7 +200,7 @@ var GCMPush = function(){
 						//me.createNotificationFromPush();
 					}
 				});
-				oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" + this.push.text);
+				oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" +encodeURIComponent(this.push.text));
 				oReq.send();
 			}else{
 				if(!me.push.title){
@@ -224,7 +224,11 @@ var GCMPush = function(){
 			showNotification("Clipboard Set",  notificationText,5000);
 		}
 		if(!this.push.url){
-			this.push.url = getUrlIfTextMatches([this.push.text,this.push.clipboard]);
+			var toCheck = [this.push.clipboard];
+			if(this.push.text && this.push.text.indexOf("=:=")<0){
+				toCheck.push(this.push.text);
+			}
+			this.push.url = getUrlIfTextMatches(toCheck);
 		}
 		if(this.push.url && !this.push.title){
 			var url = this.push.url;
