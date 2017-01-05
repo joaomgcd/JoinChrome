@@ -862,7 +862,6 @@ var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
 				"text":"Click here to allow Join to access your microphone",
 				"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
 			});
-			notifications.push(chromeNotification);
 			chromeNotification.notify();
 		}
 	}

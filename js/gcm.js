@@ -690,7 +690,6 @@ var GCMNotification = function(notification, senderId){
 								"text":"You can reply to notifications with your voice. Click here to allow Join to access your microphone",
 								"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
 							});
-							notifications.push(chromeNotification);
 							chromeNotification.notify();
 						})
 					}
