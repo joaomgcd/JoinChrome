@@ -3,7 +3,7 @@ var SMS_ACTION_ID = "SMS_ACTION_ID";
 var COPY_NUMBER = "COPY_NUMBER";
 var HANG_UP = "HANG_UP";
 var CALL_BACK = "CALL_BACK";
-var regexNumbers = /[0-9]{4,}/g;
+var regexNumbers = /[0-9\.]{4,}/g;
 
 var Request = function(){
 	this.getParams = function() {
