@@ -168,6 +168,8 @@ var isMicAvailable = function(navigator){
 			    navigator.webkitGetUserMedia({
 			        audio: true,
 			    }, function(stream) {
+			    	var audioTracks = stream.getAudioTracks();
+			    	var audioStreamStop = audioTracks.length > 0 ? audioTracks[0].stop : null;
 			        if(stream.stop){
 				        stream.stop();
 				    }

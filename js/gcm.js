@@ -849,6 +849,7 @@ var GCMNewSmsReceived = function(){
 		gcmNtification.execute();
 		var sms = {
 			"number":me.number,
+			"sender":me.name,
 			"text":me.text,
 			"date":me.date,
 			"received":true,
