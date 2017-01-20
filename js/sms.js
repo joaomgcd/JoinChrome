@@ -845,7 +845,7 @@ var SmsApp = function(){
 						addContactToList(contact);
 					}
 			}
-			if(filter && filter.match(/[0-9]+/) == filter){
+			if(filter /*&& filter.match(/[0-9]+/) == filter*/){
 				addContactToList({"name":"Unlisted Contact","number": filter});
 			}
 			me.contactListShowing = true;
