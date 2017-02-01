@@ -59,6 +59,9 @@ var ChromeNotification = function(notificationFromGcm){
 			if(device && !me.subText){
 				me.subText = "From " + device.deviceName;
 			}
+			if(!text){
+				text = "";
+			}
 			var options = {
 					"type":"basic",
 					"iconUrl":notificationIcon,

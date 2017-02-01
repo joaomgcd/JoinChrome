@@ -838,7 +838,7 @@ var GCMNewSmsReceived = function(){
 			not.image = yield doGetBase64ImagePromise(imageUrl);
 			back.UtilsSMS.setCachedAttachment(me.attachmentPartId,not.image);
 		}
-		if(me.text.match(regexNumbers)){
+		if(me.text && me.text.match(regexNumbers)){
 			not.buttons.push({
 				text: "Copy Number",
 				actionId: COPY_NUMBER
