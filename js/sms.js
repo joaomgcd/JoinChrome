@@ -864,7 +864,8 @@ var SmsApp = function(){
 	}
 	this.sendSms = function(){
 		var text = smsInputElement.value;
-		if(!text){
+		var mmsfile = mmsAttachment;
+		if(!text && !mmsfile){
 			return;
 		}
 		var subject = smsSubjectElement.value;
@@ -875,7 +876,7 @@ var SmsApp = function(){
 		//push.smscontactname = "João Dias";
 		push.smstext = text;
 		push.mmssubject = subject;
-		push.mmsfile = mmsAttachment;
+		push.mmsfile = mmsfile;
 		push.mmsurgent = urgent;
 		//push.mmsfile = "https://dl.dropboxusercontent.com/u/9787157/battery_half_drive.png";
 		push.responseType = 0;

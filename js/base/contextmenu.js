@@ -154,20 +154,20 @@ var ContextMenu = function(){
 	    chrome.contextMenus.removeAll();
 	    var contexts = {
 	    	"page":[
-		    	new ContextMenuItem(OPEN,openPage),
+		    	new ContextMenuItem(OPEN,openPage).setFavorite(),
 		    	new ContextMenuItem(PASTE,pastePage),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationPage, WITH),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandPage, WITH),
 		    ],
 		    "selection":[
 		    	new ContextMenuItem(OPEN,openSelection),
-		    	new ContextMenuItem(PASTE,pasteSelection),
+		    	new ContextMenuItem(PASTE,pasteSelection).setFavorite(),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationSelection, WITH),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSelection, WITH),
 		    	new ContextMenuItem(CALL,callNumberSelection),
 		    ],
 		    "link":[		    	
-		    	new ContextMenuItem(OPEN,openLink),
+		    	new ContextMenuItem(OPEN,openLink).setFavorite(),
 		    	new ContextMenuItem(PASTE,pasteLink),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationLink, WITH),
 		    	new ContextMenuItem(DOWNLOAD,downloadLink),
@@ -179,17 +179,17 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(SET_AS_WALLPAPER,setWallpaperSourceUrl),
 		    	new ContextMenuItem(SET_AS_LOCK_WALLPAPER,setLockWallpaperSourceUrl,null,null,device=>device.apiLevel>=24),
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
+		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
 		    "video":[
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
+		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
 		    "audio":[
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
+		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ]
 		};
@@ -256,7 +256,25 @@ var ContextMenu = function(){
 		for(var contextName in contexts){
 			contextNames.push(contextName);
 		}
-		
+		var getContextName = contextId => contextId.substring(0,1).toUpperCase() + contextId.substring(1);
+		for(var contextId in contexts){
+			devices.where(device=>UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device=>{
+	        	var context = contexts[contextId];
+				context.doForAll(contextMenuItem=>{
+	        		if(contextMenuItem.favorite){
+		        		chrome.contextMenus.create({
+			        		"contexts": [contextId],
+			        		"onclick": function(info, tab){
+			        			contextMenuItem.handler(device, info, tab);
+			        		},
+			        		"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName,
+			        		"targetUrlPatterns": contextMenuItem.patterns
+		        		});
+		        	}
+	    		});
+			})
+		}
+        	
 		devices.doForAll(function(device){
 	        chrome.contextMenus.create({
 	            "id": device.deviceId,
@@ -271,6 +289,7 @@ var ContextMenu = function(){
 	        	if(context.length > 0){
 		        	var contextForDevice = contextId + device.deviceId;
 		        	var contextName = contextId.substring(0,1).toUpperCase() + contextId.substring(1);
+
 		        	var multipleFuncsForContext = context.length > 1;
 		        	if(multipleFuncsForContext){
 			        	chrome.contextMenus.create({
@@ -286,11 +305,7 @@ var ContextMenu = function(){
 		        	context.doForAll(function(contextMenuItem){
 		        		var actionTitle = contextMenuItem.title;
 		        		if(!multipleFuncsForContext){
-		        			var joiner = " ";
-		        			if(contextMenuItem.joiner){
-		        				joiner = " " + contextMenuItem.joiner + " ";
-		        			}
-			        		actionTitle = actionTitle + joiner + contextName;
+			        		actionTitle = contextMenuItem.getActionTitle(contextName);
 		        		}
 		        		if(contextMenuItem.conditionFunc){
 		        			if(!contextMenuItem.conditionFunc(device)){
@@ -320,5 +335,13 @@ var ContextMenu = function(){
 		}
 		this.patterns = patterns;
 		this.conditionFunc = conditionFunc;
+		this.setFavorite = () => {this.favorite = true;return this;}
+		this.getActionTitle = contextName => {
+			var joiner = " ";
+			if(this.joiner){
+				joiner = " " + this.joiner + " ";
+			}
+    		return this.title + joiner + contextName;
+		}
 	}
 }
