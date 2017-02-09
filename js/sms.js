@@ -309,9 +309,6 @@ var SmsApp = function(){
 	var newCallButtonIcon = document.getElementById("newcallbuttonicon");
 	var dropzoneElement = document.getElementById("dropzonemms");
 	var mmsAttachment = null;
-	if(!back.getBetaEnabled()){
-		smsAttachFileImageElement.classList.add("hidden");
-	}
 	var highlightColor = "#FF9800";
 	var lowlightColor = "#757575";
 	var setButtonColor = function(e, color){
@@ -617,16 +614,14 @@ var SmsApp = function(){
 			}
 		}catch(error){
 			console.error(error);
-			if(back.getBetaEnabled()){
-				var deviceSelected = yield me.assureDeviceIdSelected();
-				setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");			
-				setRefreshing(true);
-				var fileResponse = yield requestFileAsync(me.deviceId, "", 3);			
-				setRefreshing(false);
-				if(fileResponse){
-					me.refresh(false);
-					return;
-				}
+			var deviceSelected = yield me.assureDeviceIdSelected();
+			setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");			
+			setRefreshing(true);
+			var fileResponse = yield requestFileAsync(me.deviceId, "", 3);			
+			setRefreshing(false);
+			if(fileResponse){
+				me.refresh(false);
+				return;
 			}
 			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
@@ -968,7 +963,7 @@ var SmsApp = function(){
 	document.querySelector("#smstitlecontainer").addEventListener("click",function(){
 		me.writeSms(me.deviceId);
 	});
-	UtilsDom.onClickAndLongClick(document.querySelector("#smssend"),e=>me.sendSms(),e=>{if(back.getBetaEnabled())smsMmsExtrasElement.classList.toggle("hidden")});
+	UtilsDom.onClickAndLongClick(document.querySelector("#smssend"),e=>me.sendSms(),e=>{smsMmsExtrasElement.classList.toggle("hidden")});
 	
 	if(me.deviceId){
 		me.refresh(false);

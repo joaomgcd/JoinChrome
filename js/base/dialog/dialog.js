@@ -223,7 +223,7 @@ Dialog.init = function(options, getResultFunc){
 	.then(function(result){
 		resultFunc();
 	});
-	//setTimeout(function(){
+	setTimeout(function(){
 		back.getCurrentTab(function(tab){
 			console.log("height:" +window.document.body.offsetHeight)
 			console.log(tab);
@@ -231,7 +231,7 @@ Dialog.init = function(options, getResultFunc){
 				height:window.document.body.offsetHeight + 60
 			});
 		});
-	//},1000);
+	},200);
 	return {
 		buttons:buttons,
 		input:input
