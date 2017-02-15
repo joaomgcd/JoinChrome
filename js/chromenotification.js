@@ -88,6 +88,7 @@ var ChromeNotification = function(notificationFromGcm){
 			}else{
 				options.isClickable = false;
 			}
+			console.log(`Creating Chrome notification with text "${text}"`);
 			try{
 				chrome.notifications.create(me.id, options,function(){});	
 			}catch(error){
