@@ -640,8 +640,8 @@ var GCMNotification = function(notification, senderId){
 			}
 
 			var chromeNotification = new ChromeNotification(not);
-			var removed = notifications.removeNotificationsWithSameId(not.id);
 			var similar = notifications.getSimilarNotification(not);
+			var removed = notifications.removeNotificationsWithSameId(not.id);
 			var shouldNotify = false;
 			if(similar){
 				console.log("Similar notification present");
@@ -655,7 +655,7 @@ var GCMNotification = function(notification, senderId){
 					shouldNotify = true;
 				//}
 			}
-			if(not.priority >= 0){
+			if(not.priority >= 2){
 				shouldNotify = true;
 			}
 			if(!not.date){

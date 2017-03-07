@@ -1,7 +1,7 @@
 
 /*************************CONSTANTS***********************/
 
-//var joinserverBase =  "http://192.168.12.104:8080/";
+//var joinserverBase =  "http://192.168.1.67:8080/";
 var joinserverBase =  "https://joinjoaomgcd.appspot.com/";
 
 var joinserver =  joinserverBase + "_ah/api/";
@@ -731,13 +731,23 @@ var decryptString = function(value, key256Bits){
 /*************************GENERIC***********************/
 var toClass = {}.toString;
 var openNewTab = function(url,options, callback){
+	var realCallback = tab => {
+		if(callback){
+			callback(tab)
+		}
+		if (url.indexOf("www.youtube.com/tv") > 0) {
+            chrome.windows.update(tab.windowId, {
+                state: "fullscreen"
+            });
+        }
+	}
 	chrome.windows.getCurrent({ 'populate': false }, function(current) {
 		if (current) {
 			if(!options){
 				options = {};
 			}
 			options.url = url;
-			chrome.tabs.create(options,callback);
+			chrome.tabs.create(options,realCallback);
 		} else {
 			var finalOptions = { 'url': url, 'type': 'normal', 'focused': true };
 			if(options){
@@ -745,11 +755,12 @@ var openNewTab = function(url,options, callback){
 					finalOptions[prop] = options[prop];
 				}
 			}
-			chrome.windows.create(finalOptions,callback);
+			chrome.windows.create(finalOptions,realCallback);
 		}
 	});
 }
 var openTab = function(url,options,callback){
+
 	chrome.tabs.query({},function(result){
 		var correctTab = result.first(function(tab){
 			return tab.url == url;
@@ -760,7 +771,7 @@ var openTab = function(url,options,callback){
 				for(var prop in options){
 					finalOptions[prop] = options[prop];
 				}
-			}
+			}			
 			chrome.tabs.update(correctTab.id, finalOptions,callback);
 		}else{
 			openNewTab(url,options,callback);

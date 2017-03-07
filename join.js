@@ -1472,8 +1472,15 @@ var showNotification = function(title, message, timeout, notificationId){
 }
 var registerDevice = function(callback,callbackError){
     var registrationId = localStorage.regIdLocal;
-    return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId,"deviceName":"Chrome","deviceType":3})
+    var registrationId2 = localStorage.regIdLocal2;
+    if(!registrationId2){
+    	registrationId2 = registrationId;
+    }
+    return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId2,"deviceName":"Chrome","deviceType":3})
     .then(function(result){
+    	if(localStorage.deviceId == result.deviceId){
+    		result.sameDeviceId = true;
+    	}
         localStorage.deviceId = result.deviceId;
         localStorage.regIdServer = result.regId;
         if(callback){
@@ -1542,7 +1549,46 @@ if(!localStorage.firstRunDone){
 }else{		
 	getToken();
 }
-chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
+var handleRegIdRegistration = function(registrationId, regIdLocalKey){
+	if (registrationId == null || registrationId == "") {
+        var errorMessage = null;
+        if(chrome.runtime.lastError){
+            errorMessage = chrome.runtime.lastError.message;
+        }
+        if(!errorMessage){
+            errorMessage = "unknown error";
+        }
+		console.error("Error getting key: " + errorMessage);
+		return {"success":false};
+	} else {
+		console.log(`Got reg id ${regIdLocalKey}:` + registrationId);
+		var result = {"success":true};
+		if(localStorage[regIdLocalKey] == registrationId){
+			result.sameRegId = true;
+		}
+		localStorage[regIdLocalKey] = registrationId;
+		return result;
+	}
+}
+chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},registrationId1=>{
+	var resultRegId1 = handleRegIdRegistration(registrationId1,"regIdLocal");
+	if(resultRegId1.success){
+		chrome.instanceID.getToken({"authorizedEntity":"737484412860","scope":"GCM"},registrationId2=>{
+			var resultRegId2 = handleRegIdRegistration(registrationId2,"regIdLocal2");
+			if(resultRegId2.success){
+				if(!resultRegId1.sameRegId || !resultRegId2.sameRegId || !localStorage.deviceId){
+					registerDevice(function(result){
+						if(!result.sameDeviceId){
+							refreshDevices();	
+						}
+					});	
+				}
+			}
+		});		
+	}
+});
+
+/*chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 	if (registrationId == null || registrationId == "") {
         var errorMessage = null;
         if(chrome.runtime.lastError){
@@ -1559,7 +1605,7 @@ chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 			refreshDevices();
 		});
 	}
-});
+});*/
 
 var deviceImages = {};
 deviceImages[""+DEVICE_TYPE_ANDROID_PHONE] =function(device){return "phone.png";};
