@@ -453,12 +453,10 @@ var Notifications = function(){
 		return notifications.first(function(notification){
 			var sameId = notification.id == id;
 			var result = false;
-			if(sameId){
-				result = true;
-			}else if(!title || !text){
+			if(!title || !text){
 				result = false;
 			}else{
-				result = notification.title == title && notification.text == text;
+				result = sameId && notification.title == title && notification.text == text;
 			}
 			return result;
 		});

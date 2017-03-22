@@ -72,7 +72,7 @@ var ChromeNotification = function(notificationFromGcm){
 					"eventTime": me.date,
 					"requireInteraction": requireInteraction
 			};
-			if(me.image){
+			if(me.image && !back.getHideNotificationText()){
 				options.type = "image";
 				options.imageUrl = image;
 			}
