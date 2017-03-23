@@ -1610,6 +1610,8 @@ chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},reg
 var deviceImages = {};
 deviceImages[""+DEVICE_TYPE_ANDROID_PHONE] =function(device){return "phone.png";};
 deviceImages[""+DEVICE_TYPE_ANDROID_TABLET]=function(device){return"tablet.png";};
+deviceImages[""+DEVICE_TYPE_IOS_PHONE] =function(device){return "iphone.png";};
+deviceImages[""+DEVICE_TYPE_IOS_TABLET]=function(device){return"ipad.png";};
 deviceImages[""+DEVICE_TYPE_CHROME_BROWSER]=function(device){return"chrome.png";};
 deviceImages[""+DEVICE_TYPE_WIDNOWS_PC]=function(device){return"windows10.png";};
 deviceImages[""+DEVICE_TYPE_FIREFOX]=function(device){return"firefox.png";};

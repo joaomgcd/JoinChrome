@@ -48,6 +48,14 @@ var VoiceCommandHandlerDeviceCommands = function(){
 			alias:["tablet","android"]
 		},
 		{
+			type:DEVICE_TYPE_IOS_PHONE,
+			alias:["phone","device","mobile","ios"]
+		},
+		{
+			type:DEVICE_TYPE_IOS_TABLET,
+			alias:["tablet","ios"]
+		},
+		{
 			type:DEVICE_TYPE_CHROME_BROWSER,
 			alias:["chrome","browser","pc"]
 		},
