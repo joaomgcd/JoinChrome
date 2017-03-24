@@ -1520,9 +1520,13 @@ chrome.gcm.onMessage.addListener(function(message){
 	}
 });
 var executeGcm = function(type, json){
-		var gcm = new window[type]();
-		gcm.fromJsonString(json);
-		gcm.execute();
+	var gcmFunc = window[type];
+	if(!gcmFunc){
+		return;
+	}
+	var gcm = new gcmFunc();
+	gcm.fromJsonString(json);
+	gcm.execute();
 }
 
 var refreshDevices = function(callback){
