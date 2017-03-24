@@ -800,7 +800,7 @@ var SmsApp = function(){
 	var writeContactListFromInfo = function(filter, contactsInfo, callback){
 		// console.log(contactsInfo);
 		if(contactsInfo.contacts){
-			var contacts = contactsInfo.contacts;
+			var contacts = contactsInfo.contacts.where(contact=>contact.number && contact.number.indexOf(",")<0);
 			smsContainerElement.innerHTML = "";
 			if(filter){
 				filter = filter.toLowerCase();
