@@ -301,6 +301,7 @@ var SmsApp = function(){
 	var smsAttachFileImageLoadingElement = document.getElementById("smsattachmentimageloading");
 	var smsInputElement = document.getElementById("smsinput");
 	var smsTitleElement = document.getElementById("smstitle");
+	var smsTitlePhotoElement = document.getElementById("contactpictureconversation");
 	var contactFindContainerElement = document.getElementById("contactfindcontainer");
 	var contactFindInputElement = document.getElementById("contactfindinput");
 	var smsContainerElement = document.getElementById("smscontainer");
@@ -489,6 +490,14 @@ var SmsApp = function(){
 	var setTitleText = function(text){
 		smsTitleElement.innerHTML = text;
 	}
+	var setTitlePhoto = function(src){
+		if(src){
+			smsTitlePhotoElement.src = src;	
+			smsTitlePhotoElement.classList.remove("hidden");
+		}else{
+			smsTitlePhotoElement.classList.add("hidden");
+		}
+	}
 	var showTitle = function(show){
 		if(!show){
 			me.contactListShowing = false;
@@ -561,6 +570,7 @@ var SmsApp = function(){
 					if(contact.lastsms){
 						var contactElement = smsContactHtml.cloneNode(true);
 						contactElement.contact = contact;
+						var contactPictureElement = contactElement.querySelector("#smscontactpicture").querySelector("img");
 						var contactNameElement = contactElement.querySelector("#smscontactname");
 						var contactCallElement = contactElement.querySelector("#smscontactcall");
 						var contactTextElement = contactElement.querySelector("#smscontacttext");
@@ -569,6 +579,11 @@ var SmsApp = function(){
 						contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ contact.lastsms.text;
 						contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
+						var contactPhoto = contact.photo;
+						if(!contact.photo){
+							contactPhoto = "icons/contact.png";
+						}
+						contactPictureElement.src = contactPhoto;						
 						contactElement.addEventListener("click",function(event){
 							var contact = findContactForElement(event.target);
 							me.contactsScroll = smsContainerElement.scrollTop;
@@ -682,6 +697,7 @@ var SmsApp = function(){
 		setPlaceholderText("Getting Messages for "+ name +"...");
 		var title = name;
 		setTitleText(title);
+		setTitlePhoto(contact.photo)
 		showTitle(true);
 		showInput(true);
 		showContactFind(false);
@@ -848,6 +864,7 @@ var SmsApp = function(){
 	}
 	me.writeContactList = function(filter,callback){
 		setTitleText("Contacts");
+		setTitlePhoto(null);
 		showTitle(true);
 		showContactFind(true);
 		var sortFunc = function(contact){
