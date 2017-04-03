@@ -1,6 +1,63 @@
 
 var back = chrome.extension.getBackgroundPage();
+var DeviceUIEventHandler = function(){
 
+	this.onStatusReceived = function(status){
+		if(!status){
+			return;
+		}
+		var gcmStatus = status.gcmStatus;
+		if(!gcmStatus){
+			return;
+		}
+		if(!selectedDeviceElement || !selectedDeviceElement.device){
+			return;
+		}
+		var device = null;
+		var deviceElements = document.querySelectorAll("#device.device");
+		console.log(deviceElements);
+		var deviceElement = null;
+		for(deviceElement of deviceElements){
+			if(deviceElement.device.deviceId==gcmStatus.deviceId){
+				device = deviceElement.device;
+				break;
+			}
+		}
+		if(!device || !device.deviceId){
+			return;
+		}
+		/*if(device.deviceId != gcmStatus.deviceId){
+			return;
+		}*/
+		var status = gcmStatus.status;
+		if(!status){
+			return;
+		}
+		UtilsDevices.showBatteryInfo(device, deviceElement.querySelector("#deviceicon"),status);
+		
+		/*var r = 30;
+		var s = 1.5 * Math.PI;
+		ctx.arc(halfSize, halfSize, halfSize, s, radians+s, false);
+		ctx.stroke();*/
+		/*ctx.textAlign = "center";
+		ctx.font="10px Roboto"; 
+		ctx.fillText(level + "%",halfSize,size - 5);*/
+	}
+}
+var eventHandler = new DeviceUIEventHandler();
+back.eventBus.register(eventHandler);
+
+var gcmStatus = new back.GCMStatus();
+gcmStatus.request = true;
+gcmStatus.deviceId = localStorage.deviceId;
+var deviceIdsToGetStatus = back.devices.where(device=>UtilsDevices.canReportStatus(device)).select(device=>device.deviceId);
+var requestedStatus = false;
+addEventListener("unload", function (event) {
+	back.console.log("Unloading device UI...");
+	back.eventBus.unregister(eventHandler);
+
+})
+var selectedDeviceElement = null;
 var writeDevices = function(){
 	var commandContainerElement = document.getElementById("devices");
 	commandContainerElement.innerHTML = "";
@@ -23,9 +80,13 @@ var writeDevices = function(){
 			deviceElement.classList.remove("selecteddevice");
 		});
 		element.classList.add("selecteddevice");
+		selectedDeviceElement = element;
 		selectedDevice = element.device;
 		localStorage.lastHoveredDeviceId = element.device.deviceId;
-
+		if(!requestedStatus){
+			//gcmStatus.send(deviceIdsToGetStatus);
+			requestedStatus = true;
+		}
 		for (var i = 0; i < buttonsElement.children.length; i++) {
 			var buttonElement = buttonsElement.children[i];
 			var command = buttonElement.command;
@@ -85,8 +146,23 @@ var writeDevices = function(){
 		if(!deviceIcon && device.deviceType == DEVICE_TYPE_GROUP){
 			deviceIcon = device.deviceId.substring(6) + ".png";
 		}
-		deviceElement.querySelector("#deviceicon").src = "icons/" + deviceIcon;
-			devicesElement.appendChild(deviceElement);
+		var imageElement = deviceElement.querySelector("#deviceicon");
+		var imageInfoElement = deviceElement.querySelector("#deviceinfoicon");
+		if(back.getBetaEnabled() && UtilsDevices.canReportStatus(device)){		
+			imageInfoElement.onclick = e => {
+				var device = UtilsDom.findParent(e.target,element=>element.device ? true : false).device;
+				console.log(device);
+				Dialog.showDeviceInfoDialog({
+				    deviceId:device.deviceId
+				},{
+				    shouldShow:true
+				})();
+			}	
+		}else{
+			imageInfoElement.classList.add("hidden");
+		}
+		imageElement.src = "icons/" + deviceIcon;	
+		devicesElement.appendChild(deviceElement);
 		deviceElements.push(deviceElement);
 	};
 

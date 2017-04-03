@@ -120,5 +120,8 @@ back.Events = {
   "SMSReceived" : function(sms, senderId){
     this.sms = sms;   
     this.deviceId = senderId;
+  },
+  "StatusReceived" : function(gcmStatus){
+    this.gcmStatus = gcmStatus;
   }
 }

@@ -81,6 +81,19 @@ Dialog.showMultiChoiceDialog = function(input,options){
 		return Dialog.show("multichoice",input,options);	
 	}
 }
+Dialog.showDeviceInfoDialog = function(input,options){
+	return function(){
+		if(!options){
+			options = {};
+		}
+		options.width = 473;
+		options.height = 195;
+
+		var itemHeight = 42;
+		//options.height += input.items.length * itemHeight;	
+		return Dialog.show("deviceinfo",input,options);	
+	}
+}
 
 Dialog.showOkCancelDialog = function(input,options){
 	return function(){
@@ -223,17 +236,18 @@ Dialog.init = function(options, getResultFunc){
 	.then(function(result){
 		resultFunc();
 	});
-	setTimeout(function(){
-		back.getCurrentTab(function(tab){
-			console.log("height:" +window.document.body.offsetHeight)
-			console.log(tab);
-			chrome.windows.update(tab.windowId,{
-				height:window.document.body.offsetHeight + 60
-			});
-		});
-	},200);
+	setTimeout(Dialog.resizeCurrentDialog,200);
 	return {
 		buttons:buttons,
 		input:input
 	};
+}
+Dialog.resizeCurrentDialog = function(){
+	back.getCurrentTab(function(tab){
+		console.log("height:" +window.document.body.offsetHeight)
+		console.log(tab);
+		chrome.windows.update(tab.windowId,{
+			height:window.document.body.offsetHeight + 60
+		});
+	});
 }

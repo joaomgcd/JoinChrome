@@ -54,10 +54,10 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	};
 	var me = this;
 	if(!allDevices){	
-		allDevices = devices;
+		allDevices = back.devices;
 	}
 	if(!showNotificationFunc){
-		showNotificationFunc = showNotification;
+		showNotificationFunc = back.showNotification;
 	}
 	if(typeof deviceIds == "string"){
 		deviceIds = deviceIds.split(",");
@@ -69,7 +69,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	this.convertGroupToDeviceIds = function(device){
 		var devicesResult = [];
 		if(device.deviceId.indexOf("group." == 0)){
-			var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(allDevices, device.deviceId);
+			var devicesForGroup = back.joindevices.groups.deviceGroups.getGroupDevices(allDevices, device.deviceId);
 			if(devicesForGroup && devicesForGroup.length > 0){
 				for (var i = 0; i < devicesForGroup.length; i++) {
 					var deviceForGroup = devicesForGroup[i];
@@ -168,7 +168,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	        });
 		}
 		if(serverDevices.length > 0){
-			sendThroughServer(serverDevices.select(function(device){return device.deviceId;}),callback,callbackError);
+			sendThroughServer(serverDevices.select(device => device.deviceId),callback,callbackError);
 		}
 	}
 	this.handleGcmResult = function(device, result){

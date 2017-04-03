@@ -945,6 +945,34 @@ var GCMRequestFile = function(){
 }
 GCMRequestFile.prototype = new GCM();
 
+var GCMStatus = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMStatus";
+	}
+	this.execute = function() {
+		if(me.request || !me.deviceId || !me.status){
+			return
+		}
+		console.log("New Status response");
+		console.log(me);
+		back.eventBus.post(new back.Events.StatusReceived(me));
+		//handlePendingRequest(this,this.requestId);
+
+	}
+}
+GCMStatus.prototype = new GCMGenericPush();
+var GCMChangeSetting = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMChangeSetting";
+	}
+	this.execute = function() {	
+		console.log("Can't change settings in Chrome yet...");
+	}
+}
+GCMChangeSetting.prototype = new GCMGenericPush();
+
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){
 		directCopy(lastTextPushed);

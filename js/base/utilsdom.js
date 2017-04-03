@@ -119,4 +119,12 @@ var UtilsDom = {
 			}
 		}
 	},
+	"findParent": function(element, whereFunc){		
+		while(element.parentElement){
+			if(whereFunc(element.parentElement)){
+				return element.parentElement;
+			}
+			element = element.parentElement;
+		}
+	}
 }
