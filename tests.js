@@ -4,6 +4,8 @@ var testHtml = document.querySelector('link[href="test.html"]').import.querySele
 
 var Tests = function(){
 	var me = this;
+	var testButton = document.getElementById("starttests");
+	me.elementToInsertResults = null;
 	this.init = function(){
 		this.push(new TestAccount());
 		this.push(new TestRegister());
@@ -15,43 +17,74 @@ var Tests = function(){
 		this.push(new TestPopup());
 		//this.push(new TestGetSms());
 	}
-	this.execute = function(elementToInsertResults){
-		elementToInsertResults.innerHTML ="";//"Local GCM Key: " + localStorage.regIdLocal + "<br/>Server GCM Key: " + localStorage.regIdServer + "<br/>";
-		this.doForAllAsync(function(test, callback){
-			var testElement = testHtml.cloneNode(true);
-			test.testElement = testElement;
-			var textElement = testElement.querySelector("#text");
-			textElement.textContent = test.description + "...";
-			elementToInsertResults.appendChild(testElement);
-
-			document.body.scrollTop = document.body.scrollHeight;
-			test.execute(callback);
-		},function(results){
-			document.body.scrollTop = document.body.scrollHeight;
-
-		},null,function(result, i){
-			var test = me[i];
-			var testElement = test.testElement;
-			var textElement = testElement.querySelector("#text");
-			var iconElement = testElement.querySelector("#iconstatus");
-			var text = "";
-			if(result.success){
-				text = "Success"
-				if(result.successMessage){
-					text += ": " + result.successMessage;
-				}else{
-					text += "!";
-				}
-				iconElement.src = "success.png";
+	var handleTestError = function(error){
+		var errorMessage = null;
+		if(error){
+			if(error.statusText){
+				errorMessage = error.statusText;
 			}else{
-				iconElement.src = "error.png";
-				text = "<font color='red'>" + result.errorMessage + "</font>";
-				if(result.fixMessage){
-					text = text + ": " + result.fixMessage;
-				}
+				errorMessage = JSON.stringify(error);
+				if(errorMessage == "{}"){
+					errorMessage = null;
+				}			
 			}
-			textElement.innerHTML += " " + text;
+		}
+		if(!errorMessage){
+			errorMessage = "Check your connection";
+		}
+		return {"success":false,"errorMessage":errorMessage};
+	}
+	var handleTestResult = function(test, result){
+		var testElement = test.testElement;
+		var textElement = testElement.querySelector("#text");
+		var iconElement = testElement.querySelector("#iconstatus");
+		var text = "";
+		if(result.success){
+			text = "Success"
+			if(result.successMessage){
+				text += ": " + result.successMessage;
+			}else{
+				text += "!";
+			}
+			iconElement.src = "success.png";
+		}else{
+			iconElement.src = "error.png";
+			text = "<font color='red'>" + result.errorMessage + "</font>";
+			if(result.fixMessage){
+				text = text + ": " + result.fixMessage;
+			}
+		}
+		textElement.innerHTML += " " + text;
+		document.body.scrollTop = document.body.scrollHeight;
+	}
+	this.executeTest = function(test){
+		var testElement = testHtml.cloneNode(true);
+		test.testElement = testElement;
+		var textElement = testElement.querySelector("#text");
+		textElement.textContent = test.description + "...";
+		me.elementToInsertResults.appendChild(testElement);
+
+		document.body.scrollTop = document.body.scrollHeight;
+		return test
+		.execute()
+		.catch(handleTestError)
+		.then(function(result){
+			handleTestResult(test,result);
+		});
+	}
+	this.execute = function(elementToInsertResults){
+		me.elementToInsertResults = elementToInsertResults;
+		testButton.disabled = true;
+		elementToInsertResults.innerHTML ="";//"Local GCM Key: " + localStorage.regIdLocal + "<br/>Server GCM Key: " + localStorage.regIdServer + "<br/>";
+		return this
+		.doForAllPromise(me.executeTest)
+		.catch(function(error){
+			alert("Unknown error: " +error);
+			return [];
+		})
+		.then(function(results){
 			document.body.scrollTop = document.body.scrollHeight;
+			testButton.disabled = false;
 		});
 	}
 }
@@ -70,54 +103,56 @@ var TestResult = function(){
 var TestSendPush = function(){
 	var me = this;
 	this.description = "Sending Push to server";
-	this.execute = function(callback){
+	this.execute = function(){
 		 var gcmPush = new back.GCMPush();
 		 gcmPush.text = TEST_PUSH_TEXT;
-		 gcmPush.send(localStorage.deviceId, function(result){
+		 return gcmPush.send(back.localStorage.deviceId)
+		 .then(function(result){
 				if(result.success){
-					callback(new TestResult());
+					return new TestResult();
 				}else{
 					result.fixMessage = "Please check your internet connection.";
-					callback(result);
+					return result;
 				}
-		 },function(error){
-			callback({"success":false,"errorMessage":JSON.stringify(error)})
 		 });
 	}
 }
 TestSendPush.prototype = new Test();
-var messageErrorReceivePush = "Try the steps mentioned in the FAQ <a target='_blank' href='http://joaoapps.com/join/faq/'>here</a>";
-var TestReceivePush = function(){
+TestReceivePush = function(){
 	var me = this;
 	this.description = "Receiving Push from server";
-	this.receivedPush = false;
-	this.timeOut = function(){
-		if(!alreadyCalledCallback  && !me.receivedPush){
-				alreadyCalledCallback = true;
-				me.callback({"success":false,"errorMessage":"Didn't receive push after 5 seconds","fixMessage":messageErrorReceivePush});
+	var timeOutSeconds = 5;
+	this.receiveTestPush = UtilsObject.async(function* (){
+		var result =  null;
+		try{
+			yield back.eventBus.waitForSticky(back.Events.TestPush,timeOutSeconds * 1000);
+			result = new TestResult();
+		}catch(error){
+			result = {"success":false,"errorMessage":"Didn't receive push after " + timeOutSeconds + " seconds. Error: " + error,"fixMessage":"Try the steps mentioned in the FAQ <a target='_blank' href='http://joaoapps.com/join/faq/'>here</a>"};
 		}
-	}
-	var alreadyCalledCallback = false;
-	this.eventListener = function(e){
-		me.receivedPush = true;
-		back.document.removeEventListener(TEST_PUSH_EVENT,me.eventListener);
-		if(!alreadyCalledCallback && me.callback){
-			alreadyCalledCallback = true;
-			me.callback(new TestResult());
-		}
-	}
-	back.document.addEventListener(TEST_PUSH_EVENT, this.eventListener);
+		back.eventBus.removeStickyData(back.Events.TestPush);
+		return result;
+	});
 	this.execute = function(callback){
-		if(!alreadyCalledCallback && me.receivedPush){
-			alreadyCalledCallback = true;
-			callback(new TestResult());
-		}else{
-			me.callback = callback;
-		}
-		setTimeout(me.timeOut,5000);
+		return this.receiveTestPush();
 	}
 }
+
 TestReceivePush.prototype = new Test();
+
+var TestReceivePushRegId = function(){
+	var me = this;
+	this.description = "Receiving Push with GCM key";
+	this.execute = function(callback){
+		 var gcmPush = new back.GCMPush();
+		 gcmPush.text = TEST_PUSH_TEXT;
+		 gcmPush.regId = back.localStorage.regIdLocal;
+		 return gcmPush
+		 .send(back.localStorage.deviceId)
+		 .then(me.receiveTestPush);
+	}
+}
+TestReceivePushRegId.prototype = new TestReceivePush();
 var TestGetSms = function(){
 	var me = this;
 	var gotSms = false;
@@ -157,34 +192,34 @@ var TestGetSms = function(){
 	}
 }
 TestGetSms.prototype = new Test();
-back.confirmTestPopup = function(){
-	fire("testpopup");
-}
+
 var TestPopup = function(){
 	var me = this;
 	this.description = "Testing popups";
-	this.eventListener = function(){
-		me.callback(new TestResult());
-		document.removeEventListener("testpopup", me.eventListener);
-	};
-	document.addEventListener("testpopup",me.eventListener);
-	this.execute = function(callback){
-		this.callback = callback;
+	var timeOutSeconds = 5;
+	this.execute = function(){
 		showPopup('testpopup.html',200,500);
+		return back.eventBus
+		.waitFor(back.Events.TestPopup,timeOutSeconds*1000)
+		.then(function(){
+			return new TestResult();
+		})
+		.catch(function(error){
+			return {"success":false,"errorMessage":"Didn't detect popup after " + timeOutSeconds + " seconds: " + error,"fixMessage":"Check if popup panels aren't blocked on your system."};
+		});
 	}
 }
 TestPopup.prototype = new Test();
 var TestRegister = function(){
 	var me = this;
 	this.description = "Testing registration on Join's server";
-	this.execute = function(callback){
-		back.registerDevice(function(result){
+	this.execute = function(){
+		return back.registerDevice()
+		.then(function(result){
 			if(result.success && result.errorMessage){
 				result.successMessage = result.errorMessage;
 			}
-			callback(result);
-		},function(error){
-			callback({"success":false,"errorMessage":JSON.stringify(error)})
+			return result;
 		});
 	}
 }
@@ -193,14 +228,16 @@ var TestCompareGcmKeys = function(){
 	var me = this;
 	this.description = "Comparing GCM keys";
 	this.execute = function(callback){
-		back.doGetWithAuth(joinserver + "registration/v1/getGcmKey/?deviceId=" + localStorage.deviceId, function(result){
-			if(result.success && result.errorMessage){
-				result.successMessage = result.errorMessage;
+		return back
+		.doGetWithAuthPromise(joinserver + "registration/v1/getGcmKey/?deviceId=" + back.localStorage.deviceId)
+		.then(function(result){
+			if(!result.success){
+				return result;
 			}
-			callback(result);
-		},function(error){
-				console.log("Error: " + error);
-				callback({"success":false,"errorMessage":JSON.stringify(error)})
+			if(result.gcmKey != back.localStorage.regIdLocal){
+				return {"success":false,"errorMessage":"Local GCM key doesn't match the one on the server","fixMessage":"Try to remove the extension and re-install it. That should fix it."}
+			}
+			return new TestResult();
 		});
 	}
 }
@@ -208,8 +245,9 @@ TestCompareGcmKeys.prototype = new Test();
 var TestAccount = function(){
 	var me = this;
 	this.description = "Getting account details";
-	this.execute = function(callback){
-		getUserInfo(function(info){
+	this.execute = function(){
+		return getUserInfoPromise()
+		.then(function(info){
 			var testResults = new TestResult();
 			var email = info.email;
 			if(email){
@@ -218,53 +256,26 @@ var TestAccount = function(){
 			}else{
 				testResults.errorMessage = "Couldn't get account";
 			}
-			callback(testResults);
+			return testResults;
 		});
 	}
 }
 TestAccount.prototype = new Test();
-var TestReceivePushRegId = function(){
-	var me = this;
-	this.description = "Receiving Push with GCM key";
-	this.received = false;
-	 this.eventListener = function(e){
-			me.received = true;
-			back.document.removeEventListener(TEST_PUSH_EVENT,me.eventListener);
-			me.callback(new TestResult());
-		}
-	this.execute = function(callback){
-		 this.callback = callback;
-		 var gcmPush = new back.GCMPush();
-		 gcmPush.text = TEST_PUSH_TEXT;
-		 gcmPush.regId = localStorage.regIdLocal;
-		 back.document.addEventListener(TEST_PUSH_EVENT, this.eventListener);
-		 gcmPush.send(localStorage.deviceId, function(result){
-				setTimeout(function(){
-					if(!me.received){
-						back.document.removeEventListener(TEST_PUSH_EVENT,me.eventListener);
-						me.callback({"success":false,"errorMessage":"Didn't receive push after 5 seconds","fixMessage":messageErrorReceivePush});
-					}
-				},5000);
-		 },function(error){
-			callback({"success":false,"errorMessage":JSON.stringify(error)})
-		 });
-	}
-}
-TestReceivePushRegId.prototype = new Test();
 var TestAuthToken = function(){
 	var me = this;
 	this.description = "Refreshing Auth Token";
-	this.received = false;
+	var timeOutSeconds = 5;
 	this.execute = function(callback){
-		 back.getAuthToken(function(token){
-				me.received = true;
-				callback({"success":true,"successMessage":"This is a secret so don't show it to anyone: token: " + token});
-		 },false);
-		 setTimeout(function(){
-			if(!me.received){
-				me.callback({"success":false,"errorMessage":"Didn't receive token after 5 seconds","fixMessage":"Did you sign in with your account? Try re-installing the extension. If that doesn't work contact the developer."});
-			}
-		 },5000);
+		 return Promise.race([
+		 	back.getAuthTokenPromise(false),
+		 	UtilsObject.timeOut(timeOutSeconds*1000)
+		 ])	 
+		 .then(function(token){
+			return {"success":true,"successMessage":"This is a secret so don't show it to anyone: token: " + token};
+		 })
+		 .catch(function(){
+			return {"success":false,"errorMessage":"Didn't receive token after "+timeOutSeconds+" seconds","fixMessage":"Did you sign in with your account? Try re-installing the extension. If that doesn't work contact the developer."};		 	
+		 });
 	}
 }
 TestAuthToken.prototype = new Test();

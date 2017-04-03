@@ -1,13 +1,17 @@
 
+var back = chrome.extension.getBackgroundPage();
 var ContextMenu = function(){
 	var OPEN = "Open";
 	var PASTE = "Paste";
 	var CREATE_NOTIFICATION = "Create Notification";
 	var SET_AS_WALLPAPER = "Set As Wallpaper";
+	var SET_AS_LOCK_WALLPAPER = "Set As Lockscreen Wallpaper";
 	var SEND_TASKER_COMMAND = "Send Tasker Command";
+	var CALL = "Call";
 	var WITH = "With";
 	var DOWNLOAD = "Download";
 	var me = this;
+	var timeOut = null;
 	var push = function(device,data){
 		var gcmPush = new GCMPush();
 		UtilsObject.applyProps(gcmPush,data);
@@ -16,8 +20,12 @@ var ContextMenu = function(){
 			console.log("Pushed");
 			console.log(result);
 		},function(result){
-			console.log("Not Pushed!");
+			var title = "Not Pushed!";
+			console.log(title);
 			console.log(result);
+			if(showNotification){
+				showNotification(title, result);
+			}
 		});
 	}
 	//Opens
@@ -54,10 +62,10 @@ var ContextMenu = function(){
 	//Notifications
 	var notificationForUrl = function(device, info, tab, url, title, text){
 		if(!title){
-			title = "Saved Page";
+			title = tab.title;
 		}
 		if(!text){
-			text = tab.title;
+			text = url;
 		}
 		push(device, {"url": url,"text": text,"title": title});
 	}
@@ -65,7 +73,21 @@ var ContextMenu = function(){
 		notificationForUrl(device, info, tab, info.pageUrl);
 	}
 	var notificationLink = function(device, info, tab){
-		notificationForUrl(device, info, tab, info.linkUrl);
+		var url = info.linkUrl;
+		//showNotification("Join","Getting link's title...");
+		doGetWithAuthPromise(url)
+		.then(function(html){
+    		var matches = html.match(/<title>(.*?)<\/title>/);
+    		if(matches && matches.length>0){
+    			return matches[0];
+    		}
+		})
+		.catch(function(error){
+			console.log("Couldn't get title for link. Using current title instead");
+		})
+		.then(function(title){
+			notificationForUrl(device, info, tab, url, title);
+		});
 	}
 	var notificationSelection = function(device, info, tab){
 		notificationForUrl(device, info, tab, info.pageUrl, "Note To Self", info.selectionText);
@@ -86,8 +108,14 @@ var ContextMenu = function(){
 	var setWallpaper = function(device, url){
 		push(device, {"wallpaper": url});
 	}
+	var setLockWallpaper = function(device, url){
+		push(device, {"lockWallpaper": url});
+	}
 	var setWallpaperSourceUrl = function(device, info, tab){
 		setWallpaper(device, info.srcUrl);
+	}
+	var setLockWallpaperSourceUrl = function(device, info, tab){
+		setLockWallpaper(device, info.srcUrl);
 	}
 
 	//Tasker Commands
@@ -111,57 +139,148 @@ var ContextMenu = function(){
 	var sendTaskerCommandSourceUrl = function(device, info, tab){
 		sendTaskerCommand(device, info.srcUrl);
 	}
+
+	//Calls
+	var callNumber = function(device, number){ 
+		push(device, {"callnumber": number});
+	}
+	var callNumberSelection = function(device, info, tab){ 
+		callNumber(device, info.selectionText);
+	}
+	var callNumberLink = function(device, info, tab){ 
+		callNumber(device, info.linkUrl);
+	}
 	this.update = function(devices){
 	    chrome.contextMenus.removeAll();
 	    var contexts = {
 	    	"page":[
-		    	new ContextMenuItem(OPEN,openPage),
+		    	new ContextMenuItem(OPEN,openPage).setFavorite(),
 		    	new ContextMenuItem(PASTE,pastePage),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationPage, WITH),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandPage, WITH),
 		    ],
 		    "selection":[
 		    	new ContextMenuItem(OPEN,openSelection),
-		    	new ContextMenuItem(PASTE,pasteSelection),
+		    	new ContextMenuItem(PASTE,pasteSelection).setFavorite(),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationSelection, WITH),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSelection, WITH),
+		    	new ContextMenuItem(CALL,callNumberSelection),
 		    ],
 		    "link":[		    	
-		    	new ContextMenuItem(OPEN,openLink),
+		    	new ContextMenuItem(OPEN,openLink).setFavorite(),
 		    	new ContextMenuItem(PASTE,pasteLink),
 		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationLink, WITH),
 		    	new ContextMenuItem(DOWNLOAD,downloadLink),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandLink, WITH),
+		    	new ContextMenuItem(CALL,callNumberLink),
 	    	],
 		    "editable":[],
 		    "image":[
 		    	new ContextMenuItem(SET_AS_WALLPAPER,setWallpaperSourceUrl),
+		    	new ContextMenuItem(SET_AS_LOCK_WALLPAPER,setLockWallpaperSourceUrl,null,null,device=>device.apiLevel>=24),
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
+		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
 		    "video":[
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
+		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
 		    "audio":[
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl),
+		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ]
 		};
-	
+		
+		chrome.contextMenus.create({
+			"type":"checkbox",
+			"checked": !getShowChromeNotifications(),
+			"title":"Mute Notifications",
+			"contexts":["browser_action"],
+			"onclick":function(info, tab) {
+				var shouldMute = true;
+				return Promise.resolve()
+				.then(Dialog.showMultiChoiceDialog({
+				    items:[
+				        {id:15,text:"15 Minutes"},
+				        {id:30,text:"30 Minutes"},
+				        {id:60,text:"1 Hour"},
+				        {id:180,text:"3 Hours"},
+				        {id:360,text:"6 Hours"},
+				    ],
+				    title:"Mute Notifications For"
+				},{
+				    shouldShow:info.checked
+				}))
+				.catch(function(){
+					console.log("Mute cancelled")
+				})
+				.then(function(item){
+					if(!item){
+						shouldMute = false;
+					}
+					back.setShowChromeNotifications(!shouldMute);
+					if(shouldMute){
+						var minutesToWait = item.id;
+						var timeToWait = minutesToWait * 1000 * 60;
+						showNotification("Join", "Notifications Muted for " + minutesToWait + " minutes");	
+						console.log("Muted");				
+						return timeToWait;
+					}
+				})
+				.then(function(timeToWait){
+					return UtilsObject.wait(timeToWait,function(to){
+						timeOut = to;
+					});
+				})
+				.then(function(){
+					if(shouldMute){
+						showNotification("Join", "Notifications Unmuted");
+						console.log("Mute ended");
+					}
+					setShowChromeNotifications(true);
+					if(timeOut){
+						clearTimeout(timeOut);
+						timeOut = null;
+						console.log("Cleared timeout");
+					}
+				});
+			}
+		});
 		if(!devices){
 			return;
 		}
+		var contextNames = [];
+		for(var contextName in contexts){
+			contextNames.push(contextName);
+		}
+		var getContextName = contextId => contextId.substring(0,1).toUpperCase() + contextId.substring(1);
+		for(var contextId in contexts){
+			devices.where(device=>UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device=>{
+	        	var context = contexts[contextId];
+				context.doForAll(contextMenuItem=>{
+	        		if(contextMenuItem.favorite){
+		        		chrome.contextMenus.create({
+			        		"contexts": [contextId],
+			        		"onclick": function(info, tab){
+			        			contextMenuItem.handler(device, info, tab);
+			        		},
+			        		"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName,
+			        		"targetUrlPatterns": contextMenuItem.patterns
+		        		});
+		        	}
+	    		});
+			})
+		}
+        	
 		devices.doForAll(function(device){
 	        chrome.contextMenus.create({
 	            "id": device.deviceId,
 	            "title": device.deviceName,
-	            "contexts": ["all"]
+	            "contexts": contextNames
 	        });
-
 	        for(var contextId in contexts){
 	        	var context = contexts[contextId];
 	        	if(!UtilsObject.isArray(context)){
@@ -170,6 +289,7 @@ var ContextMenu = function(){
 	        	if(context.length > 0){
 		        	var contextForDevice = contextId + device.deviceId;
 		        	var contextName = contextId.substring(0,1).toUpperCase() + contextId.substring(1);
+
 		        	var multipleFuncsForContext = context.length > 1;
 		        	if(multipleFuncsForContext){
 			        	chrome.contextMenus.create({
@@ -185,11 +305,12 @@ var ContextMenu = function(){
 		        	context.doForAll(function(contextMenuItem){
 		        		var actionTitle = contextMenuItem.title;
 		        		if(!multipleFuncsForContext){
-		        			var joiner = " ";
-		        			if(contextMenuItem.joiner){
-		        				joiner = " " + contextMenuItem.joiner + " ";
+			        		actionTitle = contextMenuItem.getActionTitle(contextName);
+		        		}
+		        		if(contextMenuItem.conditionFunc){
+		        			if(!contextMenuItem.conditionFunc(device)){
+		        				return;
 		        			}
-			        		actionTitle = actionTitle + joiner + contextName;
 		        		}
 			        	chrome.contextMenus.create({
 			        		"parentId": contextForDevice,
@@ -197,16 +318,30 @@ var ContextMenu = function(){
 			        		"onclick": function(info, tab){
 			        			contextMenuItem.handler(device, info, tab);
 			        		},
-			        		"title": actionTitle
+			        		"title": actionTitle,
+			        		"targetUrlPatterns": contextMenuItem.patterns
 			        	});
 		        	});
 		        }
 			}
 	    });
 	}
-	var ContextMenuItem = function(title,handler, joiner){
+	var ContextMenuItem = function(title,handler, joiner, patterns, conditionFunc){
 		this.title = title;
 		this.handler = handler;
 		this.joiner = joiner;
+		if(UtilsObject.isString(patterns)){
+			patterns = [patterns];
+		}
+		this.patterns = patterns;
+		this.conditionFunc = conditionFunc;
+		this.setFavorite = () => {this.favorite = true;return this;}
+		this.getActionTitle = contextName => {
+			var joiner = " ";
+			if(this.joiner){
+				joiner = " " + this.joiner + " ";
+			}
+    		return this.title + joiner + contextName;
+		}
 	}
 }

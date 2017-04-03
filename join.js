@@ -3,11 +3,7 @@ chrome.commands.onCommand.addListener(function(command) {
 	if(command == "popup"){
 		createPushClipboardWindowAndCloseAfterCommand();
 	}else if(command == "repeat-last-command"){
-		if(localStorage["lastpush"]){
-			window[localStorage["lastpushtype"]](localStorage["lastpush"], true);
-		}else{
-			createPushClipboardWindowAndCloseAfterCommand();
-		}
+		repeatLastCommand();
 	}else if(command == "favorite-command"){
 		var favoriteCommand = getFavoriteCommand();
 		favoriteCommand = deviceCommands.first(function(command){return command.label == favoriteCommand;});
@@ -17,8 +13,32 @@ chrome.commands.onCommand.addListener(function(command) {
 		}
 	}else if(command == "notifications-popup"){
 		showNotificationsPopup();
+	}else if(command == "voice-command"){
+		if(!getVoiceEnabled()){
+			return;
+		}
+		if(back.UtilsVoice.voiceRecognizer != null && back.UtilsVoice.voiceRecognizer.getAlwaysListeningEnabled()){
+			back.console.log("Not starting because it's on continuous");
+			return;
+		}
+		UtilsVoice.doVoiceCommand(devices,prompt=>showNotification("Join",prompt))
+		/*.then(result=>{
+			result.command.func(result.device.deviceId,true,result.parameters.input);
+		})*/
+		.catch(error=>{
+			showNotification("Join Voice Command",`Error recognizing: ${error}`);
+			console.log("Error recognizing!")
+			console.log(error);
+		});
 	}
 });
+var repeatLastCommand = function(){	
+	if(localStorage["lastpush"]){
+		window[localStorage["lastpushtype"]](localStorage["lastpush"], true);
+	}else{
+		createPushClipboardWindowAndCloseAfterCommand();
+	}
+}
 var getNotificationPopupHeight = function(){
 	var height = Math.min(Math.round((203 * notifications.length) + 80), screen.height * 0.75);
 	if(notifications.length == 0){
@@ -39,7 +59,7 @@ var showNotificationsPopup = function(tab){
 	}
 	var height = getNotificationPopupHeight();
 	var width = getNotificationPopupWidth();
-	chrome.windows.create({"focused":false, url: 'devices.html?tab='+tab+'&closeOnEmpty=true', type: 'detached_panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
+	chrome.windows.create({"focused":false, url: 'devices.html?tab='+tab+'&closeOnEmpty=true', type: 'popup' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
 			notificationsWindow = win;
 	});
 }
@@ -79,9 +99,15 @@ var createPushClipboardWindow = function(tab,params,paramsIfClosed,closeAfterCom
 	}else{
 		/*var height = Math.min(Math.round((88 * devices.length) + 100), screen.height * 0.75);
 		height = Math.max(height, (deviceCommands.length * 25) + 100);*/
-		var width = 456;
-		var height = 606;
-		chrome.windows.create({ url: url, type: 'detached_panel' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
+		var width = parseInt(localStorage.popoutWidth);
+        if(!width){
+            width = 456;
+        }
+		var height = parseInt(localStorage.popoutHeight);
+        if(!height){
+            height = 606;
+        }
+		chrome.windows.create({ url: url, type: 'popup' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
 				popupWindowClipboard = clipboardWindow;
 				popupWindowClipboardId = clipboardWindow.id;
 		});
@@ -293,6 +319,11 @@ var getAuthTokenFromTab = function(callback,selectAccount){
 var getAuthTokenFromChrome = function(callback){
 
 }
+var getAuthTokenPromise =function(selectAccount, token){
+    return new Promise(function(resolve){
+        getAuthToken(resolve, selectAccount, token);
+    });
+}
 var getAuthToken = function(callback, selectAccount, token){
 	if(token){
 		if(callback){
@@ -336,7 +367,7 @@ var removeAuthToken = function(callback){
 	delete localStorage.userinfo;
 }
 
-var doRequestWithAuth = function(method, url,content, callback, callbackError, isRetry, token) {
+/*var doRequestWithAuth = function(method, url,content, callback, callbackError, isRetry, token) {
 	getToken(function(token) {
 		if(token == null){
 			if (callbackError != null) {
@@ -361,7 +392,12 @@ var doRequestWithAuth = function(method, url,content, callback, callbackError, i
 				console.log("POST status: " + this.status);
 				var result = {};
 				if(this.responseText){
-					result = JSON.parse(this.responseText)
+                    try{
+    					result = JSON.parse(this.responseText)
+                    }
+                    catch(err) {
+                        result = this.responseText;
+                    }
 				}
 				if(!isRetry && result.userAuthError){
 					console.log("Retrying with new token...");
@@ -387,12 +423,31 @@ var doRequestWithAuth = function(method, url,content, callback, callbackError, i
 					contentString = JSON.stringify(content);
 				}
 			}
-			req.send(contentString);
+            try{
+                req.send(contentString);
+            }catch(error){
+                if (callbackError != null) {
+                    callbackError(error);
+                }
+            }
 		}
 	},token);
 }
 var doPostWithAuth = function(url,content, callback, callbackError) {
-	doRequestWithAuth("POST",url,content,callback,callbackError);
+    doRequestWithAuth("POST",url,content,callback,callbackError);
+}
+var doPostWithAuthPromise = function(url,content) {
+    return new Promise(function(resolve,reject){
+        doPostWithAuth(url,content,resolve,reject);
+    });
+}
+var doPutWithAuth = function(url,content, callback, callbackError) {
+    doRequestWithAuth("PUT",url,content,callback,callbackError);
+}
+var doPutWithAuthPromise = function(url,content) {
+    return new Promise(function(resolve,reject){
+        doPutWithAuth(url,content,resolve,reject);
+    });
 }
 var doDeleteWithAuth = function(url,content, callback, callbackError) {
 	doRequestWithAuth("DELETE",url,content,callback,callbackError);
@@ -400,6 +455,11 @@ var doDeleteWithAuth = function(url,content, callback, callbackError) {
 var doGetWithAuth = function(url, callback, callbackError,token) {
 	doRequestWithAuth("GET",url,null,callback,callbackError,false, token);
 }
+var doGetWithAuthPromise = function(url,token) {
+    return new Promise(function(resolve,reject){
+        doGetWithAuth(url,resolve,reject,token);
+    });
+}*/
 var doGetWithAuthAsyncRequest = function(endpointRequest, endpointGet, deviceId, callback, callbackError) {
 	doRequestWithAuth("GET",joinserver + "messaging/v1/" + endpointRequest + "?deviceId=" + deviceId,null,function(response){
 		var requestId = response.requestId;
@@ -554,7 +614,7 @@ var optionSavers = [
 				value = option.checked;
 			}
 			localStorage[id] = value;
-			var onSaveFunc = window["on" + option.id + "save"];
+			var onSaveFunc = window["on" + id + "save"];
 			if(onSaveFunc){
 				onSaveFunc(option, value);
 			}
@@ -640,6 +700,12 @@ var getDeviceIdsToSendAutoClipboard = function(){
 	var deviceIds = [];
 	for (var i = 0; i < devices.length; i++) {
 		var device = devices[i];
+        if(device.deviceId == localStorage.deviceId){
+            continue;
+        }
+        if(UtilsDevices.isDeviceGroup(device) || UtilsDevices.isDeviceShare(device)){
+            continue;
+        }
 		var key = device.deviceId + deviceSufix;
 		var enabled = localStorage[key] == null || localStorage[key] == "true";
 		if(enabled){
@@ -650,11 +716,15 @@ var getDeviceIdsToSendAutoClipboard = function(){
 }
 
 var getOptionValue = function(type, id, defaultValue){
-	if(!defaultValue){
-		defaultValue = getDefaultValue(id);
-	}
-	var optionSaver = getOptionSaver(type);
-	return optionSaver.getValue(id,defaultValue);
+    if(!defaultValue){
+        defaultValue = getDefaultValue(id);
+    }
+    var optionSaver = getOptionSaver(type);
+    return optionSaver.getValue(id,defaultValue);
+}
+var saveOptionValue = function(type, id, value){
+    var optionSaver = getOptionSaver(type);
+    return optionSaver.save(id,value);
 }
 var getDownloadScreenshotsEnabled = function(){
 	return getOptionValue("checkbox","downloadscreenshots");
@@ -671,6 +741,9 @@ var get12HourFormat = function(){
 var getAutoClipboard = function(){
 	return getOptionValue("checkbox","autoclipboard");
 }
+var getClipboardNotificationShowContents = function(){
+	return getOptionValue("checkbox","clipboardnotificationshowcontents");
+}
 var getAutoClipboardNotification = function(){
 	return getOptionValue("checkbox","autoclipboardnotification");
 }
@@ -681,7 +754,13 @@ var getFavoriteCommandDevice = function(){
 	return getOptionValue("select","select_favourite_command_device");
 }
 var getNotificationSeconds = function(){
-	return getOptionValue("text","notificationseconds");
+    return getOptionValue("text","notificationseconds");
+}
+var getNotificationRequireInteraction = function(){
+    return getOptionValue("checkbox","notificationrequireinteraction");
+}
+var getBetaEnabled = function(){
+    return getOptionValue("checkbox","showbetafeatures");
 }
 var getNotificationSound = function(){
 	return getOptionValue("text","notificationsound");
@@ -693,7 +772,10 @@ var getNotificationNoPopupPackages = function(){
 	return getOptionValue("textarea","notificationnopopuppackages");
 }
 var getShowChromeNotifications = function(){
-	return getOptionValue("checkbox","chromenotifications");
+    return getOptionValue("checkbox","chromenotifications");
+}
+var setShowChromeNotifications = function(value){
+    saveOptionValue("checkbox","chromenotifications",value);
 }
 var getPrefixTaskerCommands = function(){
 	return getOptionValue("checkbox","prefixtaskercommands");
@@ -716,9 +798,94 @@ var getEventghostPort = function(){
 var getFavoriteCommandText = function(){
 	return getOptionValue("text","text_favourite_command");
 }
+var getVoiceEnabled = function(){
+	return getOptionValue("checkbox","voiceenabled");
+}
+var getVoiceContinuous = function(){
+	return getOptionValue("checkbox","voicecontinuous");
+}
+var getVoiceWakeup = function(){
+	return getOptionValue("text","voicewakeup");
+}
+var onvoiceenabledsave = UtilsObject.async(function* (option, value){
+	if(!option){
+		return;
+	}
+	if(!option.ownerDocument){
+		return;
+	}
+	var continuousOption = option.ownerDocument.querySelector("#voicecontinuous");
+	var continuousSection = option.ownerDocument.querySelector("#continuoussection");
+	if(!value){
+		setVoiceContinuous(false);
+		continuousOption.checked = false;
+		continuousSection.classList.add("hidden");	
+	}else{
+		continuousSection.classList.remove("hidden");	
+	}
+});
+var setVoiceContinuous = function(enabled){
+    saveOptionValue("checkbox","voicecontinuous",enabled);
+}
+var onvoicecontinuoussave = UtilsObject.async(function* (option, value){
+    console.log("Continuous: " + value);
+    var callbackPromptFunc =  (prompt, notificationTime)=>{
+    	return new Promise(function(resolve,reject){
+			if(UtilsObject.isString(prompt)){
+				chrome.tts.speak(prompt,{
+					"lang": 'en-US',
+					"onEvent": function(event){
+						if(event.type == 'end' || event.type == 'error'|| event.type == 'interrupted'|| event.type == 'cancelled'){
+							resolve();
+						}
+					}
+				});
+				showNotification("Voice",prompt,notificationTime);	
+			}else{
+				console.error("Prompt is not text");
+				console.error(prompt);
+			}
+    	});
+	};
+	var errorFunc = error=>{
+		callbackPromptFunc(error,10000);
+	};
+	if(value){
+		try{
+			yield UtilsVoice.voiceRecognizer.isMicAvailable();
+		}catch(error){
+    		setVoiceContinuous(false);
+			chrome.tts.speak("Click the generated notification to enable your mic");
+			var chromeNotification = new ChromeNotification({
+				"id":"micnotavailable",
+				"title":"Error",
+				"text":"Click here to allow Join to access your microphone",
+				"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
+			});
+			chromeNotification.notify();
+		}
+	}
+	UtilsVoice.toggleContinuous(()=>devices, getVoiceWakeup, getVoiceContinuous, callbackPromptFunc,null,errorFunc);
+});
 var onautoclipboardsave = function(option, value){
-	console.log("Auto clipboard: " + value);
-	handleAutoClipboard();
+    console.log("Auto clipboard: " + value);
+    if(handleAutoClipboard){
+        handleAutoClipboard();   
+    }
+}
+var onchromenotificationssave = function(option, value){
+    console.log("Changed chrome notification popup setting: " + value);
+    contextMenu.update(devices);
+}
+var onshowbetafeaturessave = function(option, value){
+	if(!option){
+		return;
+	}
+	if(!option.ownerDocument){
+		return;
+	}
+    back.console.log("Changed beta setting: " + value);
+    option.ownerDocument.location.reload();
 }
 var getDefaultValue = function(option){
 	var id = null;
@@ -734,16 +901,26 @@ var defaultValues = {
 	"downloadvideos":false,
 	"12hrformat":false,
 	"autoclipboard":false,
+	"clipboardnotificationshowcontents":true,
 	"autoclipboardnotification":true,
 	"chromenotifications":true,
 	"notificationwebsites":JSON.stringify(notificationPages,null,1),
-	"notificationnopopuppackages":"com.google.android.music",
+	"notificationnopopuppackages":"",
 	"prefixtaskercommands":false,
 	"hidenotificationtext": false,
 	"playnotificationsound": true,
     "showinfonotifications": true,
-    "autoopenlinks": true
+    "autoopenlinks": true,
+    "notificationrequireinteraction": false,
+    "showbetafeatures": false,
+    "voiceenabled": false,
+    "voicecontinuous": false,
+    "voicewakeup": "computer"
 };
+if(getVoiceContinuous()){
+	onvoicecontinuoussave(null,true);
+}
+//setShowChromeNotifications(true);
 /******************************************************************************/
 
 /*************************************************************************************/
@@ -794,6 +971,10 @@ var RequestFile = function(requestType){
 			params.deviceIds = deviceId;
 		}
 		doPostWithAuth(joinserver + "requestfile/v1/request/",params, function(result){
+            if(!result.success){
+                showNotification("Can't request file",result.errorMessage);
+                return;
+            }
 			pendingRequests.push({"requestId":result.requestId,"callback":callback,"download":download,"keep":keepPendingRequest});
 			console.log("Added pending request: " + result.requestId);
 		},function(error){
@@ -849,59 +1030,88 @@ var pushClipboard = function(deviceId, notify){
 	getClipboard(function(clipboardData){
 		var push = new GCMPush();
 		push.clipboard = clipboardData;
-		push.send(deviceId);
+        push.send(deviceId,function(){
+            if(notify){
+                showNotification("Join","Sent Clipboard");
+            }
+        },function(error){
+            showNotification("Couldn't send clipboard", error);
+        });
 		setLastPush(deviceId, "pushClipboard");
-		if(notify){
-			showNotification("Join","Sent Clipboard");
-		}
+		
 	});
 }
 var openClipboard = function(deviceId, notify){
 	getClipboard(function(clipboardData){
 		var push = new GCMPush();
 		push.files = [clipboardData];
-		push.send(deviceId);
+        push.send(deviceId,function(){
+            if(notify){
+                showNotification("Join","Sent Clipboard to open");
+            }
+        },function(error){
+            showNotification("Couldn't send", error);
+        });
 		setLastPush(deviceId, "openClipboard");
-		if(notify){
-			showNotification("Join","Sent Clipboard to open");
-		}
 	});
 }
-var findDevice = function(deviceId, notify){
-	if(!confirm("This will make your phone play your default ringtone at full volume. Are you sure?")){
+var findDevice = function(deviceId, notify, ignorePrompt){
+	if(!ignorePrompt && !confirm("This will make your phone play your default ringtone at full volume. Are you sure?")){
 		return;
 	}
 	var push = new GCMPush();
 	push.find = true;
-	push.send(deviceId);
+	push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join","Device will now ring...");
+        }
+    },function(error){
+        showNotification("Couldn't ring device", error);
+    });
 	setLastPush(deviceId, "findDevice");
-	if(notify){
-		showNotification("Join","Device will now ring...");
-	}
+	
 }
-var writeText = function(deviceId, notify, text){
-	var push = new GCMPush();
-	if(!text || (typeof text) != "string" ){
-		text = prompt("Text to write");
-	}
-	push.clipboard = text;
-	if(!push.clipboard){
-		return;
-	}
-	push.send(deviceId);
-	setLastPush(deviceId, "writeText");
-	if(notify){
-		showNotification("Join","Sent Text");
-	}
+var getClipboardPush = function(text){    
+    var push = new GCMPush();
+    push.clipboard = text;
+    return push;
 }
+var sendPushToDeviceId = function(deviceId){    
+    return function(push){
+        return push.send(deviceId);
+    }
+}
+var setLastPushAndNotify = function(deviceId, notify, functionName, notificationMessage){    
+    return function(result){
+        setLastPush(deviceId, functionName);
+        if(notify){
+            showNotification("Join",notificationMessage);
+        }
+    }
+}
+var writeText = UtilsObject.async(function* (deviceId, notify, text){
+	if(!text || (typeof text) != "string"){
+		text = yield Dialog.showInputDialog({
+	        title:"Text to write",
+	        placeholder:"Type some text"
+	    })();
+	}
+	var push = getClipboardPush(text);
+	var pushResult = yield push.send(deviceId);
+	setLastPushAndNotify(deviceId, notify, "writeText",`Wrote ${text}`)();
+	
+});
 var requestLocation = function(deviceId, notify){
 	var push = new GCMPush();
 	push.location = true;
-	push.send(deviceId);
+	push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join","Requested location...");
+        }
+    },function(error){
+        showNotification("Couldn't locate device", error);
+    });
 	setLastPush(deviceId, "requestLocation");
-	if(notify){
-		showNotification("Join","Requested location...");
-	}
 }
 var doRequestFile = function(deviceId, notify, requestType, funcName, notificationText, startText){
 	if(notify){
@@ -932,24 +1142,37 @@ var renameDevice = function(deviceId, notify){
 	if(!device){
 		return;
 	}
-	var confirm = window.prompt("What do you want to name " + device.deviceName + "?");
-	if(confirm){
-		doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId="+deviceId+"&newName="+encodeURIComponent(confirm),{"deviceId":deviceId,"newName":confirm}, function(result){
-		  console.log(result);
-		  var device = devices.first(function(device){
-			return device.deviceId == deviceId;
-		  });
-		  device.deviceName = confirm;
-		  setDevices(devices);
-		  refreshDevicesPopup();
-		  if(showNotification){
-			showNotification("Renamed",device.deviceName + " renamed to " +confirm);
-		  }
-		},function(error){
-			console.log("Error: " + error);
-			showNotification("Error renaming",error);
-		});
-	}
+	var oldName = device.deviceName;
+    return Promise.resolve()
+    .then(Dialog.showInputDialog({
+            title:"What do you want to name " + device.deviceName + "?",
+            text: device.deviceName,
+            placeholder:"Device Name"
+    }))
+    .then(function(confirm){
+        if(confirm){
+            doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId="+deviceId+"&newName="+encodeURIComponent(confirm),{"deviceId":deviceId,"newName":confirm}, function(result){
+              console.log(result);
+             
+              var device = devices.first(function(device){
+                return device.deviceId == deviceId;
+              });
+               if(!result.success){
+                showNotification("Couldn't rename " + device.deviceName, result.errorMessage);
+                return;
+              }
+              device.deviceName = confirm;
+              setDevices(devices);
+              refreshDevicesPopup();
+              if(showNotification){
+                showNotification("Renamed",oldName + " renamed to " +confirm);
+              }
+            },function(error){
+                console.log("Error: " + error);
+                showNotification("Error renaming",error);
+            });
+        }
+    }).catch(UtilsObject.ignoreError);	
 }
 var deleteDevice = function(deviceId, notify){
 	var device = devices.first(function(device){return device.deviceId == deviceId;});
@@ -974,24 +1197,45 @@ var deleteDevice = function(deviceId, notify){
 		});
 	}
 }
-var noteToSelf = function(deviceId, notify){
-		var noteText = prompt("Note to self");
-		if(noteText){
-			var push = new GCMPush();
-			push.title = "Note To Self";
-			push.text = noteText;
-			push.send(deviceId);
-			setLastPush(deviceId, "noteToSelf");
+var noteToSelf = UtilsObject.async(function* (deviceId, notify, text){	
+		var noteText = text;
+		if(!noteText || !UtilsObject.isString(text)){
+			noteText = yield Dialog.showInputDialog({
+			    title:"Note to self",
+			    placeholder:"Note text here..."
+			})();
 		}
-}
+		if(!noteText){
+            return;
+        }
+		var push = new GCMPush();
+		push.title = "Note To Self";
+        push.text = noteText;
+        push.send(deviceId)
+        .then(function(){
+            if(notify){
+            	var device = devices.first(device=>device.deviceId == deviceId);
+            	if(device){
+	                showNotification("Join", `Created note on ${device.deviceName}: "${noteText}"`);
+	            }
+            }
+        })
+        .catch(UtilsObject.handleError);
+		setLastPush(deviceId, "noteToSelf");
+});
 var getCurrentTab = function(callback){
-	chrome.tabs.query({'active': true, currentWindow: true}, function (tabs) {
-		if(tabs && tabs.length > 0){
-			callback(tabs[0]);
-		}else{
-			callback(null);
-		}
-	});
+    chrome.tabs.query({'active': true, currentWindow: true}, function (tabs) {
+        if(tabs && tabs.length > 0){
+            callback(tabs[0]);
+        }else{
+            callback(null);
+        }
+    });
+}
+var getCurrentTabPromise = function(){
+    return new Promise(function(resolve,reject){
+        getCurrentTab(resolve);
+    });
 }
 var pushUrl = function(deviceId, notify,callback){
 	getCurrentTab(function(tab){
@@ -1013,16 +1257,18 @@ var pushUrl = function(deviceId, notify,callback){
 			var push = new GCMPush();
 			push.url = url;
 			push.text = text;
-			push.send(deviceId);
+			push.send(deviceId,function(){
+                if(notify){
+                    showNotification("Join", "Pushed current tab");
+                }
+            },function(error){
+                showNotification("Couldn't push current tab", error);
+            });
 			setLastPush(deviceId, "pushUrl");
 			pushed = true;
 		}
 		if(!pushed){
 			showNotification("Join", "Link not supported. Must start with http. Was " + tab.url);
-		}else{
-			if(notify){
-				showNotification("Join", "Pushed current tab");
-			}
 		}
 		if(callback){
 			callback();
@@ -1030,98 +1276,132 @@ var pushUrl = function(deviceId, notify,callback){
 	});
 }
 var pushTaskerCommand = function(deviceId, notify,text){
-	var push = new GCMPush();
-	if(!text || (typeof text) != "string" ){
-		text = prompt("Write your Tasker command.\n\nSetup a profile with the AutoApps condition to react to it.");
-	}
-	if(!text){
-		return;
-	}
-	if(getPrefixTaskerCommands()){
-		 text = "=:=" + text;
-	}
-	push.text =text;
-	push.send(deviceId);
-	setLastPush(deviceId, "pushTaskerCommand");
-	if(notify){
-		showNotification("Join", "Sent command " + text);
+    var push = new GCMPush();
+    if(!text || (typeof text) != "string" ){
+        text = prompt("Write your Tasker command.\n\nSetup a profile with the AutoApps condition to react to it.");
+    }
+    if(!text){
+        return;
+    }
+    if(getPrefixTaskerCommands()){
+         text = "=:=" + text;
+    }
+    push.text =text;
+    push.send(deviceId,function(){
+        if(notify){
+            showNotification("Join", "Sent command " + text);
+        }
+    },function(error){
+        showNotification("Couldn't push tasker command", error);
+    });
+    setLastPush(deviceId, "pushTaskerCommand"); 
+}
+var selectContactForCall = function(deviceId){
+    if(!popupWindow && !popupWindowClipboard){
+        showSmsPopup(deviceId);
+        back.console.log("Waiting for popup to open...");
+		back.eventBus.waitFor(back.Events.PopupLoaded,5000)
+		.then(()=>UtilsObject.wait(500))
+		.then(()=>{
+        	back.console.log("Popup opened!");
+			dispatch("phonecall",{"deviceId":deviceId})
+		});
+    }else{
+		dispatch("phonecall",{"deviceId":deviceId});
 	}
 }
+var showPushHistory = function(deviceId){
+    openTab("components/push-history.html?deviceId=" + deviceId);
+}
+var pushCall = function(deviceId, notify, contact){
+    var number = contact.number;
+    var name = contact.name;
+    var push = new GCMPush();
+    if(!number){
+        return;
+    }
+    if(!name){
+        name = number;
+    }
+    return Dialog
+    .confirm("Calling " + name,"This will call " + name +" ("+number+") on your device. Are you sure?")
+    .then(function(){     
+        push.callnumber = number;
+        push
+        .send(deviceId)
+        .then(function(){
+            if(notify){
+                showNotification("Join", "Sent request to call " + number);
+            }
+        })
+        .catch(function(error){
+            showNotification("Couldn't Push Call Request", error);
+        });    
+    })
+    .catch(function(){
+        console.log("Not calling " + number);
+    });
+}
 var fileInput = null;
-addEventListener("popupunloaded",function(){
-	if(listeningForFile){
-		listeningForFile = false;
-		alert("Seems that the Join popup was closed by your system before you selected the file, which will make file sending not work.\n\nPlease popout the window using the popout button inside the Join popup and try again.");
-	}
-},false);
-var listeningForFile = false;
-var pushFile = function(deviceId, notify, tab){
-	if(!fileInput){
-		return;
-	}
-	listeningForFile = true;
-	fileInput.onchange = function(){
-		listeningForFile = false;
-		if(tab){
-			chrome.tabs.remove(tab.id,function(){
-			});
-		}
-		if(!fileInput.files || fileInput.files.length == 0){
-			return;
-		}
-		var deviceName = localStorage.deviceName;
-		if(!deviceName){
-			deviceName = "Chrome";
-		}
-		var filesLength = fileInput.files.length;
-		var whatsUploading = filesLength == 1 ? fileInput.files[0].name : filesLength + " files";
-		showNotification("Join", "Uploading " + whatsUploading);
-
-		getFolderId(function(folderId){
-			var files = [];
-			for (var i = 0; i < fileInput.files.length; i++) {
-				var file = fileInput.files[i];
-				files.push(file);
-			}
-			files.doForAllAsync(function(file,callbackSingleUpload){
-				if(!file){
-					return;
-				}
-				if(filesLength > 1){
-					showNotification("Join", "Uploading " + file.name);
-				}
-				console.log("Uploading...");
-				console.log(file);
-				var formData = new FormData();
-				formData.append("data", new Blob([JSON.stringify(
-					{
-						"name": file.name,
-						"parents":[folderId]
-					})],{"type":"application/json"}));
-				formData.append("file", file);
-				doPostWithAuth("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",formData, function(result){
-					console.log("Upload result:");
-					console.log(result);
-					callbackSingleUpload("https://drive.google.com/file/d/" + result.id);
-				},function(error){
-					console.log("Error: " + error);
+var pushFile = function(deviceId, notify, tab, files){
+	try{
+		var initialAction = files ? Promise.resolve(files) : UtilsDom.pickFile();
+	   return initialAction
+	   .then(files => {
+	   		if(!files){
+	   			files = back.UtilsDom.fileInput.files;
+	   		}
+	   		var fileInput = {"files" : files};
+			if(tab){
+				chrome.tabs.remove(tab.id,function(){
 				});
-			},function(uploadResults){
-				var push = new GCMPush();
-				push.files = uploadResults;
-				push.send(deviceId);
-				setLastPush(deviceId, "pushFile");
-				showNotification("Join", "Sent " + whatsUploading);
-			});
+			}
+			if(!fileInput.files || fileInput.files.length == 0){
+				return;
+			}
 
-		},"Join Files/from " + deviceName);
+			var filesLength = fileInput.files.length;
+			var whatsUploading = filesLength == 1 ? fileInput.files[0].name : filesLength + " files";
+			showNotification("Join", "Uploading " + whatsUploading);
+	        var googleDriveManager = new GoogleDriveManager();
+	        var filesToUpload = fileInput.files;
+	        var device = devices.first(function(device){return device.deviceId == deviceId});
+	        var accountToShareTo = null;
+	        if(device){
+	            accountToShareTo = device.userAccount;
+	        }
+	        return googleDriveManager.uploadFiles({
+	            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
+	            accountToShareTo:accountToShareTo,
+	            notify: getShowInfoNotifications()
+	        }, filesToUpload)
+	        .then(function(uploadResults){
+	            var push = new GCMPush();
+	            push.files = uploadResults;
+	            push.send(deviceId,function(){
+	                console.log("pushed files");
+	                //showNotification("Join", "Sent " + whatsUploading);
+	            },function(error){
+	                showNotification("Join", "Couldn't send file: " + error);
+	            });
+	            setLastPush(deviceId, "pushFile");
+	        })
+	        .catch(UtilsObject.handleError);
+	   });
+	}catch(error){
+		return Promise.reject(error);
 	}
-	fileInput.click();
 }
 var smsWindow = null;
 var smsWindowId = null;
 var showSmsPopup = function(deviceId,number,name,isReply,text){
-	createPushClipboardWindow("sms",{"deviceId":deviceId,"number":number,"name":name},{"reply":isReply,"text":text});
+    if(!name){
+        name = number;
+    }
+    dispatch("sendsms",{"deviceId":deviceId,"sms":{"number":number,"text":text},"reply":isReply});
+    if(!popupWindow && !popupWindowClipboard){
+	   createPushClipboardWindow("sms",{"deviceId":deviceId,"number":number,"name":name},{"reply":isReply,"text":text});
+    }
 	
 }
 addEventListener(EVENT_SMS_HANDLED,function(event){
@@ -1134,11 +1414,8 @@ addEventListener(EVENT_SMS_HANDLED,function(event){
 	gcm.text = text;
 	gcm.send(deviceId);
 });
-var sendSms = function(deviceId, number){
-	dispatch("sendsms",{"deviceId":deviceId});
-	if(!popupWindow){
-		showSmsPopup(deviceId);
-	}
+var sendSmsFromButtonCommand = function(deviceId){
+	showSmsPopup(deviceId);
 	/*if(smsWindow != null){
 		chrome.windows.update(smsWindowId,{"focused":true});
 		return;
@@ -1150,7 +1427,7 @@ var sendSms = function(deviceId, number){
 	if(number){
 		url += "#" + number;
 	}
-	chrome.windows.create({ url: url, type: 'detached_panel' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
+	chrome.windows.create({ url: url, type: 'popup' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(win){
 		smsWindow = win;
 		smsWindowId = win.id;
 	});*/
@@ -1184,6 +1461,9 @@ var showNotification = function(title, message, timeout, notificationId){
 	if(!notificationId){
 		notificationId = guid();
 	}
+    if(!title || !message){
+        return;
+    }
 	chrome.notifications.create(notificationId, options,function(){
 		setInterval(function() {
 			chrome.notifications.clear(notificationId, function() {})
@@ -1191,25 +1471,32 @@ var showNotification = function(title, message, timeout, notificationId){
 	});
 }
 var registerDevice = function(callback,callbackError){
-	var registrationId = localStorage.regIdLocal;
-   /* if(!regId2){
-		console.log("Couldn't get direct regId");
-	}else{
-		//console.log("Got direct regId: " + registrationId);
-	}*/
-	doPostWithAuth(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId,"deviceName":"Chrome","deviceType":3}, function(result){
-	  console.log(result);
-	  localStorage.deviceId = result.deviceId;
-	  localStorage.regIdServer = result.regId;
-	  if(callback){
-		callback(result);
-	  }
-	},function(error){
-		console.log("Error: " + error);
-		if(callbackError){
-			callbackError(error);
-		}
-	});
+    var registrationId = localStorage.regIdLocal;
+    var registrationId2 = localStorage.regIdLocal2;
+    if(!registrationId2){
+    	registrationId2 = registrationId;
+    }
+    return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId2,"deviceName":"Chrome","deviceType":3})
+    .then(function(result){
+    	if(localStorage.deviceId == result.deviceId){
+    		result.sameDeviceId = true;
+    	}
+        localStorage.deviceId = result.deviceId;
+        localStorage.regIdServer = result.regId;
+        if(callback){
+            callback(result);
+        }
+        return result;
+    })
+    .catch(function(error){
+        console.error("Error: " + error);
+        if(callbackError){
+            callbackError(error);
+        }
+        if(!callback){
+            return Promise.reject(error);
+        }   
+    });
 }
 chrome.gcm.onMessage.addListener(function(message){
 	console.log(message);
@@ -1233,9 +1520,13 @@ chrome.gcm.onMessage.addListener(function(message){
 	}
 });
 var executeGcm = function(type, json){
-		var gcm = new window[type]();
-		gcm.fromJsonString(json);
-		gcm.execute();
+	var gcmFunc = window[type];
+	if(!gcmFunc){
+		return;
+	}
+	var gcm = new gcmFunc();
+	gcm.fromJsonString(json);
+	gcm.execute();
 }
 
 var refreshDevices = function(callback){
@@ -1247,7 +1538,6 @@ var refreshDevices = function(callback){
 	  if(callback != null){
 		callback(result.records);
 	  }
-	  refreshDevicesPopup();
 	},function(error){
 		console.log("Error: " + error);
 		if(callback != null){
@@ -1255,11 +1545,63 @@ var refreshDevices = function(callback){
 		}
 	});
 }
-
-getToken();
-chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
+if(!localStorage.firstRunDone){
+	localStorage.firstRunDone = true;
+	if(!localStorage.accessToken){
+		getAuthToken(null,true);
+	}
+}else{		
+	getToken();
+}
+var handleRegIdRegistration = function(registrationId, regIdLocalKey){
 	if (registrationId == null || registrationId == "") {
-		console.log("Error getting key: " + chrome.runtime.lastError);
+        var errorMessage = null;
+        if(chrome.runtime.lastError){
+            errorMessage = chrome.runtime.lastError.message;
+        }
+        if(!errorMessage){
+            errorMessage = "unknown error";
+        }
+		console.error("Error getting key: " + errorMessage);
+		return {"success":false};
+	} else {
+		console.log(`Got reg id ${regIdLocalKey}:` + registrationId);
+		var result = {"success":true};
+		if(localStorage[regIdLocalKey] == registrationId){
+			result.sameRegId = true;
+		}
+		localStorage[regIdLocalKey] = registrationId;
+		return result;
+	}
+}
+chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},registrationId1=>{
+	var resultRegId1 = handleRegIdRegistration(registrationId1,"regIdLocal");
+	if(resultRegId1.success){
+		chrome.instanceID.getToken({"authorizedEntity":"737484412860","scope":"GCM"},registrationId2=>{
+			var resultRegId2 = handleRegIdRegistration(registrationId2,"regIdLocal2");
+			if(resultRegId2.success){
+				if(!resultRegId1.sameRegId || !resultRegId2.sameRegId || !localStorage.deviceId){
+					registerDevice(function(result){
+						if(!result.sameDeviceId){
+							refreshDevices();	
+						}
+					});	
+				}
+			}
+		});		
+	}
+});
+
+/*chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
+	if (registrationId == null || registrationId == "") {
+        var errorMessage = null;
+        if(chrome.runtime.lastError){
+            errorMessage = chrome.runtime.lastError.message;
+        }
+        if(!errorMessage){
+            errorMessage = "unknown error";
+        }
+		console.log("Error getting key: " + errorMessage);
 	} else {
 		console.log("Got key: " + registrationId);
 		localStorage.regIdLocal = registrationId;
@@ -1267,11 +1609,13 @@ chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 			refreshDevices();
 		});
 	}
-});
+});*/
 
 var deviceImages = {};
 deviceImages[""+DEVICE_TYPE_ANDROID_PHONE] =function(device){return "phone.png";};
 deviceImages[""+DEVICE_TYPE_ANDROID_TABLET]=function(device){return"tablet.png";};
+deviceImages[""+DEVICE_TYPE_IOS_PHONE] =function(device){return "iphone.png";};
+deviceImages[""+DEVICE_TYPE_IOS_TABLET]=function(device){return"ipad.png";};
 deviceImages[""+DEVICE_TYPE_CHROME_BROWSER]=function(device){return"chrome.png";};
 deviceImages[""+DEVICE_TYPE_WIDNOWS_PC]=function(device){return"windows10.png";};
 deviceImages[""+DEVICE_TYPE_FIREFOX]=function(device){return"firefox.png";};
@@ -1294,14 +1638,16 @@ var getDeviceById = function(deviceId){
 	}
 }
 var setDevices = function(devicesToSet){
-
+	UtilsVoice.resetDeviceEntities();
 	devices = [];
 	if(devicesToSet){
 		for (var i = 0; i < devicesToSet.length; i++) {
 			var device = devicesToSet[i];
 			if(!localStorage.deviceId || localStorage.deviceId != device.deviceId){
 				devices.push(device);
-			}
+			}else{
+                devices.unshift(device);
+            }
 		}
 		console.log("After setting devices: " + localStorage.deviceId);
 		if(localStorage.deviceId){
@@ -1313,7 +1659,7 @@ var setDevices = function(devicesToSet){
 		}
 		if(localStorage.deviceName){
 			devices.doForAll(function(storedDevice){
-				if(storedDevice.deviceName == localStorage.deviceName){
+				if(storedDevice.deviceName == localStorage.deviceName && storedDevice.deviceId != localStorage.deviceId){
 					var newName = prompt("One of your Join devices is already named '" + localStorage.deviceName + "'. What do you want to name this Chrome installation?");
 					var message = "You can always rename your devices by long-touching them in the Android app.";
 					if(newName){
@@ -1329,9 +1675,7 @@ var setDevices = function(devicesToSet){
 				}
 			});
 		}
-		devices.removeIf(function(device){
-			return device.deviceType == DEVICE_TYPE_GROUP;
-		});
+		devices.removeIf(device=>device.deviceType == DEVICE_TYPE_GROUP);
 		var groups = joindevices.groups.deviceGroups.getGroups(devices);
 		for (var i = 0;i < groups.length;i++) {
 			var group = groups[i];
@@ -1342,9 +1686,11 @@ var setDevices = function(devicesToSet){
 			};
 			devices.push(deviceFromGroup);
 		}
+        UtilsObject.sort(devices,true,device=>device.deviceId.indexOf("group")>=0,device=>device.deviceId.indexOf("share")>=0,device=>device.deviceType,device=>device.deviceName);
 		localStorage["devices"] = JSON.stringify(devices);
 	}
 	contextMenu.update(devices);
+  	refreshDevicesPopup();
 }
 function directCopy(str,setLastClipboard){
 	if(!str){
@@ -1426,6 +1772,86 @@ var handleAutoClipboard = function(){
 handleAutoClipboard();
 
 
-
-
 contextMenu.update(devices);
+/*UtilsObject.wait(2000,function(timeOut){
+   // clearTimeout(timeOut);
+})
+.then(()=>{
+
+    var test = "aaaa";
+    console.log(`done waiting ${test}`)
+})*/
+/*var result = Dialog.showInputDialog({
+    text:"Something",
+    title:"Input stuffs",
+    subtitle:"I said stufff",
+    placeholder:"write stuff man"
+})()
+.then(function(result){
+    console.log("Input result");
+    console.log(result);
+}).catch(UtilsObject.ignoreError);*/
+/*var result = Dialog.showMultiChoiceDialog({
+    items:[
+        {id:0,text:"First"},
+        {id:1,text:"Second"},
+        {id:2,text:"Third"},
+        {id:2,text:"Fourth"},
+    ],
+    title:"Select One"
+})()
+.then(function(result){
+    console.log("Input result");
+    console.log(result);
+}).catch(UtilsObject.ignoreError);*/
+/*var googleDriveManager = new GoogleDriveManager();
+    console.log("Finding file");*/
+/*googleDriveManager.getFile({
+    folderName:"Join Files/From Nexus 5X",
+    fileName:"faqold.png"
+}).then(function(file){
+    console.log("Found file");
+    console.log(file);
+}).catch(function(error){
+    console.log("Error: " + error);
+});*/
+/*googleDriveManager.getFolderId({
+    folderName: "Join Files/blabla"
+}).then(function(result){
+    console.log("FOLDER RESULT");
+    console.log(result)
+}).catch(function(error){
+    console.log("FOLDER ERROR");
+    console.log(error)
+});*/
+/*var promise = googleDriveManager.uploadContent({
+    folderName:"Join Files/From Nexus 5X",
+    fileName:"stuff.json",
+    content:{"hello":"bye"},
+    overwrite:false
+}).then(function(file){
+    console.log("Uploaded file");
+    console.log(file);
+}).catch(function(error){
+    console.log("Didn't upload file: " + error);
+});*/
+//Dialog.showEmojiDialog()();
+/*navigator.webkitTemporaryStorage.requestQuota(1024*1024, function(grantedBytes) {
+  window.requestFileSystem(PERSISTENT, grantedBytes, function(){},  function(){});
+}, function(e) {
+  console.log('Error', e);
+});*/
+//UtilsVoice.doVoiceCommand("screenshot my chrome");
+
+/*UtilsVoice.doVoiceCommand(devices,prompt=>console.log(prompt),"locate my lg g4")
+.then(result=>{
+	console.log("Done recognizing!")
+	console.log(result);
+	result.command.func(result.device.deviceId,true);
+})
+.catch(error=>{
+	console.log("Error recognizing!")
+	console.log(error);
+});
+*/
+//back.Dialog.showRequestMicDialog()().then(result=>console.log("Got mic: " + result));

@@ -1,7 +1,9 @@
 
 var SMS_ACTION_ID = "SMS_ACTION_ID";
 var COPY_NUMBER = "COPY_NUMBER";
-var regexNumbers = /[0-9]{4,}/;
+var HANG_UP = "HANG_UP";
+var CALL_BACK = "CALL_BACK";
+var regexNumbers = /[0-9\.]{4,}/g;
 
 var Request = function(){
 	this.getParams = function() {
@@ -22,13 +24,18 @@ var GCM = function(){
 		}
 	}
 	this.fromJsonString = function(str) {
-		str = decryptString(str);
+		try{
+			str = decryptString(str);
+		}catch(error){
+			console.log("Wasn't encrypted: " + str);
+		}
 		if(str.indexOf("{") < 0){
 			showNotification("Decryption Error","Please check that your encryption password matches the one on other devices.")
 			return;
 		}
 		var json = JSON.parse(str);
 		this.fromJson(json);
+
 	}
 	this.getCommunicationType = function() {
 		return "GCM";
@@ -52,11 +59,44 @@ var GCM = function(){
 		}
 		var gcm = {"push":params};
 		gcm.getCommunicationType = this.getCommunicationType;
-		new DeviceIdsAndDirectDevices(deviceId).send(function(deviceIds,callback,callbackError){
+        return new DeviceIdsAndDirectDevices(deviceId)
+        .sendPromise({
+            gcm:gcm,
+            gcmParams:gcmParams,
+            sendThroughServer:function(deviceIds,callback,callbackError){
+                params.deviceId = null;
+                params.deviceIds = deviceIds.join();
+                doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
+            }
+        })
+        .then(function(result){
+            console.log("Sent push: " + JSON.stringify(result));
+            if(callback){
+                callback(result);
+            }else{
+            	return result;
+            }
+        })
+        .catch(function(error){
+            console.log("Error: " + error);
+            if(callbackError){
+                callbackError(error);
+            }else{
+                return Promise.reject(error);
+            }
+        });
+		/*new DeviceIdsAndDirectDevices(deviceId).send(function(deviceIds,callback,callbackError){
 			params.deviceId = null;
 			params.deviceIds = deviceIds.join();
 			doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
 		},gcm,gcmParams, function(result){
+			  if(!result.success){
+				  console.log("Couldn't send push: " + result.errorMessage);
+				  if(callbackError){
+					callbackError(result.errorMessage);
+				  }
+				  return;
+			  }
 			  console.log("Sent push: " + JSON.stringify(result));
 			  if(callback){
 				callback(result);
@@ -66,7 +106,7 @@ var GCM = function(){
 				if(callbackError){
 					callbackError(error);
 				}
-		});
+		});*/
 
 
 	}
@@ -160,7 +200,7 @@ var GCMPush = function(){
 						//me.createNotificationFromPush();
 					}
 				});
-				oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" + this.push.text);
+				oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" +encodeURIComponent(this.push.text));
 				oReq.send();
 			}else{
 				if(!me.push.title){
@@ -168,7 +208,8 @@ var GCMPush = function(){
 				}
 			}
 			if(this.push.text == TEST_PUSH_TEXT){
-				/*setTimeout(function(){*/fire(TEST_PUSH_EVENT)//},2000);
+                back.eventBus.postSticky(new back.Events.TestPush());
+				/*setTimeout(function(){*///fire(TEST_PUSH_EVENT)//},2000);
 			}
 		}
 		if(this.push.title){
@@ -176,10 +217,18 @@ var GCMPush = function(){
 		}
 		if(this.push.clipboard){
 			directCopy(this.push.clipboard);
-			showNotification("Clipboard Set", this.push.clipboard ,5000);
+			var notificationText = this.push.clipboard;
+			if(!back.getClipboardNotificationShowContents()){
+				notificationText = "Clipboard content hidden";
+			}
+			showNotification("Clipboard Set",  notificationText,5000);
 		}
 		if(!this.push.url){
-			this.push.url = getUrlIfTextMatches([this.push.text,this.push.clipboard]);
+			var toCheck = [this.push.clipboard];
+			if(this.push.text && this.push.text.indexOf("=:=")<0){
+				toCheck.push(this.push.text);
+			}
+			this.push.url = getUrlIfTextMatches(toCheck);
 		}
 		if(this.push.url && !this.push.title){
 			var url = this.push.url;
@@ -211,10 +260,16 @@ var GCMPush = function(){
 					var gcmLocation = new GCMLocation();
 					gcmLocation.latitude = location.coords.latitude;
 					gcmLocation.longitude = location.coords.longitude;
+					if(me.push.fromTasker){
+						gcmLocation.forTasker = true;
+					}
+					gcmLocation.requestId = me.push.requestId;
 					gcmLocation.send(me.push.senderId);
 				});
 			}
 		}
+		var googleDriveManager = new GoogleDriveManager();
+		googleDriveManager.addPushToMyDevice(this.push);
 	}
 	this.encryptSpecific = function(push, password){
 		push.encrypted = true;
@@ -270,9 +325,11 @@ var GCMRespondFile = function(){
 		console.log("got file response for requestId: " + this.responseFile.request.requestId);
 		handlePendingRequest(this.responseFile,this.responseFile.request.requestId,me.responseFile.senderId,this.responseFile.fileId);
 		console.log("got file response");
-		var event = new Event('fileresponse',{"fileId":this.responseFile.fileId});
+		/*var event = new Event('fileresponse',{"fileId":this.responseFile.fileId});
 		event.fileId = this.responseFile.fileId;
 		back.dispatchEvent(event);
+        */
+        back.eventBus.post(new back.Events.FileResponse(this.responseFile.fileId));
 	}
 }
 GCMRespondFile.prototype = new GCM();
@@ -283,7 +340,20 @@ var GCMDeviceRegistered = function(){
 		return "GCMDeviceRegistered";
 	}
 	this.execute = function() {
-		refreshDevices();
+		if(!this.device || !devices){
+			return;
+		}
+		var funcSameDevice = device => device.deviceId == this.device.deviceId;
+		var existingDevice = devices.first(funcSameDevice);
+		if(!existingDevice){
+			refreshDevices();
+		}else{
+			devices.removeIf(funcSameDevice);
+			if(!this.deleted){
+				devices.push(this.device);
+			}
+			setDevices(devices);
+		}
 	}
 }
 GCMDeviceRegistered.prototype = new GCM();
@@ -367,6 +437,9 @@ var GCMRequestNotifications = function(){
 GCMRequestNotifications.prototype = new GCMGenericPush();
 var Notifications = function(){
 	this.removeNotificationsWithSameId = function(id){
+		if(!id){
+			return;
+		}
 		var removed = this.removeIf(function(notification){
 			return notification.id == id;
 		});
@@ -380,12 +453,10 @@ var Notifications = function(){
 		return notifications.first(function(notification){
 			var sameId = notification.id == id;
 			var result = false;
-			if(sameId){
-				result = true;
-			}else if(!title || !text){
+			if(!title || !text){
 				result = false;
 			}else{
-				result = notification.title == title && notification.text == text;
+				result = sameId && notification.title == title && notification.text == text;
 			}
 			return result;
 		});
@@ -398,9 +469,10 @@ var updateBadgeText = function(){
 		UtilsBadge.setBadge("");
 	}else{
 		UtilsBadge.setBadge(notifications.length);
+		back.localStorage.areNotificationsUnread = true;
 	}
 }
-var GCMNotification = function(){
+var GCMNotification = function(notification, senderId){
 
 	this.getCommunicationType = function() {
 		return "GCMNotification";
@@ -437,11 +509,11 @@ var GCMNotification = function(){
 			var not = this.requestNotification.notifications[i];
 			this.decryptNotification(not);
 			not.senderId = me.requestNotification.senderId;
-			not.isSmsNotification = function(){
-				return this.actionId && this.actionId == SMS_ACTION_ID;
+			not.isSmsNotification = function(actionId){
+				return actionId && actionId == SMS_ACTION_ID;
 			}
 			not.cancel = function(){
-				if(not.isSmsNotification()){
+				if(not.isSmsNotification(not.actionId)){
 					back.dispatch(EVENT_SMS_HANDLED,{"text":not.text,"deviceId":not.senderId});
 				}
 				notifications.removeNotificationsWithSameId(this.id);
@@ -460,25 +532,90 @@ var GCMNotification = function(){
 				
 				if(actionId == COPY_NUMBER){
 					var matches = notification.text.match(regexNumbers);
-					if(matches && matches.length > 0){
-						var number = matches[0];
-						directCopy(number);
-						showNotification("Clipboard Set To Number", number,5000);
+					if(matches){
+						Promise.resolve()
+						.then(()=>{
+							if(matches.length == 1){
+								return matches[0];
+							}else{
+								var items = matches.select(match => ( {"id":match,"text":match}));
+								return Dialog.showMultiChoiceDialog({
+								    items:items,
+								    title:"Which Number?"
+								})();
+							}
+						})
+						.then(result=>{
+							if(result.id){
+								return result.id;
+							}else{
+								return result;
+							}
+						})
+						.then(number=>{
+							directCopy(number);
+							showNotification("Clipboard Set To Number", number,5000);
+						});
 					}else{
 						showNotification("Couldn't copy number", notification.text,5000);
 					}
 					return;
 				}
-				if(notification.isSmsNotification()){
-					var number = notification.smsnumber;
-					showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
-					notification.cancel();
-					return;
+				if(notification.isSmsNotification(actionId)){
+					if(text){
+						var push = new back.GCMPush();
+						push.smsnumber = notification.smsnumber;
+						push.smstext = text;
+						push.send(me.requestNotification.senderId)
+						.then(result=>showNotification("Join",`Replied to ${notification.smsname}: ${text}`));						
+					}else{					
+						var number = notification.smsnumber;
+						showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
+						notification.cancel();
+					}
+					return;	
 				}
 				if(!actionId || (!text && isReply)){
 					return;
 				}
-				doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",{"actionId":actionId,"text":text,"deviceId":me.requestNotification.senderId,"appPackage":notification.appPackage}, function(result){
+				var gcmParams = {};
+				gcmParams[GCM_PARAM_TIME_TO_LIVE] = 0;
+				var params = {};
+				params.deviceIds = [me.requestNotification.senderId];
+				params.senderId = localStorage.deviceId;
+				params.actionId = actionId;
+				params.appPackage = notification.appPackage;
+				params.text = text;
+				var gcm = {"requestNotification":params,"getCommunicationType":function(){return "GCMNotificationAction"}};
+				new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
+					params.deviceId = deviceIdsServer[0];
+					doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",params,callback, callbackError);
+				},gcm,gcmParams, function(result){
+				  	if(result.success){
+						console.log("Sent notification action: " + notification.id);
+						var message = notification.actionDescription;
+						if(!message){
+							if(text && isReply){
+								message = `Replied to ${notification.title}: ${text}`;
+							}else{
+								message = "Performed action remotely.";
+							}
+						}
+						if(back.getShowInfoNotifications()){
+							showNotification("Join",message);
+						}
+				  	}else{
+						console.log("Sent notification action error: " + result.errorMessage);
+						showNotification("Join","Error performing action: " + result.errorMessage);
+				  	}
+				  	if(notification.cancelOnAction){
+						notification.cancel();
+				  	}
+				},function(error){
+					showNotification("Join","Couldn't perform action: " + error);
+					console.log("Error: " + error);
+				});
+				/*doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",{"actionId":actionId,"text":text,"deviceId":me.requestNotification.senderId,"appPackage":notification.appPackage}, function(result){
 				  if(result.success){
 					console.log("Sent notification action: " + notification.id);
 					var message = notification.actionDescription;
@@ -497,12 +634,12 @@ var GCMNotification = function(){
 				  }
 				},function(error){
 					console.log("Error: " + error);
-				});
+				});*/
 			}
 
 			var chromeNotification = new ChromeNotification(not);
-			var removed = notifications.removeNotificationsWithSameId(not.id);
 			var similar = notifications.getSimilarNotification(not);
+			var removed = notifications.removeNotificationsWithSameId(not.id);
 			var shouldNotify = false;
 			if(similar){
 				console.log("Similar notification present");
@@ -516,8 +653,11 @@ var GCMNotification = function(){
 					shouldNotify = true;
 				//}
 			}
-			if(not.priority >= 1){
+			if(not.priority >= 2){
 				shouldNotify = true;
+			}
+			if(!not.date){
+				not.date = Date.now();
 			}
 			var notificationNoPopupPackages = back.getNotificationNoPopupPackages().split("\n");
 			if(notificationNoPopupPackages.indexOf(not.appPackage) >= 0){
@@ -527,15 +667,62 @@ var GCMNotification = function(){
 				chromeNotification.notify();
 			}
 			notifications.push(not);
+			if(not.replyId){
+				back.UtilsVoice.isMicAvailable()
+				.then(()=>true)
+				.catch(()=>false)
+				.then(micAvailable=>{
+					if(micAvailable){
+						if(back.getVoiceEnabled() && back.getVoiceContinuous() && back.getVoiceWakeup()){						
+							UtilsObject.doOnce("replywithvoicee",()=>showNotification("Reply With Voice",showNotification("Reply With Voice",`Say "${back.getVoiceWakeup()} reply with hello" for example to reply to this notification with your voice`,30000)));	
+						}
+						if(!back.getVoiceContinuous()){
+							back.UtilsVoice.doVoiceCommand(devices)
+							.catch(error=>back.console.log("Error with reply voice command: " + error));									
+						}
+					}else{
+						UtilsObject.doOnce("replywithvoicenomiccc",()=>{
+							var chromeNotification = new ChromeNotification({
+								"id":"replyvoice",
+								"title":"Did you know?",
+								"text":"You can reply to notifications with your voice. Click here to allow Join to access your microphone",
+								"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
+							});
+							chromeNotification.notify();
+						})
+					}
+				});
+				
+			}
 			notifications.sort(function(left,right){
-				if(left.priority && right.priority){
-					return left.priority - right.priority;
+				var leftPriority = left.priority;
+				var rightPriority = right.priority;
+				if(!leftPriority){
+					leftPriority = 0;
 				}
-				if(left.priority){
-					return 1;
+				if(!rightPriority){
+					rightPriority = 0;
 				}
-				if(right.priority){
+				if(leftPriority || leftPriority == 0){
+					leftPriority += 5;
+				}
+				if(rightPriority || rightPriority == 0){
+					rightPriority += 5;
+				}
+				if(leftPriority && rightPriority){
+					if(leftPriority > rightPriority){
+						return -1;
+					}else if(rightPriority > leftPriority){
+						return 1;
+					}else{
+						return right.date - left.date;
+					}
+				}
+				if(leftPriority){
 					return -1;
+				}
+				if(rightPriority){
+					return 1;
 				}
 				return 0;
 			});
@@ -547,6 +734,9 @@ var GCMNotification = function(){
 			handlePendingRequest(this,requestId);
 		}
 
+	}
+	if(notification && senderId){
+		this.requestNotification = {notifications:[notification], senderId:senderId};
 	}
 }
 GCMNotification.prototype = new GCM();
@@ -604,16 +794,21 @@ var GCMNotificationClear = function(){
 GCMNotificationClear.prototype = new GCM();
 
 var GCMNewSmsReceived = function(){
-
+	var me = this;
 	this.getCommunicationType = function() {
 		return "GCMNewSmsReceived";
 	}
-	this.execute = function() {
-		var title = "New SMS from " + this.name;
+	this.execute = UtilsObject.async(function* () {
+		
+		var SMSorMMS = "SMS";
+		if(me.subject || me.attachmentPartId || me.number.indexOf(",")>-1 || me.urgent){
+			SMSorMMS = "MMS";
+		}
+		var title = `New ${SMSorMMS} from ${me.name}`;
 		/*var chromeNotification = new ChromeNotification({
-				"id":"sms=:=" + this.senderId + "=:=" + this.number + "=:=" + this.text,
+				"id":"sms=:=" + me.senderId + "=:=" + me.number + "=:=" + me.text,
 				"title":title,
-				"text":this.text,"actionId":"newsms",
+				"text":me.text,"actionId":"newsms",
 				"buttons":[{
 					"text": Constants.REPLY_DIRECTLY,
 					"icon": "icons/reply.png"
@@ -622,32 +817,54 @@ var GCMNewSmsReceived = function(){
 		chromeNotification.notify(); */
 
 		var not = {};
-		not.id = UtilsSMS.getNotificationId(this.senderId, this.number);
+		not.id = back.UtilsSMS.getNotificationId(me.senderId, me.number);
 		not.title= title;
-		not.text = this.text;
+		not.text = me.text;
 		not.priority = 2;
 		not.appName = "Join";
 		not.replyId = SMS_ACTION_ID;
 		not.noPrompt = true;
-		not.actionDescription = "Sending SMS to " + this.name + "...";
+		not.actionDescription = "Sending SMS to " + me.name + "...";
 		not.cancelOnAction = true;
-		not.smsnumber = this.number;
-		not.smsname = this.name;
-		not.smstext = this.text;
+		not.smsnumber = me.number;
+		not.smsname = me.name;
+		not.smstext = me.text;
 		not.actionId = SMS_ACTION_ID;
 		not.buttons = [];
-		if(this.text.match(regexNumbers)){
+		not.appIcon = me.photo || "icons/contact.png";
+		if(me.attachmentPartId){
+			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));
+			not.image = yield doGetBase64ImagePromise(imageUrl);
+			back.UtilsSMS.setCachedAttachment(me.attachmentPartId,not.image);
+		}
+		if(me.text && me.text.match(regexNumbers)){
 			not.buttons.push({
 				text: "Copy Number",
 				actionId: COPY_NUMBER
 			});
 		}
 		var gcmNtification = new GCMNotification();
-		gcmNtification.requestNotification = {notifications:[not], senderId:this.senderId};
+		gcmNtification.requestNotification = {notifications:[not], senderId:me.senderId};
 		gcmNtification.execute();
-		var sms = {"number":this.number,"text":this.text};
-		dispatch('smsreceived',{"sms":sms,"deviceId":this.senderId});
-	}
+		var sms = {
+			"number":me.number,
+			"sender":me.name,
+			"text":me.text,
+			"date":me.date,
+			"received":true,
+			"subject":me.subject,
+			"urgent":me.urgent,
+			"attachmentPartId":me.attachmentPartId, 
+			"attachment":not.image
+		};
+		console.log(`Received ${SMSorMMS}`);
+		console.log(sms);
+		dispatch('smsreceived',{"sms":sms,"deviceId":me.senderId});
+
+		back.eventBus.post(new back.Events.SMSReceived(sms,me.senderId));
+				
+		
+	});
 }
 GCMNewSmsReceived.prototype = new GCM();
 var GCMSmsSentResult = function(){
@@ -670,6 +887,64 @@ var GCMSmsSentResult = function(){
 	}
 }
 GCMSmsSentResult.prototype = new GCM();
+var GCMPhoneCall = function(){
+    var PHONE_CALL_STATE_INCOMING_RECEIVED = 0;
+    var PHONE_CALL_STATE_INCOMING_ANSWERED = 1;
+    var PHONE_CALL_STATE_INCOMING_ENDED = 2;
+    var PHONE_CALL_STATE_OUTGOING_STARTED = 3;
+    var PHONE_CALL_STATE_OUTGOING_ENDED = 4;
+    var PHONE_CALL_STATE_MISSED = 5;
+	this.getCommunicationType = function() {
+		return "GCMPhoneCall";
+	}
+	this.execute = function() {	
+		if(!this.name){
+			this.name = this.number;
+		}
+		var buttons = [];
+		var title = null;
+		var icon = null;
+		if(this.state == PHONE_CALL_STATE_INCOMING_RECEIVED){
+			title = "Incoming Call";
+			buttons.push({
+				text: "Hang Up",
+				actionId: HANG_UP
+			});
+			icon = "icons/phone_incoming.png";
+		}else if(this.state == PHONE_CALL_STATE_MISSED){
+			title = "Missed Call";
+			buttons.push({
+				text: "Call Back",
+				actionId: CALL_BACK + "=:=" + this.number
+			});
+			icon = "icons/phone_missed.png";
+		}
+		if(title){
+			var not = {};
+			not.senderId = this.senderId;
+			not.id = this.senderId + this.number + "PHONE_CALL";
+			not.title = title;
+			not.text = this.name;
+			not.appIcon = icon;
+			not.priority = 2;
+			not.appName = "Join";
+			not.keepRemote = true;
+			not.buttons = buttons;
+			not.cancelOnAction = false;			
+			var gcmNotification = new GCMNotification(not,this.senderId);			
+			gcmNotification.execute();
+		}
+		
+	}
+}
+GCMPhoneCall.prototype = new GCM();
+var GCMRequestFile = function(){
+	this.getCommunicationType = function() {
+		return "GCMRequestFile";
+	}
+}
+GCMRequestFile.prototype = new GCM();
+
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){
 		directCopy(lastTextPushed);

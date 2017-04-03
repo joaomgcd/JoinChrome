@@ -30,6 +30,8 @@ var DEVICE_TYPE_WIDNOWS_PC = 4;
 var DEVICE_TYPE_FIREFOX = 6;
 var DEVICE_TYPE_GROUP = 7;
 var DEVICE_TYPE_ANDROID_TV = 8;
+var DEVICE_TYPE_IOS_PHONE = 10;
+var DEVICE_TYPE_IOS_TABLET = 11;
 
 
 var GCM_PARAM_TIME_TO_LIVE = "time_to_live";
@@ -56,6 +58,7 @@ joindevices.groups.DeviceGroup = function(id, name){
 }
 var DEVICE_GROUP_ALL = new joindevices.groups.DeviceGroup("all","All");
 var DEVICE_GROUP_ANDROID = new joindevices.groups.DeviceGroup("android","Androids");
+var DEVICE_GROUP_IOS = new joindevices.groups.DeviceGroup("ios","iOS Devices");
 var DEVICE_GROUP_CHROME = new joindevices.groups.DeviceGroup("chrome","Chromes");
 var DEVICE_GROUP_WINDOWS10 = new joindevices.groups.DeviceGroup("windows10", "Windows 10s");
 var DEVICE_GROUP_FIREFOX = new joindevices.groups.DeviceGroup("firefox", "Firefoxes");
@@ -65,12 +68,16 @@ var DEVICE_GROUP_PC = new joindevices.groups.DeviceGroup("pc","PCs");
 
 joindevices.groups.DeviceGroups = function(){
 	var me = this;
-	this.allDeviceGroups = [DEVICE_GROUP_ALL,DEVICE_GROUP_ANDROID,DEVICE_GROUP_CHROME,DEVICE_GROUP_WINDOWS10,DEVICE_GROUP_FIREFOX,DEVICE_GROUP_PHONE,DEVICE_GROUP_TABLET,DEVICE_GROUP_PC];
+	this.allDeviceGroups = [DEVICE_GROUP_ALL,DEVICE_GROUP_ANDROID,DEVICE_GROUP_IOS,DEVICE_GROUP_CHROME,DEVICE_GROUP_WINDOWS10,DEVICE_GROUP_FIREFOX,DEVICE_GROUP_PHONE,DEVICE_GROUP_TABLET,DEVICE_GROUP_PC];
 	this.androidGroups = [DEVICE_GROUP_ANDROID,DEVICE_GROUP_PHONE,DEVICE_GROUP_TABLET];
+	this.iosGroups = [DEVICE_GROUP_IOS,DEVICE_GROUP_PHONE,DEVICE_GROUP_TABLET];
+	this.pcGroups = [DEVICE_GROUP_PC,DEVICE_GROUP_CHROME,DEVICE_GROUP_WINDOWS10,DEVICE_GROUP_FIREFOX];
 	this.deviceTypeGroups = {};
 
 	this.deviceTypeGroups[DEVICE_TYPE_ANDROID_PHONE] = [DEVICE_GROUP_ALL,DEVICE_GROUP_ANDROID,DEVICE_GROUP_PHONE];
 	this.deviceTypeGroups[DEVICE_TYPE_ANDROID_TABLET] = [DEVICE_GROUP_ALL,DEVICE_GROUP_ANDROID,DEVICE_GROUP_TABLET];
+	this.deviceTypeGroups[DEVICE_TYPE_IOS_PHONE] = [DEVICE_GROUP_ALL,DEVICE_GROUP_IOS,DEVICE_GROUP_PHONE];
+	this.deviceTypeGroups[DEVICE_TYPE_IOS_TABLET] = [DEVICE_GROUP_ALL,DEVICE_GROUP_IOS,DEVICE_GROUP_TABLET];
 	this.deviceTypeGroups[DEVICE_TYPE_CHROME_BROWSER] = [DEVICE_GROUP_ALL,DEVICE_GROUP_CHROME,DEVICE_GROUP_PC];
 	this.deviceTypeGroups[DEVICE_TYPE_WIDNOWS_PC] = [DEVICE_GROUP_ALL,DEVICE_GROUP_WINDOWS10,DEVICE_GROUP_PC];
 	this.deviceTypeGroups[DEVICE_TYPE_FIREFOX] = [DEVICE_GROUP_ALL,DEVICE_GROUP_FIREFOX,DEVICE_GROUP_PC];
@@ -80,7 +87,7 @@ joindevices.groups.DeviceGroups = function(){
 		for (var i = 0; i < this.allDeviceGroups.length; i++) {
 			var deviceGroup = this.allDeviceGroups[i];
 			deviceGroup.devices = devices.where(function(device){
-				return device.deviceType != DEVICE_TYPE_GROUP && me.deviceTypeGroups[device.deviceType].indexOf(deviceGroup) >=0;
+				return UtilsDevices.isNotDeviceShare(device) && device.deviceType != DEVICE_TYPE_GROUP && me.deviceTypeGroups[device.deviceType].indexOf(deviceGroup) >=0;
 			});
 		}
 		//Check equal groups and remove devices from them
@@ -143,7 +150,9 @@ var notificationPages = {
 	"com.google.android.talk":"https://hangouts.google.com/",
 	"com.whatsapp":"https://web.whatsapp.com/",
 	"com.google.android.youtube":"https://www.youtube.com/feed/subscriptions",
-	"com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all"
+	"com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all",
+ 	"reddit.news": "https://www.reddit.com/message/inbox/",
+	"com.google.android.apps.playconsole":"https://play.google.com/apps/publish/"
 };
 var copyUserNotificationPages = function(){
 	try{
@@ -157,11 +166,12 @@ var copyUserNotificationPages = function(){
 	}
 }
 var getNotificationPage = function(notification){
-	if(notification.url){
-		return notification.url;
-	}
 	copyUserNotificationPages();
-	return notificationPages[notification.appPackage];
+	var url = notificationPages[notification.appPackage];
+	if(!url && notification.url){
+		url = notification.url;
+	}
+	return url;
 }
 var openNotificationPage = function(notification){
 	copyUserNotificationPages();
@@ -182,43 +192,6 @@ var dispatch = function(eventName, data){
 	UtilsObject.applyProps(event,data);
 	//event.applyProps(data);
 	back.dispatchEvent(event);
-}
-/***********************************************************/
-/*************************GOOGLE DRIVE***********************/
-var getFolderId = function(callback,path,parentId){
-	var getFolderIdForName = function(callback,name,parentId){
-		var query = "name='"+name+"'";
-		if(parentId){
-			query += " and '"+parentId+"' in parents";
-		}
-		query = encodeURIComponent(query);
-		doGetWithAuth("https://www.googleapis.com/drive/v3/files?q="+query,function(result){
-			if(!result || !result.files || result.files.length == 0){
-				var createOptions = {"name":name,"mimeType":"application/vnd.google-apps.folder"};
-				if(parentId){
-					createOptions.parents = [parentId];
-				}
-				doPostWithAuth("https://www.googleapis.com/drive/v3/files",createOptions,function(createResult){
-					callback(createResult.id);
-				},function(error){
-					console.log("Error: " + error);
-				})
-				return;
-			}else{
-				callback(result.files[0].id);
-			}
-		},function(error){
-			console.log("Error: " + error);
-		});
-	}
-	if(path.indexOf("/")>=0){
-		var split = path.split("/");
-		split.doForChain(function(name,parentId,callback){
-			getFolderIdForName(callback,name,parentId);
-		},callback);
-	}else{
-		getFolderIdForName(callback,path,parentId);
-	}
 }
 
 /***********************************************************/
@@ -274,6 +247,9 @@ var getDriveUrlFromFileId = function(fileId){
 	if(fileId.indexOf(".")>=0){
 		return fileId;
 	}
+	if(fileId.indexOf("data:image")>=0){
+		return fileId;
+	}
 	return  baseDriveUrlFiles + fileId + "?alt=media";
 }
 var getDeviceFileIdFromUrl = function(fileUrl){
@@ -287,7 +263,7 @@ var getDeviceFileIdFromUrl = function(fileUrl){
 	return match[0];
 }
 var showPopup = function(url, height, width){
-	chrome.windows.create({"focused":false, url: url, type: 'detached_panel' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height});
+	chrome.windows.create({"focused":false, url: url, type: 'popup' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height});
 }
 var jump = function(h){
   if(!h){
@@ -525,7 +501,7 @@ Array.prototype.first = function(func) {
 	};
 	return null;
 };
-Array.prototype.joinJoaomgcd = function(joiner) {
+Array.prototype.joinJoaomgcd = function(joiner,selectFunc) {
 	if(!joiner){
 		joiner=",";
 	}
@@ -534,6 +510,9 @@ Array.prototype.joinJoaomgcd = function(joiner) {
 		var item = this[i];
 		if(i>0){
 			joined += joiner;
+		}
+		if(selectFunc){
+			item = selectFunc(item);
 		}
 		joined += item;
 	};
@@ -566,6 +545,50 @@ Array.prototype.doForAllAsync = function(func, callbackFinal, shouldProcessItem,
   };
   doAll(callbackFinal);
 };
+Array.prototype.doForAllPromise = function(promise, shouldProcessItem, callbackEach) {
+  var me = this;
+  var results = [];
+  var doAll = function(count){
+	if(count == me.length){
+	  return results;
+	}else{
+		var item = me[count];
+      	++count;
+       	if(!shouldProcessItem || shouldProcessItem(item)){
+	        return promise(item).then(function(result){
+	          results.push(result);
+	          if(callbackEach){
+	            callbackEach(result, count);
+	          }
+	          return doAll(count);
+	        });
+       	}else{
+	        results.push(null);
+	        return doAll(count);
+       	}
+	}
+  };
+  return doAll(0);
+};
+Array.prototype.doForChainPromise = function(promise){
+	var me = this;
+	var preivousResult = null;
+    var finalPromise = null;
+	var doAll = function(count){
+		if(count == me.length){
+		  return preivousResult;
+		}else{
+			var item = me[count];
+			return promise(item,preivousResult)
+			.then(function(processedValue){				
+				preivousResult = processedValue;
+				return doAll(++count);
+			});
+		}
+	};
+	return doAll(0);
+}
+
 Array.prototype.doForChain = function(func, callbackFinal) {
   var me = this;
   var count = -1;
@@ -714,13 +737,23 @@ var decryptString = function(value, key256Bits){
 /*************************GENERIC***********************/
 var toClass = {}.toString;
 var openNewTab = function(url,options, callback){
+	var realCallback = tab => {
+		if(callback){
+			callback(tab)
+		}
+		if (url.indexOf("www.youtube.com/tv") > 0) {
+            chrome.windows.update(tab.windowId, {
+                state: "fullscreen"
+            });
+        }
+	}
 	chrome.windows.getCurrent({ 'populate': false }, function(current) {
 		if (current) {
 			if(!options){
 				options = {};
 			}
 			options.url = url;
-			chrome.tabs.create(options,callback);
+			chrome.tabs.create(options,realCallback);
 		} else {
 			var finalOptions = { 'url': url, 'type': 'normal', 'focused': true };
 			if(options){
@@ -728,11 +761,12 @@ var openNewTab = function(url,options, callback){
 					finalOptions[prop] = options[prop];
 				}
 			}
-			chrome.windows.create(finalOptions,callback);
+			chrome.windows.create(finalOptions,realCallback);
 		}
 	});
 }
 var openTab = function(url,options,callback){
+
 	chrome.tabs.query({},function(result){
 		var correctTab = result.first(function(tab){
 			return tab.url == url;
@@ -743,7 +777,7 @@ var openTab = function(url,options,callback){
 				for(var prop in options){
 					finalOptions[prop] = options[prop];
 				}
-			}
+			}			
 			chrome.tabs.update(correctTab.id, finalOptions,callback);
 		}else{
 			openNewTab(url,options,callback);
@@ -815,6 +849,12 @@ var getUserInfo = function(callback,force,token){
 		console.log("Error: " + error);
 	},token);
 
+}
+
+var getUserInfoPromise = function(force,token){
+	return new Promise(function(resolve,reject){
+		getUserInfo(resolve,force,token);
+	});
 }
 Date.prototype.customFormat = function(formatString){
 	var YYYY,YY,MMMM,MMM,MM,M,DDDD,DDD,DD,D,hhhh,hhh,hh,h,mm,m,ss,s,ampm,AMPM,dMod,th;

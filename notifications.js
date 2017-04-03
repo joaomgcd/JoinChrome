@@ -55,6 +55,9 @@ var writeNotifications = function(){
 		back.resetNotifications();
 		writeNotifications();
 	}
+	if(notifications.length == 0){
+		UtilsDom.hideElement(clearNotificationsFAB);
+	}
 
 	for (var i = 0; i < notifications.length; i++) {
 		var not = notifications[i];
@@ -120,8 +123,10 @@ var writeNotifications = function(){
 				image.style.display = "none";
 			}
 			var date_format = "#hh#:#mm#";
-			if (back.get12HourFormat()) { date_format = date_format + " #AMPM#";}
-			dateElement.innerHTML = new Date().customFormat(date_format);
+			if (back.get12HourFormat()) { 
+				date_format = date_format + " #AMPM#";
+			}
+			dateElement.innerHTML = new Date(not.date).customFormat(date_format);
 			titleElement.innerHTML = not.title;
 			if(not.lines && not.lines.length>0){
 				var linesText = "";
@@ -211,9 +216,16 @@ var writeNotifications = function(){
 			buttonElement.notification = not;
 			buttonElement.onclick = function(event){
 				var not = event.currentTarget.notification;
-				console.log("Doing reply action: ");
-				console.log(not);
-				not.doAction(event.currentTarget.id, not.noPrompt ? null : prompt(not.text),true);
+				var id = event.currentTarget.id;
+				var shouldPrompt = !not.noPrompt;
+				return Promise.resolve()
+				.then(Dialog.showNotificationReplyDialog(not,shouldPrompt))
+				.catch(UtilsObject.ignoreError)
+				.then(function(input){
+					console.log("Doing reply action: ");
+					console.log(not);
+					not.doAction(id, input, true);
+				});
 			};
 		}
 		notificationsElement.appendChild(notificationElement);

@@ -1,0 +1,133 @@
+<html>
+
+<head>
+<meta charset="UTF-8">
+    <title>Push History</title>
+    <link rel="import" href="push-item.html" />
+    <link rel="import" href="push-item-file.html" />
+    <script src="../js/base/utilsobject.js"></script>
+    <script src="../js/base/utilsdom.js"></script>
+    <script src="../js/base/utilsobject.js"></script>
+    <script src="../js/base/googleDriveManager.js"></script>
+    <script src="../js/base/web.js"></script>
+    <script src="../js/pushhistory.js"></script>
+    <script src="../js/pushhistoryloader.js"></script>
+    <link type="text/css" rel="stylesheet" href="../materialize/css/materialize.min.css" media="screen,projection" />
+    <link rel="stylesheet" href="../options_styles.css">
+</head>
+<style type="text/css">
+#topbar {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--global-color);
+    padding: 18px 12px 0 12px;
+    box-shadow: 0 -1px 4px black;
+}
+
+body, #clipboard {
+    color: #757575;
+}
+
+a {
+    color: #FF9800;
+}
+
+#filter {
+    width: 25%;
+    background-color: #FF9800;
+    position: fixed;
+    transition: all 0.3s ease;
+    z-index: 80;
+    font-size: large;
+    right: 30px;
+    padding: 8px;
+    opacity: 0.7;
+}
+
+#filter:focus {
+    opacity: 1;
+}
+
+#filter::-webkit-input-placeholder,
+input[type='text'] {
+    color: #fff;
+}
+
+input[type=text]:focus:not([readonly]) {
+    border-bottom: 1px solid gray;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+}
+
+.history-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#pushhistory {
+    width: 40%;
+}
+
+#pushitem {
+    display: flex;
+    flex-direction: row;
+    padding: 14px;
+}
+
+#left {
+    flex-grow: 2;
+}
+
+#right {
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+#smstitle,
+#title,
+#link,
+#clipboardword{
+    font-size: 18px;
+    font-weight: normal;
+    color: rgba(0, 0, 0, 0.87);
+    line-height: 1.5;
+}
+
+a#link {
+    color: #FF9800;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+img#image {
+    width: 100%;
+    padding: 10px;
+}
+#icon {
+	width: 75px;
+}
+#loading {
+    margin-top: 10px;
+    height: 50px;
+    width: 50px;
+}
+</style>
+
+<body>
+    <div id="topbar">
+        <div id="appinfo">
+            <span id="appiconandname">
+						<img id="appicon" src="../icons/icon.png" />
+						<span id="appname">Join</span>
+            </span>
+        </div>
+    </div>
+    <div class="history-wrap">
+        <div id="pushhistory" class="optionContainer">
+        </div>
+    </div>
+</body>
+
+</html>

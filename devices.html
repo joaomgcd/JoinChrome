@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 	<title>Join</title>
 	<script src="js/base/constants.js"></script>
+	<script src="js/base/dialog/dialog.js"></script>
 	<script src="js/base/extensions.js"></script>
 	<script src="js/base/utilsobject.js"></script>
+	<script src="js/base/utilsdom.js"></script>
 	<script src="js/base/utilsbadge.js"></script>
+	<script src="js/base/utilsdevices.js"></script>
+    <script src="js/base/web.js"></script>
+	<!--<script src="js/base/eventBus.js"></script>-->
+	<script src="js/base/googleDriveManager.js"></script>
 	<script src="utils.js"></script>
 	<script src="js/utilssms.js"></script>
 	<script src="js/devicecommands.js"></script>
@@ -15,8 +22,13 @@
 	<link rel="import" href="components/device-buttons.html" />
 	<link rel="import" href="notifications.html" />
 	<link rel="import" href="components/sms.html" />
-		<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
+	<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
 	<link type="text/css" rel="stylesheet" href="global_styles.css"/>
+	<!--<link rel="stylesheet" href="js/emoji/emojionearea.min.css">
+	<script type="text/javascript" src="js/emoji/jquery.min.js"></script>
+	<script type="text/javascript" src="js/emoji/jquery.textcomplete.min.js"></script>
+	<script type="text/javascript" src="js/emoji/emojione.min.js"></script>
+	<script type="text/javascript" src="js/emoji/emojionearea.min.js"></script>-->
 </head>
 <body>
 	<div id="topbar">
@@ -27,7 +39,7 @@
 		<div id="tabs"  class="tabselement">
 			<div id="tab-devices" class="tab waves-effect waves-light"><div class="tabIcon"><p>Devices</p></div></div>
 			<div id="tab-notifications" class="tab waves-effect waves-light"><div class="tabIcon"><p>Notifications</p></div></div>
-			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p>SMS</p></div></div>
+			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p>SMS/Phone</p></div></div>
 		</div>
 		<div id="tools" class="tabselement">
 			<div id="refresh" class="tab waves-effect waves-light"><img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" /></div>
@@ -39,29 +51,43 @@
 	<div id="notifications"></div>
 	<div id="sms">
 		<div id="smstitlecontainer" class="card">
-			<div id="smsback"><img src="icons/back.png"></div><div id="smstitle"></div>
+			<div id="smsback"><img src="icons/back.png"></div><img id="contactpictureconversation" src="icons/contact_white.png" /><div id="smstitle"></div>
 		</div>
 		<div class="fixed-action-btn" id="newsmsbutton">
 			<a class="btn-floating btn-large">
-				<div id="newsmsbuttonicon"></div>
+				<div id="newsmscall">+</div>
 			</a>
+		    <ul>
+		      <li><a class="btn-floating"><div id="newcallbuttonicon"></div></a></li>
+		      <li><a class="btn-floating"><div id="newsmsbuttonicon"></div></a></li>
+		    </ul>
 		</div>
 		<div id="contactfindcontainer" class="input-field col s6">
 					<input placeholder="Search for contact" type="text" class="validate" id="contactfindinput" />
 				</div>
 		<div id="smscontainer"></div>
 		<div id="smssendcontainer" class="input-field col s6">
-					<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
-					<div id="smssend" class="waves-effect"><img src="icons/send.png" style="opacity: 0.6"/></div>
-				</div>
+			<div id="dropzonemms" class="dropzone hidden"><div class="small">Drop files here</div></div>
+			<div  id="mmsextras" class="hidden">
+				<textarea placeholder="Subject" type="text" class="validate materialize-textarea" id="smssubject"></textarea>
+				<input type="checkbox" id="smsurgent" /><div id="smsurgenttext">Urgent</div>
+			</div>
+			<div id="smsattachment">
+				<img id="smsattachmentimage" src="icons/attachment.png"  class="waves-effect"/>
+				<img id="smsattachmentimageloading" src="icons/loading.gif" class="hidden" />
+				<div id="smsemoji"  class="waves-effect">😃</div>
+			</div>
+			<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
+			<div id="smssend" class="waves-effect" title="Long-click for Subject"><img src="icons/send.png" style="opacity: 0.6"/></div>
+		</div>
 	</div>
 	<div id="devices"></div>
-
+		<div id="dropzonedevices" class="dropzone hidden"><div>Drop files here</div></div>
 		<input type="file" id="uploadfile" style="display:none;" multiple/>
 		<script type="text/javascript" src="materialize/js/jquery-2.1.1.min.js"></script>
 		<script type="text/javascript" src="materialize/js/materialize.min.js"></script>
 	<script src="js/deviceui.js"></script>
-		<script src="devices.js"></script>
+	<script src="devices.js"></script>
 	<script src="notifications.js"></script>
 	<script src="js/Autolinker.min.js"></script>
 	<script src="js/sms.js"></script>
