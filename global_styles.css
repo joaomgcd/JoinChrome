@@ -66,6 +66,9 @@ body.popout {
 .dropzone a {
 	color: blue;
 }
+#devices {
+	background-color: #37474F;
+}
 #deviceiconcontainer {
 	border-radius: 100%;
 	display: flex;
@@ -184,7 +187,7 @@ a#link:hover {
 	display: flex;
 	flex-direction: column;
 	padding: 8px;
-	background-color: #F0F0F0;
+	background-color: #37474F;
 	overflow-y: scroll;
 }
 .button-container {
@@ -227,7 +230,7 @@ td {
 	display: none;
 }
 .tabselement {
-	background-color: #FF9800;
+	background-color: #263238;
 	display: flex;
 	font-size: 16px;
 }
@@ -258,7 +261,7 @@ td {
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
-	background-color: #FFB05C;
+	background-color: #37474F;
 }
 .tabIcon {
 	cursor: pointer;
@@ -316,16 +319,15 @@ img.tabIcon {
 	transform: rotate(360deg);
 	}
 }
-
 #notifications {
 	flex: auto;
 	overflow-y: auto;
 }
 #sms {
 	height: 100vh;
-  display: flex;
-  flex-direction: column;
-	background-color: #F0F0F0;
+  	display: flex;
+  	flex-direction: column;
+	background-color: #37474F;
 }
 #smsback {
 	display: flex;
@@ -368,7 +370,7 @@ img.tabIcon {
 }
 #smssendcontainer {
 	align-items: center;
-	background-color: #F0F0F0;
+	background-color: #37474F;
 	display: flex;
 	margin: 0;
 	padding: 8px;
@@ -462,14 +464,15 @@ img.tabIcon {
 	outline: none;
 }
 #smscontainer {
-	background-color: #F0F0F0;
+	background-color: #37474F;
 	height: 100%;
 	flex: 1 1 auto;
 	position: relative;
 	overflow: auto;
 }
 .smscontact {
-	background-color: white;
+	background-color: #37474F;
+	color: white;
 	box-sizing: initial;
 	cursor: pointer;
 	transition: all 0.1s ease;
@@ -480,7 +483,7 @@ img.tabIcon {
 	align-items: flex-start;
 }
 .smscontact:hover {
-	background-color: #F0F0F0;
+	background-color: #455A64;
 }
 .smscontactpicture {
 	margin-right: 16px;
@@ -503,11 +506,8 @@ img.tabIcon {
 }
 .smscontactcall {
 	text-align: end;
-	color: #aaaaaa;
 	visibility: hidden;
 	opacity: 0.2;
-}
-.smscontactcall {
 }
 .smscontact:hover .smscontactcall{
 	visibility: visible;
@@ -518,7 +518,6 @@ img.tabIcon {
 .smscontactcallanddate {
 	display: flex;
 	flex-direction: column;
-	/*font-size: small;*/
 	justify-content: space-between;
 	align-self: stretch;
 	margin-left:12px;
@@ -526,7 +525,7 @@ img.tabIcon {
 .smscontacttext {
 	max-width: 320px;
 	overflow: hidden;
-	color: #777777;
+	opacity: 0.7;
 	display: -webkit-box;
 	-webkit-line-clamp: 1;
 	-webkit-box-orient: vertical;
@@ -534,7 +533,7 @@ img.tabIcon {
 .smscontactdate {
 	text-align: end;
 	white-space: nowrap;
-	color: #aaaaaa;
+	opacity: 0.7;
 }
 .smsmessagecontainer {
 	display: flex;
@@ -626,7 +625,7 @@ img.tabIcon {
 	width: 15px;
 }
 .btn-floating:hover {
-	background-color: #FFB05C !important;
+	background-color: #FF9800 !important;
 }
 #newsmscall {
 	font-size: 250%;
@@ -663,6 +662,6 @@ img.tabIcon {
 	padding: 0px 8px 0px 8px;
 }
 .btn-floating {
-	background: #FF9800 !important;
+	background: #ad6700 !important;
 }
 
