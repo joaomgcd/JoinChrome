@@ -178,7 +178,7 @@ var writeDevices = function(){
 		return target;
 	}
 	var highlightColor = "#FF9800";
-	var lowlightColor = "#757575";
+	var lowlightColor = "#FFFFFF";
 	var setButtonColor = function(e, color){
 		var buttonElement = findButtonElement(e);
 		tintImage(buttonElement.commandImage,color);

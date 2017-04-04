@@ -21,6 +21,7 @@ body.popout {
 	height: 100%;
 }
 #tabsplaceholder {
+	color: white;
 	overflow: hidden;
 	text-align: center;
 }
@@ -139,7 +140,7 @@ body.popout {
 	display: none;
 }
 .devicebutton:hover {
-	background: #eeeeee;
+	background: #455A64;
 }
 #devicebuttondrag {
 	visibility: hidden;
@@ -161,7 +162,8 @@ body.popout {
 	margin: 4px 24px 4px 16px;
 }
 a#link {
-	color: #757575;
+	color: white;
+	opacity: 0.8;
 	font-size: 18px;
 	font-weight: 400;
 }
@@ -172,9 +174,11 @@ a#link:hover {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	width: 69px;
+	padding-top:4px;
 	word-break: break-word;
 }
 #devicelist {
+	color:white;
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-start;
@@ -185,6 +189,7 @@ a#link:hover {
 #notifications {
 	align-items: center;
 	display: flex;
+	flex: auto;
 	flex-direction: column;
 	padding: 8px;
 	background-color: #37474F;
@@ -318,10 +323,6 @@ img.tabIcon {
 	-o-transform: rotate(360deg);
 	transform: rotate(360deg);
 	}
-}
-#notifications {
-	flex: auto;
-	overflow-y: auto;
 }
 #sms {
 	height: 100vh;
