@@ -1,6 +1,6 @@
-var notificationsHtml = document.querySelector('link[href="notifications.html"]').import;
-var notificationHtml = notificationsHtml.querySelector('link[href="notification.html"]').import.querySelector('#notification');
-var notificationButtonHtml = notificationsHtml.querySelector('link[href="notificationbutton.html"]').import.querySelector('#notificationbutton');
+var notificationsHtml = document.querySelector('link[href$="notifications.html"]').import;
+var notificationHtml = notificationsHtml.querySelector('link[href$="notification.html"]').import.querySelector('#notification');
+var notificationButtonHtml = notificationsHtml.querySelector('link[href$="notificationbutton.html"]').import.querySelector('#notificationbutton');
 
 var notificationsElement = document.getElementById("notifications");
 var getNotifications = function(){
@@ -24,7 +24,7 @@ var getWidth = function(){
 	return chrome.extension.getBackgroundPage().getNotificationPopupWidth();
 }
 
-var writeNotifications = function(){
+var writeNotifications = function(filter){
 	notificationsElement.innerHTML = "";
 	var notifications = getNotifications();
 	if(notifications.length == 0){
@@ -46,24 +46,29 @@ var writeNotifications = function(){
 	//     }
 	// }
 
-	var clearNotificationsFAB = createElement(notificationsElement, "div", "clearAllNotificationButton",{"class":"fixed-action-btn"});
-	var clearNotificationsLink = createElement(clearNotificationsFAB, "a", null, {"class":"btn-floating btn-large"});
-	var clearNotificationsIcon = createElement(clearNotificationsLink, "div", "clearAllNotificationButtonIcon");
-	clearNotificationsFAB.onclick = function(){
-		var gcmNotificationClear = new back.GCMNotificationClear();
-		gcmNotificationClear.clearAll();
-		back.resetNotifications();
-		writeNotifications();
-	}
-	if(notifications.length == 0){
-		UtilsDom.hideElement(clearNotificationsFAB);
+	if(!filter){
+		var clearNotificationsFAB = createElement(notificationsElement, "div", "clearAllNotificationButton",{"class":"fixed-action-btn"});
+		var clearNotificationsLink = createElement(clearNotificationsFAB, "a", null, {"class":"btn-floating btn-large"});
+		var clearNotificationsIcon = createElement(clearNotificationsLink, "div", "clearAllNotificationButtonIcon");
+		clearNotificationsFAB.onclick = function(){
+			var gcmNotificationClear = new back.GCMNotificationClear();
+			gcmNotificationClear.clearAll();
+			back.resetNotifications();
+			writeNotifications();
+		}
+		if(notifications.length == 0){
+			UtilsDom.hideElement(clearNotificationsFAB);
+		}		
 	}
 
 	for (var i = 0; i < notifications.length; i++) {
 		var not = notifications[i];
+		if(filter && !filter(not)){
+			continue;
+		}
 		var notificationElement = not.notificationElement;
 		if(notificationElement == null){
-			var device = getDevices().first(function(device){
+			var device = back.getDevices().first(function(device){
 				return device.deviceId == not.senderId;
 			});
 			var iconsToDownload = [];
@@ -142,6 +147,9 @@ var writeNotifications = function(){
 				buttonsElement.style.display = "flex";
 				for (var e = 0; e < not.buttons.length; e++) {
 					var button = not.buttons[e];
+			 		if(button.actionId == Constants.ACTION_DIALOG_NOTIFICATION){
+			 			continue;
+			 		}
 					var buttonElement = notificationButtonHtml.cloneNode(true);
 					var buttonTextElement = buttonElement.querySelector("#text");
 					// var buttonIconElement = buttonElement.querySelector("#icon");
@@ -156,7 +164,7 @@ var writeNotifications = function(){
 			}else{
 				buttonsElement.style.display = "none";
 			}
-			if(not.replyId){
+			/*if(not.replyId){
 				buttonsElement.style.display = "flex";
 				var buttonElement = notificationButtonHtml.cloneNode(true);
 				var buttonTextElement = buttonElement.querySelector("#text");
@@ -165,7 +173,7 @@ var writeNotifications = function(){
 				// buttonIconElement.src = "icons/reply.png"
 				buttonElement.id = not.replyId;
 				buttonsElement.appendChild(buttonElement);
-			}
+			}*/
 			doGetBase64Images(iconsToDownload);
 		}
 
@@ -201,6 +209,9 @@ var writeNotifications = function(){
 		if(not.buttons){
 			 for (var j = 0; j < not.buttons.length; j++) {
 					var button = not.buttons[j];
+			 		if(button.actionId == Constants.ACTION_DIALOG_NOTIFICATION){
+			 			continue;
+			 		}
 					var buttonElement = notificationElement.querySelector("[id='"+button.actionId+"']")
 					buttonElement.notification = not;
 					buttonElement.onclick = function(event){
@@ -211,7 +222,7 @@ var writeNotifications = function(){
 					};
 			 }
 		}
-		if(not.replyId){
+		/*if(not.replyId){
 			var buttonElement = notificationElement.querySelector("[id='"+not.replyId+"']")
 			buttonElement.notification = not;
 			buttonElement.onclick = function(event){
@@ -227,13 +238,13 @@ var writeNotifications = function(){
 					not.doAction(id, input, true);
 				});
 			};
-		}
+		}*/
 		notificationsElement.appendChild(notificationElement);
 
 	};
-	if(onlyTabToShow && onlyTabToShow == "notifications"){
+	/*if(onlyTabToShow && onlyTabToShow == "notifications"){
 	   // window.resizeTo(getWidth(),getHeight());
-	}
+	}*/
 }
 writeNotifications();
 

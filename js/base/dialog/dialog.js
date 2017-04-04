@@ -94,6 +94,19 @@ Dialog.showDeviceInfoDialog = function(input,options){
 		return Dialog.show("deviceinfo",input,options);	
 	}
 }
+Dialog.showNotificationDialog = function(input,options){
+	return function(){
+		if(!options){
+			options = {};
+		}
+		options.width = 473;
+		options.height = 195;
+
+		var itemHeight = 42;
+		//options.height += input.items.length * itemHeight;	
+		return Dialog.show("notification",input,options);	
+	}
+}
 
 Dialog.showOkCancelDialog = function(input,options){
 	return function(){
