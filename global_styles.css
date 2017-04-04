@@ -384,6 +384,11 @@ img.tabIcon {
 	cursor: pointer;
 }
 #smssend img {
+	opacity: 0.8;
+    width: 0;
+    height: 0;
+    padding: 12px;
+    background:url("icons/send.png") 0 0/24px 24px;
     margin-right: 8px;
 }
 #smsattachment {
@@ -393,7 +398,10 @@ img.tabIcon {
 	padding: 1px;
 }
 #smsattachment img{
-	width: 32px;
+	width: 0;
+	height: 0;
+	padding: 16px;
+	background:url("icons/attachment.png") 0 0/32px 32px;
     margin-right: 8px;
 	cursor: pointer;
 }
