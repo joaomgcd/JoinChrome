@@ -123,5 +123,8 @@ back.Events = {
   },
   "StatusReceived" : function(gcmStatus){
     this.gcmStatus = gcmStatus;
+  },
+  "NotificationHandled" : function(info){
+    this.info = info;
   }
 }

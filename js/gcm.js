@@ -3,6 +3,8 @@ var SMS_ACTION_ID = "SMS_ACTION_ID";
 var COPY_NUMBER = "COPY_NUMBER";
 var HANG_UP = "HANG_UP";
 var CALL_BACK = "CALL_BACK";
+var REPLY_ACTION = "REPLY_ACTION";
+var LOCAL_DISMISS = "LOCAL_DISMISS";
 var regexNumbers = /[0-9\.]{4,}/g;
 
 var Request = function(){
@@ -149,7 +151,7 @@ var GCMPush = function(){
 		}
 		var not = {};
 		not.senderId = push.senderId;
-		not.id = guid();
+		not.id = push.id;
 		not.title= title;
 		not.text = text;
 		not.appIcon = push.icon;
@@ -157,6 +159,7 @@ var GCMPush = function(){
 		not.priority = 2;
 		not.appName = "Join";
 		not.keepRemote = true;
+		not.gcmDeleteOnCancel = true;
 		if(text && text.match(regexNumbers)){
 			not.buttons = [];
 			not.buttons.push({
@@ -441,7 +444,11 @@ var Notifications = function(){
 			return;
 		}
 		var removed = this.removeIf(function(notification){
-			return notification.id == id;
+			var remove = notification.id == id;
+			if(remove){
+				notification.announceNotificationHandled({"dismissed":true});
+			}
+			return remove;
 		});
 		chrome.notifications.clear(id, function(){});
 		return removed;
@@ -512,12 +519,18 @@ var GCMNotification = function(notification, senderId){
 			not.isSmsNotification = function(actionId){
 				return actionId && actionId == SMS_ACTION_ID;
 			}
-			not.cancel = function(){
+			not.cancel = function(localOnly){
 				if(not.isSmsNotification(not.actionId)){
 					back.dispatch(EVENT_SMS_HANDLED,{"text":not.text,"deviceId":not.senderId});
 				}
 				notifications.removeNotificationsWithSameId(this.id);
-				if(!this.keepRemote){
+				if(!localOnly && this.gcmDeleteOnCancel){
+					var deviceIdsToDelete = back.devices.where(device=>device.regId2?true:false).select(device=>device.deviceId);
+					var gcmPushDelete = new GCMDeleteNotification();
+					gcmPushDelete.notificationId = not.id;
+					gcmPushDelete.send(deviceIdsToDelete);
+				}
+				if(!this.keepRemote && !localOnly){
 					var gcmNotificationClear = new GCMNotificationClear();
 					gcmNotificationClear.send(this,me.requestNotification.senderId);
 				}else{
@@ -527,9 +540,38 @@ var GCMNotification = function(notification, senderId){
 				updateBadgeText();
 				refreshNotificationsPopup();
 			}
-			not.doAction = function(actionId,text, isReply){
+			not.announceNotificationHandled = function(info){
+				info.notificationId = not.id;
+				back.eventBus.post(new back.Events.NotificationHandled(info));
+			}
+			not.doAction = function(actionId, text, isReply){
 				var notification = this;
 				
+				if(actionId == Constants.ACTION_DIALOG_NOTIFICATION){
+					back.console.log("Showing notification in dialog");
+					chrome.notifications.clear(notification.id, function(){});
+					Dialog.showNotificationDialog({
+					    notificationId:notification.id
+					},{
+					    shouldShow:true
+					})();
+
+					return;
+				}
+				if(actionId == REPLY_ACTION){
+					var shouldPrompt = !notification.noPrompt;
+					Promise.resolve()
+					.then(Dialog.showNotificationReplyDialog(notification, shouldPrompt))
+					.catch(UtilsObject.ignoreError).then(function(input){
+						not.announceNotificationHandled({"replied":true});
+						notification.doAction(notification.replyId, input, true);
+					});
+					return;
+				}
+				if(actionId == LOCAL_DISMISS){
+					notification.cancel(true);
+					return;
+				}
 				if(actionId == COPY_NUMBER){
 					var matches = notification.text.match(regexNumbers);
 					if(matches){
@@ -636,7 +678,18 @@ var GCMNotification = function(notification, senderId){
 					console.log("Error: " + error);
 				});*/
 			}
-
+			if(!not.buttons){
+				not.buttons = [];
+			}
+			if(not.replyId){
+				not.buttons.splice(0,0,{"text":Constants.REPLY_DIRECTLY,"icon":"/icons/reply.png","actionId":REPLY_ACTION});
+			}
+			if(back.getBetaEnabled()){
+				if(not.buttons.length>1){
+					not.buttons.splice(0,0,{"text":"More Actions...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
+				}
+				not.buttons.splice(1,0,{"text":"Dismiss","icon":"/icons/close.png","actionId":LOCAL_DISMISS});					
+			}
 			var chromeNotification = new ChromeNotification(not);
 			var similar = notifications.getSimilarNotification(not);
 			var removed = notifications.removeNotificationsWithSameId(not.id);
@@ -972,6 +1025,23 @@ var GCMChangeSetting = function(){
 	}
 }
 GCMChangeSetting.prototype = new GCMGenericPush();
+var GCMDeleteNotification = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMDeleteNotification";
+	}
+	this.execute = function() {	
+		if(!this.notificationId){
+			return;
+		}
+		var notificationToCancel = notifications.first(n=>n.id==this.notificationId);
+		if(!notificationToCancel){
+			return;
+		}
+		notificationToCancel.cancel();
+	}
+}
+GCMDeleteNotification.prototype = new GCMGenericPush();
 
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){

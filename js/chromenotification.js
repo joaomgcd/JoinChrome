@@ -43,15 +43,19 @@ var ChromeNotification = function(notificationFromGcm){
 			}
 			var image = getIcon(results[1]);
 			var notificationButtons = [];
-			if(me.replyId){
+			/*if(me.replyId){
 				notificationButtons.push({"title":Constants.REPLY_DIRECTLY,"iconUrl":"icons/reply.png"});
-			}
+			}*/
 			if(me.buttons){
 				for (var i = 0; i < me.buttons.length; i++) {
 					var button = me.buttons[i];
 					notificationButtons.push({"title":button.text,"iconUrl":getIcon(results[i+2])});
 				};
 			}
+			/*while(notificationButtons.length>1){
+				notificationButtons.pop();
+			}
+			notificationButtons.push({"title":"Dismiss","iconUrl":"/icons/close.png"});*/
 			var text = me.text;
 			if(back.getHideNotificationText()){
 				text = "Content hidden";
@@ -134,8 +138,8 @@ chrome.notifications.onClicked.addListener(function(id){
 		//console.log("WARNING: notification clicked but didn't exist! Shouldn't happen!" );
 		return;
 	}
-		var opened = openNotificationPage(notification);
-		if(!opened){
+	var opened = openNotificationPage(notification);
+	if(!opened){
 		notification.doAction(notification.actionId);
 	}
 });
@@ -160,31 +164,14 @@ chrome.notifications.onButtonClicked.addListener(function(id,index){
 		console.log("WARNING: button clicked but didn't exist! Shouldn't happen!" );
 		return;
 	}
-	var isReplyAction = notification.replyId && index == 0;
-	if(!isReplyAction){
-		isReplyAction = false;
+	var buttons = notification.buttons;
+	if(!buttons){
+		console.log("WARNING: button clicked but didn't find buttons! Shouldn't happen!" );
+		return;
 	}
-	var shouldPrompt = !notification.noPrompt;
-	return Promise.resolve()
-	.then(Dialog.showNotificationReplyDialog(notification,isReplyAction && shouldPrompt))
-	.catch(UtilsObject.ignoreError)
-	.then(function(input){	
-		if(isReplyAction){
-			notification.doAction(notification.replyId, input, true);
-			return;
-		}	
-		var buttons = notification.buttons;
-		if(!buttons){
-			console.log("WARNING: button clicked but didn't find buttons! Shouldn't happen!" );
-			return;
-		}
-		if(notification.replyId){
-			index--;
-		}
-		if(buttons.length <= index){
-			console.log("WARNING: button " + (index + 1) + " clicked but didn't find that many buttons! Shouldn't happen!" );
-			return;
-		}
-		notification.doAction(buttons[index].actionId);
-	});
+	if(buttons.length <= index){
+		console.log("WARNING: button " + (index + 1) + " clicked but didn't find that many buttons! Shouldn't happen!" );
+		return;
+	}
+	notification.doAction(buttons[index].actionId);
 });
