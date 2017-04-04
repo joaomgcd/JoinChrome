@@ -3,6 +3,7 @@
 }
 a {
 	color: #FF9800;
+	transition: all 0.3s ease;
 }
 html, body {
 	height: 100%;
@@ -160,6 +161,8 @@ body.popout {
 	height: 24px;
 	width: 24px;
 	margin: 4px 24px 4px 16px;
+	-webkit-filter: brightness(150%);
+	filter: brightness(150%);
 }
 a#link {
 	color: white;

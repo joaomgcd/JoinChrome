@@ -177,19 +177,19 @@ var writeDevices = function(){
 		}
 		return target;
 	}
-	var highlightColor = "#FF9800";
-	var lowlightColor = "#757575";
-	var setButtonColor = function(e, color){
-		var buttonElement = findButtonElement(e);
-		tintImage(buttonElement.commandImage,color);
-		buttonElement.commandLink.style.color = color;
-	}
-	var buttonHover = function(e){
-		setButtonColor(e,highlightColor);
-	};
-	var buttonHoverOut = function(e){
-		setButtonColor(e,lowlightColor);
-	};
+	// var highlightColor = "#FF9800";
+	// var lowlightColor = "#757575";
+	// var setButtonColor = function(e, color){
+	// 	var buttonElement = findButtonElement(e);
+	// 	tintImage(buttonElement.commandImage,color);
+	// 	buttonElement.commandLink.style.color = color;
+	// }
+	// var buttonHover = function(e){
+	// 	setButtonColor(e,highlightColor);
+	// };
+	// var buttonHoverOut = function(e){
+	// 	setButtonColor(e,lowlightColor);
+	// };
 	var buttonClick = function(e){
 		var link = findButtonElement(e);
 		/*if(link.command.condition && !link.command.condition(selectedDevice)){
@@ -308,8 +308,8 @@ var writeDevices = function(){
 	for (var e = 0; e < deviceCommands.length; e++) {
 		var command = deviceCommands[e];
 		var buttonElement = deviceButtonHtml.cloneNode(true);
-		buttonElement.onmouseover = buttonHover;
-		buttonElement.onmouseout = buttonHoverOut;
+		// buttonElement.onmouseover = buttonHover;
+		// buttonElement.onmouseout = buttonHoverOut;
 		var link = buttonElement.querySelector("#link");
 		var image = buttonElement.querySelector("#devicebuttonimage");
 
