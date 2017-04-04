@@ -21,6 +21,7 @@ body.popout {
 	height: 100%;
 }
 #tabsplaceholder {
+	color: white;
 	overflow: hidden;
 	text-align: center;
 }
@@ -65,6 +66,9 @@ body.popout {
 }
 .dropzone a {
 	color: blue;
+}
+#devices {
+	background-color: #37474F;
 }
 #deviceiconcontainer {
 	border-radius: 100%;
@@ -136,7 +140,7 @@ body.popout {
 	display: none;
 }
 .devicebutton:hover {
-	background: #eeeeee;
+	background: #455A64;
 }
 #devicebuttondrag {
 	visibility: hidden;
@@ -158,7 +162,8 @@ body.popout {
 	margin: 4px 24px 4px 16px;
 }
 a#link {
-	color: #757575;
+	color: white;
+	opacity: 0.8;
 	font-size: 18px;
 	font-weight: 400;
 }
@@ -169,9 +174,11 @@ a#link:hover {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	width: 69px;
+	padding-top:4px;
 	word-break: break-word;
 }
 #devicelist {
+	color:white;
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-start;
@@ -182,9 +189,10 @@ a#link:hover {
 #notifications {
 	align-items: center;
 	display: flex;
+	flex: auto;
 	flex-direction: column;
 	padding: 8px;
-	background-color: #F0F0F0;
+	background-color: #37474F;
 	overflow-y: scroll;
 }
 .button-container {
@@ -227,7 +235,7 @@ td {
 	display: none;
 }
 .tabselement {
-	background-color: #FF9800;
+	background-color: #263238;
 	display: flex;
 	font-size: 16px;
 }
@@ -258,7 +266,7 @@ td {
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
-	background-color: #FFB05C;
+	background-color: #37474F;
 }
 .tabIcon {
 	cursor: pointer;
@@ -316,16 +324,11 @@ img.tabIcon {
 	transform: rotate(360deg);
 	}
 }
-
-#notifications {
-	flex: auto;
-	overflow-y: auto;
-}
 #sms {
 	height: 100vh;
-  display: flex;
-  flex-direction: column;
-	background-color: #F0F0F0;
+  	display: flex;
+  	flex-direction: column;
+	background-color: #37474F;
 }
 #smsback {
 	display: flex;
@@ -335,7 +338,7 @@ img.tabIcon {
 	width: 24px;
 }
 #smstitlecontainer {
-	background-color: #FF9800;
+	background-color: #263238;
 	color: white;
 	cursor: pointer;
 	flex-direction: row;
@@ -348,7 +351,7 @@ img.tabIcon {
 	padding: 8px;
 }
 #smstitlecontainer:hover {
-	background-color: #FFB05C;
+	background-color: #455A64;
 	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
 }
 #smstitlecontainer.hidden {
@@ -360,7 +363,7 @@ img.tabIcon {
     overflow: hidden;
 }
 #smstitle:hover {  
-	max-height: none;
+	/*max-height: none;*/
 }
 #contactpictureconversation {  
 	max-height: 25px;
@@ -368,7 +371,7 @@ img.tabIcon {
 }
 #smssendcontainer {
 	align-items: center;
-	background-color: #F0F0F0;
+	background-color: #37474F;
 	display: flex;
 	margin: 0;
 	padding: 8px;
@@ -409,7 +412,7 @@ img.tabIcon {
 	display: none !important;
 }
 #smsinput {
-	background-color: white;
+	background-color: #78909C;
 	border-radius: 4px;
 	border: none;
 	box-shadow: none;
@@ -462,14 +465,15 @@ img.tabIcon {
 	outline: none;
 }
 #smscontainer {
-	background-color: #F0F0F0;
+	background-color: #37474F;
 	height: 100%;
 	flex: 1 1 auto;
 	position: relative;
 	overflow: auto;
 }
 .smscontact {
-	background-color: white;
+	background-color: #37474F;
+	color: white;
 	box-sizing: initial;
 	cursor: pointer;
 	transition: all 0.1s ease;
@@ -480,7 +484,7 @@ img.tabIcon {
 	align-items: flex-start;
 }
 .smscontact:hover {
-	background-color: #F0F0F0;
+	background-color: #455A64;
 }
 .smscontactpicture {
 	margin-right: 16px;
@@ -500,15 +504,11 @@ img.tabIcon {
 .smscontactpicture > img {
 	width: 36px;
     border-radius: 36px;
-    vertical-align: middle;
 }
 .smscontactcall {
 	text-align: end;
-	color: #aaaaaa;
 	visibility: hidden;
 	opacity: 0.2;
-}
-.smscontactcall {
 }
 .smscontact:hover .smscontactcall{
 	visibility: visible;
@@ -519,7 +519,6 @@ img.tabIcon {
 .smscontactcallanddate {
 	display: flex;
 	flex-direction: column;
-	/*font-size: small;*/
 	justify-content: space-between;
 	align-self: stretch;
 	margin-left:12px;
@@ -527,16 +526,15 @@ img.tabIcon {
 .smscontacttext {
 	max-width: 320px;
 	overflow: hidden;
-	color: #777777;
-/*	display: -webkit-box;
+	opacity: 0.7;
+	display: -webkit-box;
 	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;*/
-	max-height:1.5em;
+	-webkit-box-orient: vertical;
 }
 .smscontactdate {
 	text-align: end;
 	white-space: nowrap;
-	color: #aaaaaa;
+	opacity: 0.7;
 }
 .smsmessagecontainer {
 	display: flex;
@@ -551,7 +549,8 @@ img.tabIcon {
 }
 .smsmessage {
 	padding: 8px 14px 8px 14px;
-	background-color: white;
+	background-color: #78909C;
+	color: white;
 	border-radius: 4px;
 	display: flex;
 	position: relative;
@@ -561,7 +560,7 @@ img.tabIcon {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: #FFE0B2;
+	background-color: #ad6700;
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -570,14 +569,14 @@ img.tabIcon {
 	right: 4px;
 }
 .smsbubbletriangle polygon {
-	fill: white;
+	fill: #78909C;
 }
 .smsbubbletrianglereceived {
 	position: relative;
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: #FFE0B2;
+	fill: #ad6700;
 }
 .smsmessagetext {
 	word-wrap: break-word;
@@ -611,7 +610,7 @@ img.tabIcon {
 }
 .smsmessagedate {
 	flex-grow: 1;
-	color: #999999;
+	opacity: 0.7;
 	margin-top: 2px;
 	text-align: left;
 }
@@ -628,7 +627,7 @@ img.tabIcon {
 	width: 15px;
 }
 .btn-floating:hover {
-	background-color: #FFB05C !important;
+	background-color: #ffb851 !important;
 }
 #newsmscall {
 	font-size: 250%;
