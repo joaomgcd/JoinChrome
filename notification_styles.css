@@ -1,4 +1,5 @@
 #notification.card {
+	background-color: #607D8B;
 	width: 95%;
 	margin: 0.5rem !important;
 	cursor: default;
@@ -12,6 +13,7 @@
 	box-shadow: 5px 5px 5px grey;
 	padding: 8px;
 	background-color: white;
+	color: white;
 	box-sizing: initial;
 	position: relative;
 	align-self: center;
@@ -23,16 +25,17 @@
 	right: 4px;
 	padding: 4px;
 	opacity: 0.5;
-	cursor: pointer; cursor: hand;
+	cursor: pointer;
 	display:none;
+	z-index: 80;
+	transition: all 0.3s ease;
 }
 #closebutton:hover {
 	opacity: 1;
-	background-color: #F0F0F0;
+	background-color: #78909C;
 }
 .notificationBody{
 	display:flex;
-	background-color: white;
 	margin: 8px 0px 8px 0px;
 }
 .notificationright{
@@ -51,13 +54,13 @@
 	font-size: 130%;
 	word-wrap: break-word;
 	font-family: 'Roboto', sans-serif;
-	color: #757575;
+	opacity: 0.8;
 }
 #date{
 	display: flex;
 	align-items: center;
 	font-family: 'Roboto', sans-serif;
-	color: #757575;
+	opacity: 0.8;
 	margin-left: auto;
 	font-size: 110%;
 }
@@ -98,7 +101,7 @@
 	transition: all 0.3s ease;
 }
 .notificationbutton:hover {
-	background-color: #F0F0F0;
+	background-color: #78909C;
 }
 .notificationbutton:hover div.buttontext {
 	color: #FFB64A;
@@ -134,7 +137,8 @@
 	margin-left: 8px;
 }
 #notificationTop{
-	color: gray;
+	color: white;
+	opacity: 0.8;
 	display: flex;
 	font-family: 'Roboto', sans-serif;
 }
@@ -143,6 +147,6 @@
 }
 #clearAllNotificationButtonIcon {
 	height: 100%;
-		width: 100%;
-		background: url('icons/clear_all.png') center/60% 60% no-repeat;
+	width: 100%;
+	background: url('icons/clear_all.png') center/60% 60% no-repeat;
 }
