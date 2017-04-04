@@ -52,6 +52,9 @@
 	word-wrap: break-word;
 	font-family: 'Roboto', sans-serif;
 	color: #757575;
+	overflow:hidden;
+	line-height:1.5em;
+	max-height:7.5em;
 }
 #date{
 	display: flex;
