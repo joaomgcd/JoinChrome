@@ -1,7 +1,5 @@
 :root {
 	--global-color: #FF9800;
-
-
 }
 a {
 	color: #FF9800;
@@ -532,7 +530,7 @@ img.tabIcon {
 	overflow: hidden;
 	color: #777777;
 	display: -webkit-box;
-	-webkit-line-clamp: 2;
+	-webkit-line-clamp: 1;
 	-webkit-box-orient: vertical;
 }
 .smscontactdate {
