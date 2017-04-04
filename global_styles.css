@@ -492,6 +492,7 @@ img.tabIcon {
 	justify-content: space-between;
 }
 .smscontactname {
+	flex-grow: 1;
 	font-size: 16px;
 }
 .smscontactpicture > img {
@@ -506,7 +507,6 @@ img.tabIcon {
 	color: #aaaaaa;
 	visibility: hidden;
 	opacity: 0.2;
-	flex-grow: 1;
 }
 .smscontactcall {
 }
