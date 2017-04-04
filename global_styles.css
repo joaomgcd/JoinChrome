@@ -504,6 +504,7 @@ img.tabIcon {
 .smscontactpicture > img {
 	width: 36px;
     border-radius: 36px;
+    vertical-align: middle;
 }
 .smscontactcall {
 	text-align: end;
@@ -527,9 +528,8 @@ img.tabIcon {
 	max-width: 320px;
 	overflow: hidden;
 	opacity: 0.7;
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
+	color: #777777;
+	max-height:1.5em;
 }
 .smscontactdate {
 	text-align: end;

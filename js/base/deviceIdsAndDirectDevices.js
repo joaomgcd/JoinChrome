@@ -59,9 +59,13 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	if(!showNotificationFunc){
 		showNotificationFunc = back.showNotification;
 	}
+	if(!deviceIds){
+		deviceIds = [];
+	}
 	if(typeof deviceIds == "string"){
 		deviceIds = deviceIds.split(",");
 	}
+	deviceIds = deviceIds.where(deviceId=>deviceId?true:false);
 	this.deviceIds = deviceIds;
 	this.serverDevices = [];
 	this.directDevices = [];

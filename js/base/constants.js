@@ -1,3 +1,4 @@
 var Constants = {
-	"REPLY_DIRECTLY": "Reply Directly"
+	"REPLY_DIRECTLY": "Reply Directly",
+	"ACTION_DIALOG_NOTIFICATION": "ACTION_DIALOG_NOTIFICATION"
 };

@@ -54,7 +54,10 @@
 	font-size: 130%;
 	word-wrap: break-word;
 	font-family: 'Roboto', sans-serif;
-	opacity: 0.8;
+	color: #757575;
+	overflow:hidden;
+	line-height:1.5em;
+	max-height:7.5em;
 }
 #date{
 	display: flex;
