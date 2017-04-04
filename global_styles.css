@@ -548,7 +548,8 @@ img.tabIcon {
 }
 .smsmessage {
 	padding: 8px 14px 8px 14px;
-	background-color: white;
+	background-color: #78909C;
+	color: white;
 	border-radius: 4px;
 	display: flex;
 	position: relative;
@@ -558,7 +559,7 @@ img.tabIcon {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: #FFE0B2;
+	background-color: #ad6700;
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -567,14 +568,14 @@ img.tabIcon {
 	right: 4px;
 }
 .smsbubbletriangle polygon {
-	fill: white;
+	fill: #78909C;
 }
 .smsbubbletrianglereceived {
 	position: relative;
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: #FFE0B2;
+	fill: #ad6700;
 }
 .smsmessagetext {
 	word-wrap: break-word;
@@ -608,7 +609,7 @@ img.tabIcon {
 }
 .smsmessagedate {
 	flex-grow: 1;
-	color: #999999;
+	opacity: 0.7;
 	margin-top: 2px;
 	text-align: left;
 }
@@ -625,7 +626,7 @@ img.tabIcon {
 	width: 15px;
 }
 .btn-floating:hover {
-	background-color: #FF9800 !important;
+	background-color: #ffb851 !important;
 }
 #newsmscall {
 	font-size: 250%;
@@ -662,6 +663,6 @@ img.tabIcon {
 	padding: 0px 8px 0px 8px;
 }
 .btn-floating {
-	background: #ad6700 !important;
+	background: #FF9800 !important;
 }
 
