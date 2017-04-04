@@ -254,8 +254,7 @@ td {
 	cursor: hand;
 	cursor: pointer;
 	opacity: 0.6;
-	padding-left: 4px;
-	padding-right: 4px;
+	padding: 0px 6px 0px 6px;
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
@@ -381,17 +380,16 @@ img.tabIcon {
 }
 #smssend {
 	display: flex;
-	flex-direction: column;
 	padding: 1px;
 	cursor: pointer;
 }
 #smssend img {
-	width: 32px;
     margin-right: 8px;
 }
 #smsattachment {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	align-items: center;
 	padding: 1px;
 }
 #smsattachment img{
