@@ -338,7 +338,7 @@ img.tabIcon {
 	width: 24px;
 }
 #smstitlecontainer {
-	background-color: #FF9800;
+	background-color: #263238;
 	color: white;
 	cursor: pointer;
 	flex-direction: row;
@@ -351,7 +351,7 @@ img.tabIcon {
 	padding: 8px;
 }
 #smstitlecontainer:hover {
-	background-color: #FFB05C;
+	background-color: #455A64;
 	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
 }
 #smstitlecontainer.hidden {
@@ -363,7 +363,7 @@ img.tabIcon {
     overflow: hidden;
 }
 #smstitle:hover {  
-	max-height: none;
+	/*max-height: none;*/
 }
 #contactpictureconversation {  
 	max-height: 25px;
@@ -412,7 +412,7 @@ img.tabIcon {
 	display: none !important;
 }
 #smsinput {
-	background-color: white;
+	background-color: #78909C;
 	border-radius: 4px;
 	border: none;
 	box-shadow: none;
