@@ -416,7 +416,7 @@ img.tabIcon {
     z-index: 1000;
 }
 #smsemoji{
-	font-size: 20px;
+	font-size: 22px;
 	cursor: pointer;
 }
 .hidden{
@@ -571,7 +571,7 @@ img.tabIcon {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: #db8200;
+	background-color: #FF9800;
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -587,7 +587,7 @@ img.tabIcon {
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: #db8200;
+	fill: #FF9800;
 }
 .smsmessagetext {
 	word-wrap: break-word;
