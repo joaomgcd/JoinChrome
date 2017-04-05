@@ -3,6 +3,9 @@ var NotificationDialogEventHandler = function(){
 	this.onPopupLoaded = function(){
 		Dialog.cancel();
 	}
+	this.onNotificationImagesLoaded = function(){
+		Dialog.resizeCurrentDialog();
+	}
 	this.onNotificationHandled = function(handled){
 		if(!handled){
 			return;
