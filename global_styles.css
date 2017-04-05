@@ -1,7 +1,5 @@
 :root {
 	--global-color: #FF9800;
-
-
 }
 a {
 	color: #FF9800;
@@ -256,8 +254,7 @@ td {
 	cursor: hand;
 	cursor: pointer;
 	opacity: 0.6;
-	padding-left: 4px;
-	padding-right: 4px;
+	padding: 0px 6px 0px 6px;
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
@@ -383,17 +380,16 @@ img.tabIcon {
 }
 #smssend {
 	display: flex;
-	flex-direction: column;
 	padding: 1px;
 	cursor: pointer;
 }
 #smssend img {
-	width: 32px;
     margin-right: 8px;
 }
 #smsattachment {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	align-items: center;
 	padding: 1px;
 }
 #smsattachment img{
@@ -504,6 +500,7 @@ img.tabIcon {
 .smscontactpicture > img {
 	width: 36px;
     border-radius: 36px;
+    vertical-align: middle;
 }
 .smscontactcall {
 	text-align: end;
@@ -531,9 +528,10 @@ img.tabIcon {
 	max-width: 320px;
 	overflow: hidden;
 	color: #777777;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
+/*	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;*/
+	max-height:1.5em;
 }
 .smscontactdate {
 	text-align: end;
