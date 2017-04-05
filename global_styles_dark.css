@@ -143,6 +143,9 @@ body.popout {
 .devicebutton:hover {
 	background: #455A64;
 }
+.devicebutton:hover a#link {
+	color: #FF9800;
+}
 #devicebuttondrag {
 	visibility: hidden;
 	transition: all 0.1s ease;
@@ -152,7 +155,7 @@ body.popout {
 }
 #devicebuttondrag {
 	margin-left: auto;
-	opacity: 0.2;
+	opacity: 0.5;
 }
 #devicebuttondrag:hover{
 	opacity: 0.9 !important;
@@ -169,9 +172,6 @@ a#link {
 	opacity: 0.8;
 	font-size: 18px;
 	font-weight: 400;
-}
-a#link:hover {
-	color: #FF9800;
 }
 .devicename {
 	overflow: hidden;
@@ -680,7 +680,7 @@ img.tabIcon {
 
 /*Notification Cards*/
 #notification.card {
-	background-color: #607D8B;
+	background-color: #546E7A;
 	width: 95%;
 	margin: 0.5rem !important;
 	cursor: default;
@@ -691,9 +691,7 @@ img.tabIcon {
 }
 .notification{
 	flex-direction: column;
-	/*box-shadow: 5px 5px 5px grey;*/
 	padding: 8px;
-	background-color: white;
 	color: white;
 	box-sizing: initial;
 	position: relative;
