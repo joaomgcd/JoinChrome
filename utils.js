@@ -943,17 +943,11 @@ var setPopupIcon = function(alternative){
 }
 
 var setTheme = function(dark){
-	// console.log("WHTA" + dark);
 	var glob = document.getElementById("global_styles");
-	// var notif = document.getElementById("notification_styles");
 	if(dark) {
 		glob.setAttribute("href","global_styles_dark.css");
-		// notif.setAttribute("href","notification_styles_dark.css");
-		console.log("DARK");
 	}
 	else {
 		glob.setAttribute("href","global_styles.css");
-		// notif.setAttribute("href","notification_styles.css");
-		console.log("LIGHT");
 	}
 }

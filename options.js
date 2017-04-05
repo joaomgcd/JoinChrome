@@ -261,8 +261,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			.catch(()=>console.log("dont show voice intro"));
 		})
 		optionVoice.addEventListener("click", handleVoiceOption);
-	
 
+		// Apply dark or light theme
+		var sheet = document.getElementById("options_styles");
+        if(back.getDarkMode()) {
+            sheet.setAttribute("href","options_styles_dark.css");
+        }
+        else {
+            sheet.setAttribute("href","options_styles.css");
+        }
+        document.getElementById("darkmode").onclick = function() {location.reload();};
+	
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;
 		var optionTabSelectors = document.querySelectorAll("[showtab]");
