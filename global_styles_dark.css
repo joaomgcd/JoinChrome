@@ -571,7 +571,7 @@ img.tabIcon {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: #ad6700;
+	background-color: #db8200;
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -587,7 +587,7 @@ img.tabIcon {
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: #ad6700;
+	fill: #db8200;
 }
 .smsmessagetext {
 	word-wrap: break-word;
