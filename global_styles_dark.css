@@ -678,3 +678,155 @@ img.tabIcon {
 	background: #FF9800 !important;
 }
 
+/*Notification Cards*/
+#notification.card {
+	background-color: #607D8B;
+	width: 95%;
+	margin: 0.5rem !important;
+	cursor: default;
+	overflow: visible !important;
+}
+#notification.card:hover #closebutton {
+	display: block;
+}
+.notification{
+	flex-direction: column;
+	padding: 8px;
+	background-color: white;
+	color: white;
+	box-sizing: initial;
+	position: relative;
+	align-self: center;
+}
+#closebutton{
+	position: absolute;
+	height: 13px;
+	top: 4px;
+	right: 4px;
+	padding: 4px;
+	opacity: 0.5;
+	cursor: pointer;
+	display:none;
+	z-index: 80;
+	transition: all 0.3s ease;
+}
+#closebutton:hover {
+	opacity: 1;
+	background-color: #78909C;
+}
+.notificationBody{
+	display:flex;
+	margin: 8px 0px 8px 0px;
+}
+.notificationright{
+	display:flex;
+	flex-direction: column;
+	flex-grow: 1;
+	margin: 8px;
+	width: 0px;
+}
+.notificationtitle{
+	font-size: 160%;
+	font-family: 'Roboto', sans-serif;
+	flex-grow: 1;
+}
+.notificationtext{
+	font-size: 130%;
+	word-wrap: break-word;
+	font-family: 'Roboto', sans-serif;
+	opacity: 0.8;
+}
+#date{
+	display: flex;
+	align-items: center;
+	font-family: 'Roboto', sans-serif;
+	opacity: 0.8;
+	margin-left: auto;
+	font-size: 110%;
+}
+.notificationleft{
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 8px;
+}
+.notificationicon{
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+}
+.notificationiconapp{
+	position: absolute;
+	bottom: 5px;
+	right: -5px;
+	width: 30px;
+}
+.notificationimage{
+	border-top: 1px solid #e6e6e6;
+	border-bottom: 1px solid #e6e6e6;
+	margin-top: 10px;
+}
+.notificationbuttons{
+	display:flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+}
+.notificationbutton {
+	border-radius: 2px;
+	cursor: pointer; cursor: hand;
+	display:flex;
+	padding: 8px;
+	transition: all 0.3s ease;
+}
+.notificationbutton:hover {
+	background-color: #78909C;
+}
+.notificationbutton:hover div.buttontext {
+	color: #FFB64A;
+}
+.notificationbutton:active {
+	background-color:#FF9800;
+}
+.notificationbutton:active div.buttontext {
+	color: white;
+}
+.buttonicon{
+	height:24px;
+	opacity: 0.5;
+	width:24px;
+}
+.buttontext{
+	align-self: center;
+	color: #FF9800;
+	flex-grow: 1;
+	font-family: 'Roboto', sans-serif;
+	font-size: 130%;
+	font-weight: 500;
+	margin-left: 8px;
+	margin-right: 8px;
+	text-transform: uppercase;
+	transition: all 0.3s ease;
+}
+#appname{
+	align-self: center;
+	margin-right: 8px;
+}
+.notificationdevice{
+	margin-left: 8px;
+}
+#notificationTop{
+	color: white;
+	opacity: 0.8;
+	display: flex;
+	font-family: 'Roboto', sans-serif;
+}
+#textanddate{
+	display: flex;
+}
+#clearAllNotificationButtonIcon {
+	height: 100%;
+	width: 100%;
+	background: url('icons/clear_all.png') center/60% 60% no-repeat;
+}
