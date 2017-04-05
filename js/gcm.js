@@ -569,7 +569,7 @@ var GCMNotification = function(notification, senderId){
 					return;
 				}
 				if(actionId == LOCAL_DISMISS){
-					notification.cancel(true);
+					notification.cancel(false);
 					return;
 				}
 				if(actionId == COPY_NUMBER){
@@ -681,14 +681,15 @@ var GCMNotification = function(notification, senderId){
 			if(!not.buttons){
 				not.buttons = [];
 			}
+			var actionTexts = not.buttons.select(button=>button.text).join(", ");
 			if(not.replyId){
 				not.buttons.splice(0,0,{"text":Constants.REPLY_DIRECTLY,"icon":"/icons/reply.png","actionId":REPLY_ACTION});
 			}
 			if(back.getBetaEnabled()){
 				if(not.buttons.length>1){
-					not.buttons.splice(0,0,{"text":"More Actions...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
+					not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
 				}
-				not.buttons.splice(1,0,{"text":"Dismiss","icon":"/icons/close.png","actionId":LOCAL_DISMISS});					
+				not.buttons.splice(1,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});					
 			}
 			var chromeNotification = new ChromeNotification(not);
 			var similar = notifications.getSimilarNotification(not);
@@ -885,6 +886,7 @@ var GCMNewSmsReceived = function(){
 		not.actionId = SMS_ACTION_ID;
 		not.buttons = [];
 		not.appIcon = me.photo || "icons/contact.png";
+		not.gcmDeleteOnCancel = true;
 		if(me.attachmentPartId){
 			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));
 			not.image = yield doGetBase64ImagePromise(imageUrl);

@@ -126,5 +126,8 @@ back.Events = {
   },
   "NotificationHandled" : function(info){
     this.info = info;
+  },
+  "NotificationImagesLoaded" : function(results){
+    this.results = results;
   }
 }
