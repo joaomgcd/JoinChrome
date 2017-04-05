@@ -174,7 +174,7 @@ var writeNotifications = function(filter){
 				buttonElement.id = not.replyId;
 				buttonsElement.appendChild(buttonElement);
 			}*/
-			doGetBase64Images(iconsToDownload);
+			doGetBase64Images(iconsToDownload, results => back.eventBus.post(new back.Events.NotificationImagesLoaded(results)));
 		}
 
 		var closeButton = notificationElement.querySelector("#closebutton");
@@ -188,7 +188,7 @@ var writeNotifications = function(filter){
 				var not = event.currentTarget.notification;
 				console.log("Cancelling: ");
 				console.log(not);
-				not.cancel();
+				not.cancel(true);
 				writeNotifications();
 			};
 		}
