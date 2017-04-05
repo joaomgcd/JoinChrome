@@ -691,6 +691,7 @@ img.tabIcon {
 }
 .notification{
 	flex-direction: column;
+	/*box-shadow: 5px 5px 5px grey;*/
 	padding: 8px;
 	background-color: white;
 	color: white;
