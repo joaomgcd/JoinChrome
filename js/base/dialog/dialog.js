@@ -238,6 +238,13 @@ Dialog.init = function(options, getResultFunc){
 		var button = buttonsElement.children[i];
 		buttons[button.id] = button;
 	}
+	var sheet = document.getElementById("dialog_style");
+    if(back.getDarkMode()) {
+        sheet.setAttribute("href","../../css/dialog_dark.css");
+    }
+    else {
+        sheet.setAttribute("href","../../css/dialog.css");
+    }
 	window.addEventListener("unload",function(){
 		Dialog.cancel("closed window");
 	});

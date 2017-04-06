@@ -1,3 +1,8 @@
+html {
+	background-color: #37474F;
+	color: white;
+}
+
 body{
 	padding-left: 24px;
 	padding-right: 24px;
@@ -21,6 +26,7 @@ body{
 }
 input[type='button']:hover {
 	box-shadow: 0px 2px 12px -2px gray !important;
+	background-color: #455A64;
 	color: var(--global-color) !important;
 }
 input[type='button']:active {
@@ -41,12 +47,13 @@ input[type='text']:focus, input[type='password']:focus {
 	border-bottom: solid 1px var(--global-color);
 }
 input[type='button'] {
-	background-color: white;
+	background-color: #37474F;
 	border-radius: 2px;
 	border: 0;
 	font-size: 0.8rem;
 	outline: 0;
 	padding: 8px 16px 8px 16px;
+	margin:2px;
 	text-transform: uppercase;
 	transition: all 0.3s ease;
 }
