@@ -238,6 +238,7 @@ Dialog.init = function(options, getResultFunc){
 		var button = buttonsElement.children[i];
 		buttons[button.id] = button;
 	}
+	UtilsDom.setDarkThemeIfSelected();
 	window.addEventListener("unload",function(){
 		Dialog.cancel("closed window");
 	});

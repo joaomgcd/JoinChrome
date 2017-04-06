@@ -40,10 +40,11 @@ var isMicAvailable = function(navigator){
 	    });
 	})
 }
+UtilsDom.setDarkThemeIfSelected();
 document.addEventListener('DOMContentLoaded', function() {
 	isMicAvailable()
-.then(()=>console.log("Mic in devices"))
-.catch(error=>console.log("No mic in devices: " + error));
+	.then(()=>console.log("Mic in devices"))
+	.catch(error=>console.log("No mic in devices: " + error));	
 });
 var clearClipboardWindows = function(){
 	return chrome.extension.getBackgroundPage().clearClipboardWindows();
