@@ -517,8 +517,6 @@ img.tabIcon {
 	visibility: hidden;
 	opacity: 0.2;
 }
-.smscontactcall {
-}
 .smscontact:hover .smscontactcall{
 	visibility: visible;
 }
