@@ -759,6 +759,9 @@ var getNotificationSeconds = function(){
 var getNotificationRequireInteraction = function(){
     return getOptionValue("checkbox","notificationrequireinteraction");
 }
+var getAddDismissEverywhereButton = function(){
+    return getOptionValue("checkbox","adddimisseverywherebutton");
+}
 var getBetaEnabled = function(){
     return getOptionValue("checkbox","showbetafeatures");
 }
@@ -912,6 +915,7 @@ var defaultValues = {
     "showinfonotifications": true,
     "autoopenlinks": true,
     "notificationrequireinteraction": false,
+    "adddimisseverywherebutton": true,
     "showbetafeatures": false,
     "voiceenabled": false,
     "voicecontinuous": false,

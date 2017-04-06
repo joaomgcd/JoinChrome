@@ -684,12 +684,17 @@ var GCMNotification = function(notification, senderId){
 			var actionTexts = not.buttons.select(button=>button.text).join(", ");
 			if(not.replyId){
 				not.buttons.splice(0,0,{"text":Constants.REPLY_DIRECTLY,"icon":"/icons/reply.png","actionId":REPLY_ACTION});
+				if(back.getAddDismissEverywhereButton()){
+					actionTexts = "Reply" + (actionTexts.length>0 ? ", ": "") + actionTexts ;	
+				}
 			}
 			if(back.getBetaEnabled()){
-				if(not.buttons.length>1){
+				if(back.getAddDismissEverywhereButton()){
+					not.buttons.splice(1,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
+				}
+				if(not.buttons.length>2){
 					not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
 				}
-				not.buttons.splice(1,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});					
 			}
 			var chromeNotification = new ChromeNotification(not);
 			var similar = notifications.getSimilarNotification(not);

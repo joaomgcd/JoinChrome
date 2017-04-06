@@ -156,7 +156,7 @@ chrome.notifications.onClosed.addListener(function(id,byUser) {
 		console.log("Not clearing persistent notification from phone");
 		return;
 	}
-	notification.cancel(true);
+	notification.cancel(back.getAddDismissEverywhereButton());
 });
 chrome.notifications.onButtonClicked.addListener(function(id,index){
 	var notification = getNotification(id);

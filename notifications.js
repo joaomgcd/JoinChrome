@@ -188,7 +188,7 @@ var writeNotifications = function(filter){
 				var not = event.currentTarget.notification;
 				console.log("Cancelling: ");
 				console.log(not);
-				not.cancel(true);
+				not.cancel(back.getAddDismissEverywhereButton());
 				writeNotifications();
 			};
 		}

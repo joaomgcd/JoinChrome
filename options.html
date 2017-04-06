@@ -94,6 +94,7 @@
                 <input joaoappsoption type="checkbox" id="playnotificationsound" />
                 <div class="selection_indicator"></div>
             </label>
+            
             <span id="voicesection">
                 <h2>Voice Control (English Only For Now)</h2>           
                 <label class="selection">Enable Voice Control
@@ -182,40 +183,41 @@
             <div>Number of seconds a notification should show (max 25 seconds):
                 <input joaoappsoption type="text" id="notificationseconds" placeholder="Duration" />
             </div>
-            <div>Keep notifications until you interact with them. If set, setting above will be ignored:
-                <input joaoappsoption type="checkbox" id="notificationrequireinteraction" />
-                <h4>App websites</h4>
-                <div>Link Android package names to corresponding websites to open the website when clicking on a notification</div>
-                <textarea joaoappsoption id="notificationwebsites" spellcheck="false"></textarea>
-                <h4>Notification Sound</h4>
-                <div>Must be a publicly accessible URL of an mp3 or ogg file:
-                    <input joaoappsoption type="text" id="notificationsound" placeholder="URL" />
-                </div>
-                <h4>Info Notifications</h4>
-                <label class="selection">
-                    Show notifications that inform you that an action was executed correctly
-                    <input joaoappsoption type="checkbox" id="showinfonotifications" />
-                    <div class="selection_indicator"></div>
-                </label>
-                <h2>Tasker</h2>
-                <h4>Activate to allow Join AutoApps condition to automatically support sent commands</h4>
-                <label class="selection">Add the "jointextpush=:=" prefix to Tasker commands
-                    <input joaoappsoption type="checkbox" id="prefixtaskercommands" />
-                    <div class="selection_indicator"></div>
-                </label>
-                <h2>EventGhost</h2>
-                <h4>If set, will redirect received Tasker Commands to the AutoRemote plugin in EventGhost in the specified port</h4>
-                <div>EventGhost Port:
-                    <input joaoappsoption type="text" id="eventghostport" placeholder="Port" />
-                </div>
-                <h2>General</h2>
-                <label class="selection">Alternative popup icon
-                    <input joaoappsoption type="checkbox" id="alternativeicon" />
-                    <div class="selection_indicator"></div>
-                </label>
-                <h2>Beta</h2>
-                <input joaoappsoption type="checkbox" id="showbetafeatures" /> Enable Beta Features (you'll also need the <a href="https://play.google.com/apps/testing/com.joaomgcd.join" target="haha">Join Beta app</a>)
+            <div>Keep notifications until you interact with them. If set, setting above will be ignored:<input joaoappsoption type="checkbox" id="notificationrequireinteraction" />
             </div>
+             <div>Add "Dismiss Everywhere" Button in Chrome Notifications. If this is not added, the top-right X will dismiss the notifications everywhere: <input joaoappsoption type="checkbox" id="adddimisseverywherebutton" /></div>
+            <h4>App websites</h4>
+            <div>Link Android package names to corresponding websites to open the website when clicking on a notification</div>
+            <textarea joaoappsoption id="notificationwebsites" spellcheck="false"></textarea>
+            <h4>Notification Sound</h4>
+            <div>Must be a publicly accessible URL of an mp3 or ogg file:
+                <input joaoappsoption type="text" id="notificationsound" placeholder="URL" />
+            </div>
+            <h4>Info Notifications</h4>
+            <label class="selection">
+                Show notifications that inform you that an action was executed correctly
+                <input joaoappsoption type="checkbox" id="showinfonotifications" />
+                <div class="selection_indicator"></div>
+            </label>
+            <h2>Tasker</h2>
+            <h4>Activate to allow Join AutoApps condition to automatically support sent commands</h4>
+            <label class="selection">Add the "jointextpush=:=" prefix to Tasker commands
+                <input joaoappsoption type="checkbox" id="prefixtaskercommands" />
+                <div class="selection_indicator"></div>
+            </label>
+            <h2>EventGhost</h2>
+            <h4>If set, will redirect received Tasker Commands to the AutoRemote plugin in EventGhost in the specified port</h4>
+            <div>EventGhost Port:
+                <input joaoappsoption type="text" id="eventghostport" placeholder="Port" />
+            </div>
+            <h2>General</h2>
+            <label class="selection">Alternative popup icon
+                <input joaoappsoption type="checkbox" id="alternativeicon" />
+                <div class="selection_indicator"></div>
+            </label>
+            <h2>Beta</h2>
+            <input joaoappsoption type="checkbox" id="showbetafeatures" /> Enable Beta Features (you'll also need the <a href="https://play.google.com/apps/testing/com.joaomgcd.join" target="haha">Join Beta app</a>)
+            
         </div>
         <div tab="help" id="help" class="optionContainer">
             <div class="help-option">
