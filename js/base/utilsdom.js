@@ -128,10 +128,21 @@ var UtilsDom = {
 		}
 	},
 	"setDarkThemeIfSelected": function(){
+		if(back.getDarkMode()){
+			UtilsDom.setTheme("dark");
+		}else{    		
+			UtilsDom.setTheme();
+		}
 	},
 	"setTheme": function(theme){
 		if(!theme){
 			return;
+		}
+		var themeSheets = document.querySelectorAll("link[themesheet]");
+		for(var themeSheet of themeSheets){
+		    if(themeSheet){
+		    	themeSheet.setAttribute("href",themeSheet.href.replace(".css","_" + theme + ".css"));
+		    }	
 		}
 	}
 }
