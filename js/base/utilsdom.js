@@ -126,5 +126,12 @@ var UtilsDom = {
 			}
 			element = element.parentElement;
 		}
+	},
+	"setDarkThemeIfSelected": function(){
+	},
+	"setTheme": function(theme){
+		if(!theme){
+			return;
+		}
 	}
 }

@@ -941,13 +941,3 @@ var setPopupIcon = function(alternative){
 		});
 	  }
 }
-
-var setTheme = function(dark){
-	var glob = document.getElementById("global_styles");
-	if(dark) {
-		glob.setAttribute("href","global_styles_dark.css");
-	}
-	else {
-		glob.setAttribute("href","global_styles.css");
-	}
-}

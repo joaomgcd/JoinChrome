@@ -101,6 +101,9 @@ body.popout {
 .deviceinfo:hover{
 	opacity: 1;
 }
+#deviceinfoiconcontainer{
+    //background: url(icons/info_dark.png) 0 0/20px 20px;
+}
 .device {
 	align-items: center;
 	cursor: pointer;
