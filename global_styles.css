@@ -41,28 +41,28 @@ body.popout {
 	overflow-y: auto;
 	height: 100vh;
 }
-.dropzone {    
+.dropzone {
 	position: absolute;
-    /* top: 50%; */
-    /* left: 50%; */
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    background-color: rgba(255, 100, 0, .8);
-    display: flex;
-    align-items: center;
-    align-content: center;
-  	outline: 2px dashed black;
-  	outline-offset: -20px;
+	/* top: 50%; */
+	/* left: 50%; */
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	background-color: rgba(255, 100, 0, .8);
+	display: flex;
+	align-items: center;
+	align-content: center;
+	outline: 2px dashed black;
+	outline-offset: -20px;
 }
-.dropzone div {    
-    width: 100%;
-    text-align: center;
-    font-size: 50px;
-    //text-shadow: 1px 1px #ffffff;
+.dropzone div {
+	width: 100%;
+	text-align: center;
+	font-size: 50px;
+	//text-shadow: 1px 1px #ffffff;
 }
-.dropzone div.small {    
-    font-size: 20px;
+.dropzone div.small {
+	font-size: 20px;
 }
 .dropzone a {
 	color: blue;
@@ -85,15 +85,15 @@ body.popout {
 .deviceinfo{
 	display: none;
 	position: absolute;
-    width: 20px;
-    height: 20px;
-    bottom: 0px;
-    right: -8px;
-    border-radius: 20px;
-    border: 1px solid black;
-    background-color: black;
-    opacity: 0.4;
-    z-index: 20;
+	width: 20px;
+	height: 20px;
+	bottom: 0px;
+	right: -8px;
+	border-radius: 20px;
+	border: 1px solid black;
+	background-color: black;
+	opacity: 0.4;
+	z-index: 20;
 }
 .deviceinfo:hover{
 	opacity: 1;
@@ -324,8 +324,8 @@ img.tabIcon {
 }
 #sms {
 	height: 100vh;
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 	background-color: #F0F0F0;
 }
 #smsback {
@@ -356,14 +356,14 @@ img.tabIcon {
 	display: none;
 }
 #smstitle {
-	margin-left: 8px;    
+	margin-left: 8px;
 	max-height: 25px;
-    overflow: hidden;
+	overflow: hidden;
 }
-#smstitle:hover {  
+#smstitle:hover {
 	max-height: none;
 }
-#contactpictureconversation {  
+#contactpictureconversation {
 	max-height: 25px;
 	border-radius: 25px;
 }
@@ -386,11 +386,11 @@ img.tabIcon {
 }
 #smssend img {
 	opacity: 0.8;
-    width: 0;
-    height: 0;
-    padding: 12px;
-    background:url("icons/send.png") 0 0/24px 24px;
-    margin-right: 8px;
+	width: 0;
+	height: 0;
+	padding: 12px;
+	background:url("icons/send.png") 0 0/24px 24px;
+	margin-right: 8px;
 }
 #smsattachment {
 	display: flex;
@@ -403,12 +403,12 @@ img.tabIcon {
 	height: 0;
 	padding: 16px;
 	background:url("icons/attachment.png") 0 0/32px 32px;
-    margin-right: 8px;
+	margin-right: 8px;
 	cursor: pointer;
 }
 #smsattachmentimageloading{
 	position: absolute;
-    z-index: 1000;
+	z-index: 1000;
 }
 #smsemoji{
 	font-size: 22px;
@@ -442,27 +442,27 @@ img.tabIcon {
 	max-height: 5rem;
 	overflow: auto;
 	padding: 8px;
-	resize: none;   
+	resize: none;
 }
 #smsurgent {
 	margin-left: 8px;
 	position: relative;
-    left: 0px;
-    visibility: visible;
+	left: 0px;
+	visibility: visible;
 }
 #smsmessageurgent {
 	font-weight: bold;
 }
 #smsurgenttext {
-	font-size: 1rem;	
+	font-size: 1rem;
 }
-#mmsextras {  
+#mmsextras {
 	position: absolute;
-    bottom: 50px;
-    max-width: 50%;
-    left: 50px;
-    display: flex;
-    align-items: center;	
+	bottom: 50px;
+	max-width: 50%;
+	left: 50px;
+	display: flex;
+	align-items: center;
 }
 #smsinput::-webkit-resizer {
 	background: url("icons/resize_handle.png") right bottom/50% 50% no-repeat;
@@ -508,8 +508,8 @@ img.tabIcon {
 }
 .smscontactpicture > img {
 	width: 36px;
-    border-radius: 36px;
-    vertical-align: middle;
+	border-radius: 36px;
+	vertical-align: middle;
 }
 .smscontactcall {
 	text-align: end;
@@ -824,6 +824,6 @@ img.tabIcon {
 }
 #clearAllNotificationButtonIcon {
 	height: 100%;
-		width: 100%;
-		background: url('icons/clear_all.png') center/60% 60% no-repeat;
+	width: 100%;
+	background: url('icons/clear_all.png') center/60% 60% no-repeat;
 }
