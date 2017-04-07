@@ -61,13 +61,13 @@
             <!-- <div class="shortcut" id="shortcutpopup">You can <a id="configurepopup" href="#">configure</a> a keyboard shortcut to show a popup with your devices to easily perform commands.</div>
 				<div class="shortcut" id="shortcutrepeat-last-command">You can <a id="configurerepeat-last-command" href="#">configure</a> a keyboard shortcut to repeat the last command performed on your devices.</div>
 				<div class="shortcut" id="shortcutfavorite-command">You can <a id="configurefavorite-command" href="#">configure</a> a keyboard shortcut to perform your Favorite Command chosen below.</div>-->
-            <ul id="configure_list">
-                <li id="shortcutpopup" class="shortcut">Show a popup with your devices to easily perform commands</li>
-                <li id="shortcutrepeat-last-command" class="shortcut">Repeat the last command performed on your devices</li>
-                <li id="shortcutvoice-command" class="shortcut">Perform a voice command</li>
-                <li id="shortcutfavorite-command" class="shortcut">Perform your Favorite Command chosen below</li>
-            </ul>
-            <div>Make shortcuts global to perform these even when Chrome is closed</div>
+
+                <p id="shortcutpopup" class="shortcut">Show a popup with your devices to easily perform commands</li>
+                <p id="shortcutrepeat-last-command" class="shortcut">Repeat the last command performed on your devices</li>
+                <p id="shortcutvoice-command" class="shortcut">Perform a voice command</li>
+                <p id="shortcutfavorite-command" class="shortcut">Perform your Favorite Command chosen below</li>
+
+            <p>Make shortcuts global to perform these even when Chrome is closed</p>
             <input type="button" id="configure_keyboard_shortcuts" value="configure" />
             <h2>Favorite Command</h2>
             <h4>Set your favorite command to be executed with the "Favorite Command" shortcut</h4>
@@ -75,7 +75,7 @@
                 <select joaoappsoption id="select_favourite_command_device"></select>
                 :
                 <select joaoappsoption id="select_favourite_command"></select>
-                <div id="favouritecommandtextarea">
+                <p id="favouritecommandtextarea">
                     with this text:
                     <input joaoappsoption type="text" id="text_favourite_command" placeholder="Leave blank to set text when sending" size="40" />
                 </div>
@@ -95,14 +95,14 @@
                 <input joaoappsoption type="checkbox" id="playnotificationsound" />
                 <div class="selection_indicator"></div>
             </label>
-            
+
             <span id="voicesection">
-                <h2>Voice Control (English Only For Now)</h2>           
+                <h2>Voice Control (English Only For Now)</h2>
                 <label class="selection">Enable Voice Control
                     <input joaoappsoption type="checkbox" id="voiceenabled" />
                     <div class="selection_indicator"></div>
                 </label>
-                <span id="continuoussection">    
+                <span id="continuoussection">
                     <label class="selection">Continuous Listening
                         <input joaoappsoption type="checkbox" id="voicecontinuous" />
                         <div class="selection_indicator"></div>
@@ -223,7 +223,7 @@
             </label>
             <h2>Beta</h2>
             <input joaoappsoption type="checkbox" id="showbetafeatures" /> Enable Beta Features (you'll also need the <a href="https://play.google.com/apps/testing/com.joaomgcd.join" target="haha">Join Beta app</a>)
-            
+
         </div>
         <div tab="help" id="help" class="optionContainer">
             <div class="help-option">
