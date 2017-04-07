@@ -3,29 +3,29 @@
 }
 
 @font-face {
-  font-family: "Roboto";
-  src: local(Roboto Thin), url("materialize/font/roboto/Roboto-Thin.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Thin.woff") format("woff"), url("materialize/font/roboto/Roboto-Thin.ttf") format("truetype");
-  font-weight: 200; }
+	font-family: "Roboto";
+	src: local(Roboto Thin), url("materialize/font/roboto/Roboto-Thin.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Thin.woff") format("woff"), url("materialize/font/roboto/Roboto-Thin.ttf") format("truetype");
+	font-weight: 200; }
 
 @font-face {
-  font-family: "Roboto";
-  src: local(Roboto Light), url("materialize/font/roboto/Roboto-Light.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Light.woff") format("woff"), url("materialize/font/roboto/Roboto-Light.ttf") format("truetype");
-  font-weight: 300; }
+	font-family: "Roboto";
+	src: local(Roboto Light), url("materialize/font/roboto/Roboto-Light.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Light.woff") format("woff"), url("materialize/font/roboto/Roboto-Light.ttf") format("truetype");
+	font-weight: 300; }
 
 @font-face {
-  font-family: "Roboto";
-  src: local(Roboto Regular), url("materialize/font/roboto/Roboto-Regular.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Regular.woff") format("woff"), url("materialize/font/roboto/Roboto-Regular.ttf") format("truetype");
-  font-weight: 400; }
+	font-family: "Roboto";
+	src: local(Roboto Regular), url("materialize/font/roboto/Roboto-Regular.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Regular.woff") format("woff"), url("materialize/font/roboto/Roboto-Regular.ttf") format("truetype");
+	font-weight: 400; }
 
 @font-face {
-  font-family: "Roboto";
-  src: url("materialize/font/roboto/Roboto-Medium.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Medium.woff") format("woff"), url("materialize/font/roboto/Roboto-Medium.ttf") format("truetype");
-  font-weight: 500; }
+	font-family: "Roboto";
+	src: url("materialize/font/roboto/Roboto-Medium.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Medium.woff") format("woff"), url("materialize/font/roboto/Roboto-Medium.ttf") format("truetype");
+	font-weight: 500; }
 
 @font-face {
-  font-family: "Roboto";
-  src: url("materialize/font/roboto/Roboto-Bold.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Bold.woff") format("woff"), url("materialize/font/roboto/Roboto-Bold.ttf") format("truetype");
-  font-weight: 700; }
+	font-family: "Roboto";
+	src: url("materialize/font/roboto/Roboto-Bold.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Bold.woff") format("woff"), url("materialize/font/roboto/Roboto-Bold.ttf") format("truetype");
+	font-weight: 700; }
 
 body {
 	background: #fafafa;
@@ -157,13 +157,13 @@ h5 { color: #FF7A00; }
 }
 .help-links, .help-icon {
 	display: inline-block;
-		vertical-align: middle;
+	vertical-align: middle;
 }
 .help-icon {
 	padding-right: 20px;
 }
 [tab] :first-child {
-		/*margin-top: 10px;*/
+	/*margin-top: 10px;*/
 }
 [showtab] {
 	padding: 12px;
@@ -319,7 +319,7 @@ input[type='button']#resetcolorbutton, input[type='button']#configure_keyboard_s
 	box-shadow: 0px 2px 6px -1px gray;
 }
 .shortcut{
-		 list-style-type: none;
+	 list-style-type: none;
 }
 .shortcutline{
 	display: flex;
@@ -403,53 +403,53 @@ select:focus {
 	background-color: #333;
 	float: left;
 	-webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
-					animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+			animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
 }
 .sk-cube-grid .sk-cube1 {
 	-webkit-animation-delay: 0.2s;
-					animation-delay: 0.2s; }
+			animation-delay: 0.2s; }
 .sk-cube-grid .sk-cube2 {
 	-webkit-animation-delay: 0.3s;
-					animation-delay: 0.3s; }
+			animation-delay: 0.3s; }
 .sk-cube-grid .sk-cube3 {
 	-webkit-animation-delay: 0.4s;
-					animation-delay: 0.4s; }
+			animation-delay: 0.4s; }
 .sk-cube-grid .sk-cube4 {
 	-webkit-animation-delay: 0.1s;
-					animation-delay: 0.1s; }
+			animation-delay: 0.1s; }
 .sk-cube-grid .sk-cube5 {
 	-webkit-animation-delay: 0.2s;
-					animation-delay: 0.2s; }
+			animation-delay: 0.2s; }
 .sk-cube-grid .sk-cube6 {
 	-webkit-animation-delay: 0.3s;
-					animation-delay: 0.3s; }
+			animation-delay: 0.3s; }
 .sk-cube-grid .sk-cube7 {
 	-webkit-animation-delay: 0s;
-					animation-delay: 0s; }
+			animation-delay: 0s; }
 .sk-cube-grid .sk-cube8 {
 	-webkit-animation-delay: 0.1s;
-					animation-delay: 0.1s; }
+			animation-delay: 0.1s; }
 .sk-cube-grid .sk-cube9 {
 	-webkit-animation-delay: 0.2s;
-					animation-delay: 0.2s; }
+			animation-delay: 0.2s; }
 
 @-webkit-keyframes sk-cubeGridScaleDelay {
 	0%, 70%, 100% {
-		-webkit-transform: scale3D(1, 1, 1);
-						transform: scale3D(1, 1, 1);
+	-webkit-transform: scale3D(1, 1, 1);
+			transform: scale3D(1, 1, 1);
 	} 35% {
-		-webkit-transform: scale3D(0, 0, 1);
-						transform: scale3D(0, 0, 1);
+	-webkit-transform: scale3D(0, 0, 1);
+			transform: scale3D(0, 0, 1);
 	}
 }
 
 @keyframes sk-cubeGridScaleDelay {
 	0%, 70%, 100% {
-		-webkit-transform: scale3D(1, 1, 1);
-						transform: scale3D(1, 1, 1);
+	-webkit-transform: scale3D(1, 1, 1);
+			transform: scale3D(1, 1, 1);
 	} 35% {
-		-webkit-transform: scale3D(0, 0, 1);
-						transform: scale3D(0, 0, 1);
+	-webkit-transform: scale3D(0, 0, 1);
+			transform: scale3D(0, 0, 1);
 	}
 }
 
@@ -481,11 +481,11 @@ select:focus {
 
 @keyframes sk-bouncedelay {
 	0%, 80%, 100% {
-		-webkit-transform: scale(0);
-		transform: scale(0);
+	-webkit-transform: scale(0);
+	transform: scale(0);
 	} 40% {
-		-webkit-transform: scale(1.0);
-		transform: scale(1.0);
+	-webkit-transform: scale(1.0);
+	transform: scale(1.0);
 	}
 }
 
