@@ -407,11 +407,11 @@ img.tabIcon {
 	cursor: pointer;
 }
 #smsattachmentimageloading{
-	position: absolute;	
+	position: absolute;
     z-index: 1000;
 }
 #smsemoji{
-	font-size: 20px;
+	font-size: 22px;
 	cursor: pointer;
 }
 .hidden{
