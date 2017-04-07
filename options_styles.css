@@ -33,6 +33,9 @@ body {
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	margin: 0px;
 }
+a {
+	color: #FF9800
+}
 h1 { color: #5a5a5a; }
 h2 {
 	color: #5a5a5a;
@@ -40,7 +43,7 @@ h2 {
 }
 h3 { color: #FF7A00; }
 h4 {
-	color: #A75000;
+	color: #FF9800;
 	margin-top: 1rem;
 	margin-bottom: 0.5rem;
 }
