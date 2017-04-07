@@ -150,7 +150,6 @@ h5 { color: #FF7A00; }
 	font-weight: 400;
 }
 #help a{
-	color: var(--global-color);
 	text-decoration: none;
 }
 .help-option {
