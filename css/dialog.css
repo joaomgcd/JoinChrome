@@ -1,3 +1,7 @@
+html {
+	background-color: var(--theme-background-color);
+	color: var(--theme-text-color);
+}
 body{
 	padding-left: 24px;
 	padding-right: 24px;
@@ -21,7 +25,7 @@ body{
 }
 input[type='button']:hover {
 	box-shadow: 0px 2px 12px -2px gray !important;
-	color: var(--global-color) !important;
+	color: var(--theme-button-color) !important;
 }
 input[type='button']:active {
 	background-color: var(--global-color) !important;
@@ -41,7 +45,7 @@ input[type='text']:focus, input[type='password']:focus {
 	border-bottom: solid 1px var(--global-color);
 }
 input[type='button'] {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	border-radius: 2px;
 	border: 0;
 	font-size: 0.8rem;

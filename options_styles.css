@@ -1,7 +1,12 @@
 :root {
-	--global-color: #FF9800;
+	--theme-background-color-options: #FAFAFA;
+	--theme-background-color-options-container: white;
+	--theme-text-color-header2: #5a5a5a;
+	--theme-text-color-header4: #A75000;	
 }
-
+body{
+	color: var(--theme-text-color);
+}
 @font-face {
   font-family: "Roboto";
   src: local(Roboto Thin), url("materialize/font/roboto/Roboto-Thin.woff2") format("woff2"), url("materialize/font/roboto/Roboto-Thin.woff") format("woff"), url("materialize/font/roboto/Roboto-Thin.ttf") format("truetype");
@@ -28,19 +33,19 @@
   font-weight: 700; }
 
 body {
-	background: #fafafa;
+	background: var(--theme-background-color-options);
 	font: normal 13px Roboto,arial,sans-serif;
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	margin: 0px;
 }
 h1 { color: #5a5a5a; }
 h2 {
-	color: #5a5a5a;
+	color: var(--theme-text-color-header2);
 	font-size: 1.25rem;
 }
 h3 { color: #FF7A00; }
 h4 {
-	color: #A75000;
+	color: var(--theme-text-color-header4);
 	margin-top: 1rem;
 	margin-bottom: 0.5rem;
 }
@@ -124,7 +129,7 @@ h5 { color: #FF7A00; }
 	z-index: -1;
 }
 #devicesAutoClipboard input[type='checkbox']:checked ~ div.clipboardDevice {
-	background-color: var(--global-color);
+	background-color: var(--theme-button-color);
 	opacity: 1;
 }
 #optionTabs {
@@ -147,7 +152,7 @@ h5 { color: #FF7A00; }
 	font-weight: 400;
 }
 #help a{
-	color: var(--global-color);
+	color: var(--theme-button-color);
 	text-decoration: none;
 }
 .help-option {
@@ -182,7 +187,7 @@ h5 { color: #FF7A00; }
 #topbar {
 	display: flex;
 	flex-direction: column;
-	background-color: var(--global-color);
+	background-color: var(--theme-button-color);
 	padding: 18px 12px 0 12px;
 	box-shadow: 0 -1px 4px black;
 }
@@ -247,7 +252,7 @@ h5 { color: #FF7A00; }
 }
 div.optionContainer {
 	padding: 24px;
-	background-color: white;
+	background-color: var(--theme-background-color-options-container);
 	margin-top: 16px;
 	border-radius: 4px;
 	box-shadow: 0 2px 6px -3px black;
@@ -275,7 +280,7 @@ textarea#notificationwebsites {
 textarea#notificationwebsites:focus {
 	outline: none;
 	opacity: 1;
-	border-bottom: solid 1px var(--global-color);
+	border-bottom: solid 1px var(--theme-button-color);
 }
 label.selection {
 	display: flex;
@@ -297,14 +302,14 @@ label.selection .selection_indicator {
 	min-width: 16px;
 	width: 16px;
 	height: 16px;
-	background: url('icons/checkbox_blank.png') 0px 0px/100% 100%;
+	background: url('/icons/options/checkbox_blank.svg') 0px 0px/100% 100%;
 }
 label.selection input:checked ~.selection_indicator {
 	opacity: 0.5;
-	background: url('icons/checkbox.png') 0px 0px/100% 100%;
+	background: url('/icons/options/checkbox.svg') 0px 0px/100% 100%;
 }
 input[type='button'] {
-	background-color: white;
+	background-color: var(--theme-button-color);
 	border-radius: 2px;
 	border: 0;
 	font-size: 0.8rem;
@@ -331,10 +336,10 @@ input[type='button']#resetcolorbutton, input[type='button']#configure_keyboard_s
 }
 input[type='button']:hover {
 	box-shadow: 0px 2px 12px -2px gray !important;
-	color: var(--global-color) !important;
+	color: var(--theme-button-color) !important;
 }
 input[type='button']:active {
-	background-color: var(--global-color) !important;
+	background-color: var(--theme-button-color) !important;
 	color: white !important;
 }
 input[type='text'], input[type='password'] {
@@ -348,7 +353,7 @@ input[type='text'], input[type='password'] {
 }
 input[type='text']:focus, input[type='password']:focus {
 	opacity: 1;
-	border-bottom: solid 1px var(--global-color);
+	border-bottom: solid 1px var(--theme-button-color);
 }
 select {
 	border: 0;

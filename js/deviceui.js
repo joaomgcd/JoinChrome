@@ -303,6 +303,16 @@ var writeDevices = function(){
     		}
     	});
 	}
+	var replaceWithSvg = function(command,image){
+		UtilsDom.replaceWithSvgInline(image,"/icons/commands/" + command.commandId + ".svg").then(svg=>{
+			if(!svg){
+				return;
+			}
+			if(command.transformIcon){
+				svg.style.transform = command.transformIcon;
+			}
+		});
+	}
 	/*var dropzoneElement = UtilsDom.createElement(commandsElement,"div","dropzone",{"class":"dropzone"});
 	dropzoneElement.innerHTML = "Drop files here";*/
 	for (var e = 0; e < deviceCommands.length; e++) {
@@ -312,8 +322,9 @@ var writeDevices = function(){
 		// buttonElement.onmouseout = buttonHoverOut;
 		var link = buttonElement.querySelector("#link");
 		var image = buttonElement.querySelector("#devicebuttonimage");
-
-		image.src = "icons/" + command.commandId + ".png";
+		var dragImage = buttonElement.querySelector("#devicebuttondrag");
+		//UtilsDom.replaceWithSvgInline(dragImage);
+		replaceWithSvg(command,image);
 		commandSortOrder[command.commandId] = e;
 		link.textContent = command.label;
 		buttonElement.onclick = buttonClick;

@@ -1,0 +1,9 @@
+:root {
+	--theme-button-color: #FF9800;
+	--theme-button-color-lowlight: white;
+	--theme-text-color: white;
+	--theme-background-color: #37474F;
+	--theme-background-color-hover: #455A64;
+	--theme-background-color-panel: #78909C;
+	--theme-tab-color: #263238;	
+}

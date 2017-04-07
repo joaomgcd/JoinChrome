@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Apply dark or light theme
 		UtilsDom.setDarkThemeIfSelected();
 		
-        document.getElementById("darkmode").onclick = function() {location.reload();};
+        document.getElementById("theme").onchange = e => back.eventBus.post(new back.Events.ThemeChanged(e.target.value));
 	
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;
@@ -445,3 +445,13 @@ var setFavoriteCommandOptions = function(){
 			selectFavoriteCommand.value = selected;
 		}
 }
+var OptionsEventHandler = function(){
+	this.onThemeChanged = function(themeChanged){
+		UtilsDom.setTheme(themeChanged.theme);
+	}
+}
+var eventHandler = new OptionsEventHandler();
+back.eventBus.register(eventHandler);
+addEventListener("unload", function (event) {
+	back.eventBus.unregister(eventHandler);
+}, true);

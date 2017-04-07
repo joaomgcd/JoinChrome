@@ -120,6 +120,7 @@ var deviceCommands = [
 	{
 		"label":"Send an EventGhost command",
 		"commandId":"eventghost",
+		"transformIcon": "rotate(90deg)",
 		"showForGroups":joindevices.groups.deviceGroups.pcGroups,
 		"func":back.pushTaskerCommand,
 		"hasText":true,

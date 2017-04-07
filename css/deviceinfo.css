@@ -124,7 +124,7 @@ li:hover{
     display: inline;
 }
 .dndLabel{
-	color: black;
+	color: var(--theme-text-color);
 }
 #refresh{
 	background-color: #FF9800;

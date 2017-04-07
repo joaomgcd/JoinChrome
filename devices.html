@@ -23,6 +23,7 @@
 	<link rel="import" href="notifications.html" />
 	<link rel="import" href="components/sms.html" />
 	<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
+	<link type="text/css" themesheet rel="stylesheet" href="base_styles.css"/>
 	<link type="text/css" themesheet rel="stylesheet" href="global_styles.css"/>
 	<!--<link rel="stylesheet" href="js/emoji/emojionearea.min.css">
 	<script type="text/javascript" src="js/emoji/jquery.min.js"></script>
@@ -73,12 +74,12 @@
 				<input type="checkbox" id="smsurgent" /><div id="smsurgenttext">Urgent</div>
 			</div>
 			<div id="smsattachment">
-				<img id="smsattachmentimage" src="icons/attachment.png"  class="waves-effect"/>
+				<img id="smsattachmentimage" src="/icons/attachment.svg"  class="waves-effect"/>
 				<img id="smsattachmentimageloading" src="icons/loading.gif" class="hidden" />
 				<div id="smsemoji"  class="waves-effect">😃</div>
 			</div>
 			<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
-			<div id="smssend" class="waves-effect" title="Long-click for Subject"><img src="icons/send.png" /></div>
+			<div id="smssend" class="waves-effect" title="Long-click for Subject"><img src="/icons/send.svg" /></div>
 		</div>
 	</div>
 	<div id="devices"></div>

@@ -1,14 +1,15 @@
 :root {
-	--global-color: #FF9800;
+	
 }
 a {
-	color: #FF9800;
+	color: var(--theme-button-color);
 	transition: all 0.3s ease;
 }
 html, body {
 	height: 100%;
 }
 body {
+	color: var(--theme-text-color);
 	height: 600px;
 	width: 410px;
 	font-family: "Roboto", sans-serif;
@@ -17,9 +18,18 @@ body {
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	overflow: hidden;
 }
+svg{
+	fill: var(--theme-button-color-lowlight);
+}
+svg:hover{
+	fill: var(--theme-button-color);
+}
 body.popout {
 	width: 100%;
 	height: 100%;
+}
+#devices {
+	background-color: var(--theme-background-color);
 }
 #tabsplaceholder {
 	overflow: hidden;
@@ -31,7 +41,7 @@ body.popout {
 	width: 100%;
 }
 .devicecommandsleft {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -115,7 +125,7 @@ body.popout {
 	opacity: 1 !important;
 }
 .device #deviceiconcontainer {
-	background-color: #FF9800;
+	background-color: var(--theme-button-color);
 }
 .devicecommands .selecteddevice::after {
 	background: antiquewhite;
@@ -137,10 +147,10 @@ body.popout {
 	display: none;
 }
 .devicebutton:hover {
-	background: #eeeeee;
+	background: var(--theme-background-color-hover);
 }
 .devicebutton:hover a#link {
-	color: #FF9800;
+	color: var(--theme-button-color);
 }
 #devicebuttondrag {
 	visibility: hidden;
@@ -162,7 +172,7 @@ body.popout {
 	margin: 4px 24px 4px 16px;
 }
 a#link {
-	color: #757575;
+	color: var(--theme-button-color-lowlight);
 	font-size: 18px;
 	font-weight: 400;
 }
@@ -171,6 +181,7 @@ a#link {
 	text-overflow: ellipsis;
 	width: 69px;
 	word-break: break-word;
+	padding-top:4px;
 }
 #devicelist {
 	display: flex;
@@ -185,7 +196,7 @@ a#link {
 	display: flex;
 	flex-direction: column;
 	padding: 8px;
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 	overflow-y: scroll;
 }
 .button-container {
@@ -218,7 +229,7 @@ a#link {
 	width: 190px !important;
 }
 .button-link:hover {
-	background: #FF9800;
+	background: var(--theme-button-color);
 }
 td {
 	padding: 0px !important;
@@ -228,7 +239,7 @@ td {
 	display: none;
 }
 .tabselement {
-	background-color: #FF9800;
+	background-color: var(--theme-tab-color);
 	display: flex;
 	font-size: 16px;
 }
@@ -259,7 +270,7 @@ td {
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
-	background-color: #FFB05C;
+	box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
 }
 .tabIcon {
 	cursor: pointer;
@@ -324,9 +335,9 @@ img.tabIcon {
 }
 #sms {
 	height: 100vh;
-  display: flex;
-  flex-direction: column;
-	background-color: #F0F0F0;
+  	display: flex;
+  	flex-direction: column;
+	background-color: var(--theme-background-color-panel);
 }
 #smsback {
 	display: flex;
@@ -336,7 +347,7 @@ img.tabIcon {
 	width: 24px;
 }
 #smstitlecontainer {
-	background-color: #FF9800;
+	background-color: var(--theme-tab-color);
 	color: white;
 	cursor: pointer;
 	flex-direction: row;
@@ -349,8 +360,9 @@ img.tabIcon {
 	padding: 8px;
 }
 #smstitlecontainer:hover {
-	background-color: #FFB05C;
-	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
+	//background-color: #FFB05C;
+	box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
+	//box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
 }
 #smstitlecontainer.hidden {
 	display: none;
@@ -369,7 +381,7 @@ img.tabIcon {
 }
 #smssendcontainer {
 	align-items: center;
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 	display: flex;
 	margin: 0;
 	padding: 8px;
@@ -389,7 +401,6 @@ img.tabIcon {
     width: 0;
     height: 0;
     padding: 12px;
-    background:url("icons/send.png") 0 0/24px 24px;
     margin-right: 8px;
 }
 #smsattachment {
@@ -402,23 +413,25 @@ img.tabIcon {
 	width: 0;
 	height: 0;
 	padding: 16px;
-	background:url("icons/attachment.png") 0 0/32px 32px;
     margin-right: 8px;
 	cursor: pointer;
+}
+#smsattachmentimage {
+	transform: rotate(90deg);
 }
 #smsattachmentimageloading{
 	position: absolute;	
     z-index: 1000;
 }
 #smsemoji{
-	font-size: 20px;
+	font-size: 22px;
 	cursor: pointer;
 }
 .hidden{
 	display: none !important;
 }
 #smsinput {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	border-radius: 4px;
 	border: none;
 	box-shadow: none;
@@ -432,7 +445,7 @@ img.tabIcon {
 	resize: none;
 }
 #smssubject {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	border-radius: 4px;
 	border: none;
 	box-shadow: none;
@@ -471,14 +484,14 @@ img.tabIcon {
 	outline: none;
 }
 #smscontainer {
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 	height: 100%;
 	flex: 1 1 auto;
 	position: relative;
 	overflow: auto;
 }
 .smscontact {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	box-sizing: initial;
 	cursor: pointer;
 	transition: all 0.1s ease;
@@ -489,7 +502,7 @@ img.tabIcon {
 	align-items: flex-start;
 }
 .smscontact:hover {
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 }
 .smscontactpicture {
 	margin-right: 16px;
@@ -534,11 +547,12 @@ img.tabIcon {
 .smscontacttext {
 	max-width: 320px;
 	overflow: hidden;
-	color: #777777;
+	color: var(--theme-text-color);
 /*	display: -webkit-box;
 	-webkit-line-clamp: 1;
 	-webkit-box-orient: vertical;*/
 	max-height:1.5em;
+	opacity: 0.7;
 }
 .smscontactdate {
 	text-align: end;
@@ -558,7 +572,7 @@ img.tabIcon {
 }
 .smsmessage {
 	padding: 8px 14px 8px 14px;
-	background-color: white;
+	background-color: var(--theme-background-color);
 	border-radius: 4px;
 	display: flex;
 	position: relative;
@@ -568,7 +582,7 @@ img.tabIcon {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: #FFE0B2;
+	background-color: var(--theme-button-color);
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -577,14 +591,14 @@ img.tabIcon {
 	right: 4px;
 }
 .smsbubbletriangle polygon {
-	fill: white;
+	fill: var(--theme-background-color);
 }
 .smsbubbletrianglereceived {
 	position: relative;
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: #FFE0B2;
+	fill: var(--theme-button-color);
 }
 .smsmessagetext {
 	word-wrap: break-word;
@@ -618,7 +632,7 @@ img.tabIcon {
 }
 .smsmessagedate {
 	flex-grow: 1;
-	color: #999999;
+	color: var(--theme-button-color-lowlight);
 	margin-top: 2px;
 	text-align: left;
 }
@@ -635,7 +649,7 @@ img.tabIcon {
 	width: 15px;
 }
 .btn-floating:hover {
-	background-color: #FFB05C !important;
+	box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
 }
 #newsmscall {
 	font-size: 250%;
@@ -655,7 +669,7 @@ img.tabIcon {
 }
 #contactfindcontainer {
 	align-items: center;
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 	display: flex;
 	margin:0;
 	padding:16px;
@@ -664,7 +678,7 @@ img.tabIcon {
 	display: none;
 }
 #contactfindinput {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	border-radius: 4px;
 	border: none;
 	box-shadow: none;
@@ -672,12 +686,12 @@ img.tabIcon {
 	padding: 0px 8px 0px 8px;
 }
 .btn-floating {
-	background: #FF9800 !important;
+	background: var(--theme-button-color) !important;
 }
 
 /*Notification Cards*/
 #notification.card {
-	background-color: white;
+	background-color: var(--theme-background-color);
 	width: 95%;
 	margin: 0.5rem !important;
 	cursor: default;
@@ -702,14 +716,16 @@ img.tabIcon {
 	opacity: 0.5;
 	cursor: pointer; cursor: hand;
 	display:none;
+	z-index: 80;
+	transition: all 0.3s ease;
 }
 #closebutton:hover {
 	opacity: 1;
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 }
 .notificationBody{
 	display:flex;
-	background-color: white;
+	background-color: var(--theme-background-color);
 	margin: 8px 0px 8px 0px;
 }
 .notificationright{
@@ -728,18 +744,20 @@ img.tabIcon {
 	font-size: 130%;
 	word-wrap: break-word;
 	font-family: 'Roboto', sans-serif;
-	color: #757575;
+	color: var(--theme-button-color-lowlight);
 	overflow:hidden;
 	line-height:1.5em;
 	max-height:7.5em;
+	opacity: 0.8;
 }
 #date{
 	display: flex;
 	align-items: center;
 	font-family: 'Roboto', sans-serif;
-	color: #757575;
+	color: var(--theme-button-color-lowlight);
 	margin-left: auto;
 	font-size: 110%;
+	opacity: 0.8;
 }
 .notificationleft{
 	position: relative;
@@ -779,13 +797,13 @@ img.tabIcon {
 	transition: all 0.3s ease;
 }
 .notificationbutton:hover {
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 }
 .notificationbutton:hover div.buttontext {
 	color: #FFB64A;
 }
 .notificationbutton:active {
-	background-color:#FF9800;
+	background-color:var(--theme-button-color);
 }
 .notificationbutton:active div.buttontext {
 	color: white;
@@ -797,7 +815,7 @@ img.tabIcon {
 }
 .buttontext{
 	align-self: center;
-	color: #FF9800;
+	color: var(--theme-button-color);
 	flex-grow: 1;
 	font-family: 'Roboto', sans-serif;
 	font-size: 130%;

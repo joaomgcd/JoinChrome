@@ -41,10 +41,12 @@ var isMicAvailable = function(navigator){
 	})
 }
 UtilsDom.setDarkThemeIfSelected();
+UtilsDom.replaceAllSvgInline();
 document.addEventListener('DOMContentLoaded', function() {
 	isMicAvailable()
 	.then(()=>console.log("Mic in devices"))
 	.catch(error=>console.log("No mic in devices: " + error));	
+	UtilsDom.replaceAllSvgInline();
 });
 var clearClipboardWindows = function(){
 	return chrome.extension.getBackgroundPage().clearClipboardWindows();
@@ -181,6 +183,7 @@ back.addEventListener("sendsms",sendSmsDevices,false);
 back.addEventListener("phonecall",sendSmsDevices,false);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading popup devices...");
+	back.eventBus.unregister(eventHandler);
 	back.removeEventListener("sendsms",sendSmsDevices,false);
 	back.removeEventListener("phonecall",sendSmsDevices,false);
 	if(isPopup){
@@ -297,3 +300,10 @@ var makeDropZoneReady = function(dropzoneElement, optionalText){
 	})
 	.catch(back.UtilsObject.ignoreError);
 }
+var DevicesEventHandler = function(){
+	this.onThemeChanged = function(themeChanged){
+		UtilsDom.setTheme(themeChanged.theme);
+	}
+}
+var eventHandler = new DevicesEventHandler();
+back.eventBus.register(eventHandler);

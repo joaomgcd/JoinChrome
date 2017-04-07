@@ -129,5 +129,9 @@ back.Events = {
   },
   "NotificationImagesLoaded" : function(results){
     this.results = results;
+  },
+  "ThemeChanged" : function(theme){
+    back.console.log("Theme changed: " + theme);
+    this.theme = theme;
   }
 }

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
     <link rel="import" href="test.html" />
     <title>Join Settings</title>
+    <link type="text/css" themesheet rel="stylesheet" href="base_styles.css"/>
     <link type="text/css" themesheet rel="stylesheet" href="options_styles.css" />
     <script src="js/aes.js"></script>
     <script src="js/pbkdf2.js"></script>
@@ -120,11 +121,12 @@
                 <input joaoappsoption type="checkbox" id="12hrformat" />
                 <div class="selection_indicator"></div>
             </label>
-            <h4>Themes</h4>
-            <label class="selection">Use dark mode
-                <input joaoappsoption type="checkbox" id="darkmode" />
-                <div class="selection_indicator"></div>
-            </label>
+            <h4>Themes</h4>            
+            <select joaoappsoption id="theme">
+                <option value="">Normal</option>
+                <option value="dark">Dark</option>
+                <option value="green">Green</option>
+            </select>
         </div>
         <div tab="encryption" class="optionContainer">
             <!--<h1>IMPORTANT: It has come to my attention that <a href="http://www.bis.doc.gov/index.php/policy-guidance/encryption/identifying-encryption-items">having encryption in an app doesn't conform to US Export laws</a> which is required for an app to be on Google Play. Therefore encryption in Join will be disabled until I sort things out</h1> -->

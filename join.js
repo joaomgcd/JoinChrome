@@ -738,8 +738,8 @@ var getDownloadVideosEnabled = function(){
 var get12HourFormat = function(){
 	return getOptionValue("checkbox","12hrformat");
 }
-var getDarkMode = function(){
-	return getOptionValue("checkbox","darkmode");
+var getTheme = function(){
+	return getOptionValue("select","theme");
 }
 var getAutoClipboard = function(){
 	return getOptionValue("checkbox","autoclipboard");
@@ -906,7 +906,6 @@ var defaultValues = {
 	"downloadscreenshots": true,
 	"downloadvideos":false,
 	"12hrformat":false,
-	"darkmode":false,
 	"autoclipboard":false,
 	"clipboardnotificationshowcontents":true,
 	"autoclipboardnotification":true,

@@ -128,21 +128,150 @@ var UtilsDom = {
 		}
 	},
 	"setDarkThemeIfSelected": function(){
-		if(back.getDarkMode()){
-			UtilsDom.setTheme("dark");
-		}else{    		
-			UtilsDom.setTheme();
-		}
+		UtilsDom.setTheme(back.getTheme());
 	},
-	"setTheme": function(theme){
-		if(!theme){
+	"setTheme": function(themeToSet){
+		var themeSheets = document.querySelectorAll("link[themesheet]");
+		var injectedThemeSheets = document.querySelectorAll("link[injected]");
+		for(var injected of injectedThemeSheets){
+			injected.parentElement.removeChild(injected);
+		}
+		if(!themeToSet){
 			return;
 		}
-		var themeSheets = document.querySelectorAll("link[themesheet]");
-		for(var themeSheet of themeSheets){
-		    if(themeSheet){
-		    	themeSheet.setAttribute("href",themeSheet.href.replace(".css","_" + theme + ".css"));
-		    }	
+		var setThemeColors = function(rootRule, sheetName, themeToSet){
+			if(UtilsObject.isString(themeToSet)){
+				var sheetNode = rootRule.parentStyleSheet.ownerNode;
+				var newNode = sheetNode.cloneNode(true);
+				/*themeToSet = `_${themeToSet.toLowerCase()}.css`;
+				newNode.href = newNode.href.replace(".css",themeToSet);	*/
+				newNode.href = newNode.href = `/themes/${themeToSet.toLowerCase()}/${sheetName}.css`;
+				newNode.setAttribute("injected","");
+				sheetNode.parentNode.appendChild(newNode)	
+			}else{	
+				var text = "";
+				for(var color in themeToSet){
+					text += `${color}:${themeToSet[color]};`;
+				}
+				rootRule.style.cssText += text; 
+			}
+			/*fetch("/themes.json")
+			.then(result=>result.json())
+			.then(themes=>{
+			console.log("Themes");
+			console.log(themes);
+			var theme = Array.prototype.find.call(themes.themes, theme=>theme.name == themeToSet);
+			var colors = theme.colors[sheetName];
+			var text = "";
+			for(var color in colors){
+				text += `${color}:${colors[color]};`;
+			}
+			rootRule.style.cssText += text; 
+			});*/
 		}
+		console.log(`Found ${themeSheets.length} theme sheets`);
+
+		//Workaround for when sometimes the sheets aren't immediately available on load
+		var hasAll = true;
+		for(var themeSheet of themeSheets){
+			if(!themeSheet.sheet){
+				hasAll = false;
+				break;
+			}
+		}
+		if(!hasAll){
+			setTimeout(()=>UtilsDom.setTheme(themeToSet),1);
+			return;
+		}
+		for(var themeSheet of themeSheets){
+			console.log(themeSheet.sheet);
+			var styleSheet = themeSheet.sheet;
+			if(!styleSheet){
+				continue;
+			}
+			console.log(styleSheet.href);
+			var sheetName = styleSheet.href.substring(styleSheet.href.lastIndexOf("/")+1);
+			sheetName = sheetName.substring(0,sheetName.lastIndexOf("."));
+			var rootRule = Array.prototype.find.call(styleSheet.cssRules, cssRule=>cssRule instanceof CSSStyleRule && cssRule.selectorText.toLowerCase() == ":root");
+			if(!rootRule){
+				continue;
+			}
+			setThemeColors(rootRule, sheetName, themeToSet);
+		}
+	},
+	"getInjectedCSSRule": function(ruleName) {
+		ruleName = ruleName.toLowerCase();
+		var result = null;
+		var find = Array.prototype.find;
+
+		find.call(document.styleSheets, styleSheet => {
+			if(!styleSheet.ownerNode.isInjected){
+				return false;
+			}
+			result = find.call(styleSheet.cssRules, cssRule => {
+				return cssRule instanceof CSSStyleRule && cssRule.selectorText.toLowerCase() == ruleName;
+			});
+			return result != null;
+		});
+		return result;
+	},
+	"getSvgFromFile": function(imgURL){
+		return fetch(imgURL)
+		.then(function(response) {
+			return response.text();
+		})
+		.then(function(text){
+			var parser = new DOMParser();
+	        var xmlDoc = parser.parseFromString(text, "text/xml");
+
+	        // Get the SVG tag, ignore the rest
+	        var svg = xmlDoc.getElementsByTagName('svg')[0];
+
+	        // Remove any invalid XML tags as per http://validator.w3.org
+	        svg.removeAttribute('xmlns:a');
+
+	        // Check if the viewport is set, if the viewport is not set the SVG wont't scale.
+	        if(!svg.getAttribute('viewBox') && svg.getAttribute('height') && svg.getAttribute('width')) {
+	            svg.setAttribute('viewBox', '0 0 ' + svg.getAttribute('height') + ' ' + svg.getAttribute('width'))
+	        }
+	        return svg;
+		})
+		.catch(e=>console.log(e));
+	},
+	"replaceAllSvgInline": function(){
+		document.querySelectorAll('img[src$=svg]').forEach(function(img){
+		    UtilsDom.replaceWithSvgInline(img);
+		})
+	},
+	"replaceWithSvgInline": function(img, imgURL){
+		if(!img.parentNode){
+			return;
+		}
+	    var imgID = img.id;
+	    var imgClass = img.className;
+	    if(!imgURL){
+	    	imgURL = img.src;
+	    }
+	    return UtilsDom.getSvgFromFile(imgURL)
+	    .then(svg=>{
+	    	if(!svg){
+	    		return;
+	    	}
+			// Add replaced image's ID to the new SVG
+	        if(typeof imgID !== 'undefined') {
+	            svg.setAttribute('id', imgID);
+	        }
+	        // Add replaced image's classes to the new SVG
+	        if(typeof imgClass !== 'undefined') {
+	            svg.setAttribute('class', imgClass+' replaced-svg');
+	        }
+			if(!img.parentNode){
+				return;
+			}
+	        // Replace image with new SVG
+	        img.parentNode.replaceChild(svg, img);
+	        return svg;
+	    });
+
 	}
 }
