@@ -306,7 +306,8 @@ label.selection input:checked ~.selection_indicator {
 	background: url('icons/checkbox.png') 0px 0px/100% 100%;
 }
 input[type='button'] {
-	background-color: white;
+	color: #FFFFFF;
+	background-color: #FF9800;
 	border-radius: 2px;
 	border: 0;
 	font-size: 0.8rem;
@@ -314,6 +315,7 @@ input[type='button'] {
 	padding: 8px 16px 8px 16px;
 	text-transform: uppercase;
 	transition: all 0.3s ease;
+	font-weight: 600;
 }
 input[type='button']#resetcolorbutton, input[type='button']#configure_keyboard_shortcuts, input[type='button']#starttests {
 	box-shadow: 0px 2px 6px -1px gray;
