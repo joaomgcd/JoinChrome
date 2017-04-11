@@ -489,7 +489,9 @@ img.tabIcon {
 	flex: 1 1 auto;
 	position: relative;
 	overflow: auto;
-	padding: 50px;
+}
+div#smscontainer > #smsmessagecontainer:first-child {
+	padding-top: 50px;
 }
 .smscontact {
 	background-color: var(--theme-background-color);
