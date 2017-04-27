@@ -1,5 +1,5 @@
 :root {
-	
+
 }
 a {
 	color: var(--theme-button-color);
@@ -51,7 +51,7 @@ body.popout {
 	overflow-y: auto;
 	height: 100vh;
 }
-.dropzone {    
+.dropzone {
 	position: absolute;
     /* top: 50%; */
     /* left: 50%; */
@@ -65,13 +65,13 @@ body.popout {
   	outline: 2px dashed black;
   	outline-offset: -20px;
 }
-.dropzone div {    
+.dropzone div {
     width: 100%;
     text-align: center;
     font-size: 50px;
     //text-shadow: 1px 1px #ffffff;
 }
-.dropzone div.small {    
+.dropzone div.small {
     font-size: 20px;
 }
 .dropzone a {
@@ -368,14 +368,14 @@ img.tabIcon {
 	display: none;
 }
 #smstitle {
-	margin-left: 8px;    
+	margin-left: 8px;
 	max-height: 25px;
     overflow: hidden;
 }
-#smstitle:hover {  
+#smstitle:hover {
 	max-height: none;
 }
-#contactpictureconversation {  
+#contactpictureconversation {
 	max-height: 25px;
 	border-radius: 25px;
 }
@@ -420,7 +420,7 @@ img.tabIcon {
 	transform: rotate(90deg);
 }
 #smsattachmentimageloading{
-	position: absolute;	
+	position: absolute;
     z-index: 1000;
 }
 #smsemoji{
@@ -455,7 +455,7 @@ img.tabIcon {
 	max-height: 5rem;
 	overflow: auto;
 	padding: 8px;
-	resize: none;   
+	resize: none;
 }
 #smsurgent {
 	margin-left: 8px;
@@ -467,15 +467,15 @@ img.tabIcon {
 	font-weight: bold;
 }
 #smsurgenttext {
-	font-size: 1rem;	
+	font-size: 1rem;
 }
-#mmsextras {  
+#mmsextras {
 	position: absolute;
     bottom: 50px;
     max-width: 50%;
     left: 50px;
     display: flex;
-    align-items: center;	
+    align-items: center;
 }
 #smsinput::-webkit-resizer {
 	background: url("icons/resize_handle.png") right bottom/50% 50% no-repeat;
@@ -489,6 +489,9 @@ img.tabIcon {
 	flex: 1 1 auto;
 	position: relative;
 	overflow: auto;
+}
+div#smscontainer > #smsmessagecontainer:first-child {
+	padding-top: 50px;
 }
 .smscontact {
 	background-color: var(--theme-background-color);
