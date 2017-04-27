@@ -577,10 +577,11 @@ var GCMNotification = function(notification, senderId){
 					if(matches){
 						Promise.resolve()
 						.then(()=>{
+							var removeLastDot = match => match.lastIndexOf(".") == match.length-1 ? match.substring(0,match.length-1) : match;
 							if(matches.length == 1){
-								return matches[0];
+								return removeLastDot(matches[0]);
 							}else{
-								var items = matches.select(match => ( {"id":match,"text":match}));
+								var items = matches.select(match => ( {"id":removeLastDot(match),"text":removeLastDot(match)}));
 								return Dialog.showMultiChoiceDialog({
 								    items:items,
 								    title:"Which Number?"
@@ -890,7 +891,7 @@ var GCMNewSmsReceived = function(){
 		not.smstext = me.text;
 		not.actionId = SMS_ACTION_ID;
 		not.buttons = [];
-		not.appIcon = me.photo || "icons/contact.png";
+		not.appIcon = me.photo || "/icons/contact.png";
 		not.gcmDeleteOnCancel = true;
 		if(me.attachmentPartId){
 			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));
