@@ -589,6 +589,9 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	margin-left: 0;
 	margin-right: 16px;
 }
+.received a {
+	color: var(--theme-background-color);
+}
 .smsbubbletriangle {
 	position: relative;
 	right: 4px;
