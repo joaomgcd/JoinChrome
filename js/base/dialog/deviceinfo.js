@@ -38,7 +38,7 @@ var DeviceUIEventHandler = function(){
 		var rangeElement = document.querySelector("#" + rangeElementId);
 		if(!rangeElement){
 			var image = document.createElement("img");
-			image.src = "/icons/"+type+".png";
+			image.src = "/icons/deviceinfo/"+type+".svg";
 			var rangeElement = document.createElement("input");
 			rangeElement.setAttribute("type", "range");
 			rangeElement.volumeType = type;
@@ -142,6 +142,8 @@ var DeviceUIEventHandler = function(){
 		};
 		Dialog.resizeCurrentDialog();
 		setTimeout(Dialog.resizeCurrentDialog,500);
+		//UtilsDom.setCurrentTheme();
+		UtilsDom.replaceAllSvgInline();
 	}
 
 }

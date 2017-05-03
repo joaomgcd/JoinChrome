@@ -3,6 +3,7 @@
 	--theme-background-color-options-container: white;
 	--theme-text-color-header2: #5a5a5a;
 	--theme-text-color-header4: #A75000;	
+	--theme-text-color-header5: #AF5F00;	
 }
 body{
 	color: var(--theme-text-color);
@@ -49,7 +50,9 @@ h4 {
 	margin-top: 1rem;
 	margin-bottom: 0.5rem;
 }
-h5 { color: #FF7A00; }
+h5 { 
+	color: var(--theme-text-color-header5);
+}
 #Settings {
 	display: flex;
 	flex-direction: column;
@@ -129,7 +132,7 @@ h5 { color: #FF7A00; }
 	z-index: -1;
 }
 #devicesAutoClipboard input[type='checkbox']:checked ~ div.clipboardDevice {
-	background-color: var(--theme-button-color);
+	background-color: var(--theme-accent-color);
 	opacity: 1;
 }
 #optionTabs {
@@ -152,7 +155,7 @@ h5 { color: #FF7A00; }
 	font-weight: 400;
 }
 #help a{
-	color: var(--theme-button-color);
+	color: var(--theme-accent-color);
 	text-decoration: none;
 }
 .help-option {
@@ -177,7 +180,7 @@ h5 { color: #FF7A00; }
 	transition: all 0.3s ease;
 }
 [showtab]:not(.selected):hover {
-	background-color: white;
+	background-color: var(--theme-accent-color-light);
 }
 [showtab].selected {
 	box-shadow: 0px -4px 0px white inset;
@@ -187,7 +190,7 @@ h5 { color: #FF7A00; }
 #topbar {
 	display: flex;
 	flex-direction: column;
-	background-color: var(--theme-button-color);
+	background-color: var(--theme-accent-color);
 	padding: 18px 12px 0 12px;
 	box-shadow: 0 -1px 4px black;
 }
@@ -280,7 +283,7 @@ textarea#notificationwebsites {
 textarea#notificationwebsites:focus {
 	outline: none;
 	opacity: 1;
-	border-bottom: solid 1px var(--theme-button-color);
+	border-bottom: solid 1px var(--theme-accent-color);
 }
 label.selection {
 	display: flex;
@@ -309,7 +312,7 @@ label.selection input:checked ~.selection_indicator {
 	background: url('/icons/options/checkbox.svg') 0px 0px/100% 100%;
 }
 input[type='button'] {
-	background-color: var(--theme-button-color);
+	cursor: pointer;
 	border-radius: 2px;
 	border: 0;
 	font-size: 0.8rem;
@@ -336,14 +339,14 @@ input[type='button']#resetcolorbutton, input[type='button']#configure_keyboard_s
 }
 input[type='button']:hover {
 	box-shadow: 0px 2px 12px -2px gray !important;
-	color: var(--theme-button-color) !important;
+	background-color: var(--theme-accent-color);
+	color: white;
 }
 input[type='button']:active {
-	background-color: var(--theme-button-color) !important;
+	background-color: var(--theme-accent-color) !important;
 	color: white !important;
 }
 input[type='text'], input[type='password'] {
-	background: none;
 	border: none;
 	border-bottom: solid 1px gray;
 	margin: 4px;
@@ -353,7 +356,7 @@ input[type='text'], input[type='password'] {
 }
 input[type='text']:focus, input[type='password']:focus {
 	opacity: 1;
-	border-bottom: solid 1px var(--theme-button-color);
+	border-bottom: solid 1px var(--theme-accent-color);
 }
 select {
 	border: 0;

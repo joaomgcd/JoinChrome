@@ -106,7 +106,7 @@
 	background-color: #F0F0F0;
 }
 .notificationbutton:hover div.buttontext {
-	color: #FFB64A;
+	
 }
 .notificationbutton:active {
 	background-color:#FF9800;
@@ -121,7 +121,6 @@
 }
 .buttontext{
 	align-self: center;
-	color: #FF9800;
 	flex-grow: 1;
 	font-family: 'Roboto', sans-serif;
 	font-size: 130%;

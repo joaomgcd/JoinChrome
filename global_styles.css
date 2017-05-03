@@ -2,7 +2,7 @@
 
 }
 a {
-	color: var(--theme-button-color);
+	color: var(--theme-accent-color);
 	transition: all 0.3s ease;
 }
 html, body {
@@ -19,10 +19,14 @@ body {
 	overflow: hidden;
 }
 svg{
-	fill: var(--theme-button-color-lowlight);
+	fill: var(--theme-accent-color-lowlight);
+    transition: all 0.3s ease;
 }
-svg:hover{
-	fill: var(--theme-button-color);
+svg:hover {
+	fill: var(--theme-accent-color);
+}
+li:hover > svg {
+	fill: var(--theme-accent-color);
 }
 body.popout {
 	width: 100%;
@@ -125,7 +129,7 @@ body.popout {
 	opacity: 1 !important;
 }
 .device #deviceiconcontainer {
-	background-color: var(--theme-button-color);
+	background-color: var(--theme-accent-color);
 }
 .devicecommands .selecteddevice::after {
 	background: antiquewhite;
@@ -150,7 +154,7 @@ body.popout {
 	background: var(--theme-background-color-hover);
 }
 .devicebutton:hover a#link {
-	color: var(--theme-button-color);
+	color: var(--theme-accent-color);
 }
 #devicebuttondrag {
 	visibility: hidden;
@@ -172,7 +176,7 @@ body.popout {
 	margin: 4px 24px 4px 16px;
 }
 a#link {
-	color: var(--theme-button-color-lowlight);
+	color: var(--theme-accent-color-lowlight);
 	font-size: 18px;
 	font-weight: 400;
 }
@@ -229,7 +233,7 @@ a#link {
 	width: 190px !important;
 }
 .button-link:hover {
-	background: var(--theme-button-color);
+	background: var(--theme-accent-color);
 }
 td {
 	padding: 0px !important;
@@ -270,7 +274,7 @@ td {
 	transition: all 0.3s ease;
 }
 .tab:not(.selected):hover {
-	box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
+	background-color: var(--theme-accent-color-light);
 }
 .tabIcon {
 	cursor: pointer;
@@ -360,9 +364,7 @@ img.tabIcon {
 	padding: 8px;
 }
 #smstitlecontainer:hover {
-	//background-color: #FFB05C;
-	box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
-	//box-shadow: 0 4px 10px 0 rgba(0,0,0,0.16),0 4px 20px 0 rgba(0,0,0,0.12);
+	background-color: var(--theme-accent-color-light);
 }
 #smstitlecontainer.hidden {
 	display: none;
@@ -373,7 +375,7 @@ img.tabIcon {
     overflow: hidden;
 }
 #smstitle:hover {
-	max-height: none;
+	
 }
 #contactpictureconversation {
 	max-height: 25px;
@@ -418,6 +420,7 @@ img.tabIcon {
 }
 #smsattachmentimage {
 	transform: rotate(90deg);
+	margin-right: 6px;
 }
 #smsattachmentimageloading{
 	position: absolute;
@@ -505,7 +508,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	align-items: flex-start;
 }
 .smscontact:hover {
-	background-color: var(--theme-background-color-panel);
+	background-color: var(--theme-accent-color-light);
 }
 .smscontactpicture {
 	margin-right: 16px;
@@ -531,7 +534,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	text-align: end;
 	color: #aaaaaa;
 	visibility: hidden;
-	opacity: 0.2;
+	opacity: 0.5;
 }
 .smscontact:hover .smscontactcall{
 	visibility: visible;
@@ -585,7 +588,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: var(--theme-button-color);
+	background-color: var(--theme-accent-color);
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -604,7 +607,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: var(--theme-button-color);
+	fill: var(--theme-accent-color);
 }
 .smsmessagetext {
 	word-wrap: break-word;
@@ -638,7 +641,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 }
 .smsmessagedate {
 	flex-grow: 1;
-	color: var(--theme-button-color-lowlight);
+	color: var(--theme-accent-color-lowlight);
 	margin-top: 2px;
 	text-align: left;
 }
@@ -655,7 +658,8 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	width: 15px;
 }
 .btn-floating:hover {
-	box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
+	background-color: var(--theme-accent-color-light);
+	transition: all 0.3s ease;
 }
 #newsmscall {
 	font-size: 250%;
@@ -692,7 +696,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	padding: 0px 8px 0px 8px;
 }
 .btn-floating {
-	background: var(--theme-button-color) !important;
+	background-color: var(--theme-accent-color);
 }
 
 /*Notification Cards*/
@@ -707,6 +711,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	display: block;
 }
 .notification{
+	color: var(--theme-accent-color-lowlight);
 	flex-direction: column;
 	padding: 8px;
 	box-sizing: initial;
@@ -724,6 +729,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	display:none;
 	z-index: 80;
 	transition: all 0.3s ease;
+	fill: var(--theme-accent-color-lowlight);
 }
 #closebutton:hover {
 	opacity: 1;
@@ -750,7 +756,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	font-size: 130%;
 	word-wrap: break-word;
 	font-family: 'Roboto', sans-serif;
-	color: var(--theme-button-color-lowlight);
+	color: var(--theme-accent-color-lowlight);
 	overflow:hidden;
 	line-height:1.5em;
 	max-height:7.5em;
@@ -760,7 +766,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	display: flex;
 	align-items: center;
 	font-family: 'Roboto', sans-serif;
-	color: var(--theme-button-color-lowlight);
+	color: var(--theme-accent-color-lowlight);
 	margin-left: auto;
 	font-size: 110%;
 	opacity: 0.8;
@@ -806,10 +812,10 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	background-color: var(--theme-background-color-panel);
 }
 .notificationbutton:hover div.buttontext {
-	color: #FFB64A;
+	//color: var(--theme-accent-color-light);
 }
 .notificationbutton:active {
-	background-color:var(--theme-button-color);
+	background-color:var(--theme-accent-color);
 }
 .notificationbutton:active div.buttontext {
 	color: white;
@@ -821,7 +827,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 }
 .buttontext{
 	align-self: center;
-	color: var(--theme-button-color);
+	color: var(--theme-accent-color-lowlight);
 	flex-grow: 1;
 	font-family: 'Roboto', sans-serif;
 	font-size: 130%;
@@ -848,6 +854,6 @@ div#smscontainer > #smsmessagecontainer:first-child {
 }
 #clearAllNotificationButtonIcon {
 	height: 100%;
-		width: 100%;
-		background: url('icons/clear_all.png') center/60% 60% no-repeat;
+	width: 100%;
+	background: url('icons/clear_all.png') center/60% 60% no-repeat;
 }

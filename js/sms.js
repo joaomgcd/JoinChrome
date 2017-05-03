@@ -627,6 +627,7 @@ var SmsApp = function(){
 			if(!local){
 				writeContactsInfo(deviceId, yield contactsGetter.getInfo(sortFunc,sortDescending));
 			}
+			UtilsDom.replaceAllSvgInline();
 		}catch(error){
 			console.error(error);
 			var deviceSelected = yield me.assureDeviceIdSelected();

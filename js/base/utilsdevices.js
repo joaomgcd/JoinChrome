@@ -67,7 +67,7 @@ var UtilsDevices = {
 	},
 	"showBatteryInfo":function(device, imageElement, status){
 		if(status.charging){
-			imageElement.src = "/icons/charging.png";
+			imageElement.src = "/icons/deviceinfo/charging.svg";
 		}else{
 			imageElement.src = UtilsDevices.getDeviceImage(device);
 		}

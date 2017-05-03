@@ -43,7 +43,7 @@ li:hover{
 	margin-top: 16px;
 }
 #iconcontainer{
-	background-color: #FF9800;
+	background-color: var(--theme-accent-color);
     border-radius: 1000px;
     width: 70px;
     height: 70px;
@@ -55,6 +55,8 @@ li:hover{
 #icon{
 	width: 50px;
 	height: 50px;
+	color: var(--theme-accent-color-lowlight);
+	fill: var(--theme-accent-color-lowlight);
 }
 #batterypercent{
     position: absolute;
@@ -127,7 +129,7 @@ li:hover{
 	color: var(--theme-text-color);
 }
 #refresh{
-	background-color: #FF9800;
+	background-color: var(--theme-accent-color);
 	border-radius: 1000px;
 	position: fixed;
 	top: 16px;

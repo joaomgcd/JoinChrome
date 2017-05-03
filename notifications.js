@@ -245,6 +245,10 @@ var writeNotifications = function(filter){
 	/*if(onlyTabToShow && onlyTabToShow == "notifications"){
 	   // window.resizeTo(getWidth(),getHeight());
 	}*/
+
+	UtilsDom.replaceAllSvgInline((image,svg)=>{
+		svg.notification = image.notification;
+	});
 }
 writeNotifications();
 

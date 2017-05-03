@@ -40,7 +40,7 @@ var isMicAvailable = function(navigator){
 	    });
 	})
 }
-UtilsDom.setDarkThemeIfSelected();
+UtilsDom.setCurrentTheme();
 UtilsDom.replaceAllSvgInline();
 document.addEventListener('DOMContentLoaded', function() {
 	isMicAvailable()

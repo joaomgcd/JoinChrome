@@ -691,7 +691,7 @@ var GCMNotification = function(notification, senderId){
 			}
 			if(back.getBetaEnabled()){
 				if(back.getAddDismissEverywhereButton()){
-					not.buttons.splice(1,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
+					not.buttons.splice(0,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
 				}
 				if(not.buttons.length>2){
 					not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});

@@ -2,7 +2,8 @@
 	--theme-background-color-options: #263238;
 	--theme-background-color-options-container: #455A64;
 	--theme-text-color-header2: white;
-	--theme-text-color-header4: #F57C00;
+	--theme-text-color-header4: #F57C00;	
+	--theme-text-color-header5: #A0AFA0;
 }
 
 label.selection .selection_indicator {

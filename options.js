@@ -1,4 +1,4 @@
-﻿
+
 var createElement = function(parent, tag, id, attributes) {
 		var el = document.createElement(tag);
 		el.setAttribute('id', id);
@@ -262,9 +262,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		})
 		optionVoice.addEventListener("click", handleVoiceOption);
 		// Apply dark or light theme
-		UtilsDom.setDarkThemeIfSelected();
-		
+		UtilsDom.setCurrentTheme();
         document.getElementById("theme").onchange = e => back.eventBus.post(new back.Events.ThemeChanged(e.target.value));
+		document.getElementById("themeColorPicker").onchange = e => back.eventBus.post(new back.Events.ThemeChanged({
+			"--theme-accent-color": e.target.value
+		}));
 	
 		document.getElementById("appiconandname").onclick = function(){ openTab("http://joaoapps.com/join");};
 		document.getElementById("deviceName").innerHTML = localStorage.deviceName;
@@ -409,6 +411,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById("alternativeicon").onclick = function(e){
 			setPopupIcon(e.target.checked);
 		}
+
+
+		
 });
 var manageFavoriteCommandTextArea = function(deviceCommand){
 	var favoriteCommandTextArea = document.getElementById("favouritecommandtextarea");
