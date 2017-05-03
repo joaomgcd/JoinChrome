@@ -129,7 +129,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			},reject);
 		});
 	}
-	this.send = function(sendThroughServer, gcm, gcmParams,callback, callbackError){
+	this.send = async function(sendThroughServer, gcm, gcmParams,callback, callbackError){
 		if(!gcm){
 			me.callCallback(callbackError,"No message to push");
 			return;
@@ -146,8 +146,8 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			if(!gcmParams){
 				gcmParams = {};
 			}
-			doDirectGCMRequest({regIds:regIds,gcmString:gcmString,gcmType:gcm.getCommunicationType(),gcmParams:gcmParams})
-			.then(function(multicastResult){
+			try{
+				var multicastResult = await doDirectGCMRequest({regIds:regIds,gcmString:gcmString,gcmType:gcm.getCommunicationType(),gcmParams:gcmParams});
 				for (var i = 0; i < directDevices.length; i++) {
 					var device = directDevices[i];
 					var result = multicastResult.results[i];
@@ -160,16 +160,15 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 
 	            console.log("Posted direct GCM");
 	            console.log(gcmString);
-	        })
-	        .catch(function(error){
-	        	var title = "Direct GCM error";
+			}catch(error){
+				var title = "Direct GCM error";
 	            console.log(title);
 	            console.log(error);
             	showNotificationFunc(title, "Error: " + error.responseText);            	
 				if(serverDevices.length == 0){
 					me.callCallback(callbackError,error.toString());
 				}
-	        });
+			}			
 		}
 		if(serverDevices.length > 0){
 			sendThroughServer(serverDevices.select(device => device.deviceId),callback,callbackError);

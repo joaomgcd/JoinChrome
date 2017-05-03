@@ -689,13 +689,11 @@ var GCMNotification = function(notification, senderId){
 					actionTexts = "Reply" + (actionTexts.length>0 ? ", ": "") + actionTexts ;	
 				}
 			}
-			if(back.getBetaEnabled()){
-				if(back.getAddDismissEverywhereButton()){
-					not.buttons.splice(0,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
-				}
-				if(not.buttons.length>2){
-					not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
-				}
+			if(back.getAddDismissEverywhereButton()){
+				not.buttons.splice(0,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
+			}
+			if(not.buttons.length>2){
+				not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
 			}
 			var chromeNotification = new ChromeNotification(not);
 			var similar = notifications.getSimilarNotification(not);
