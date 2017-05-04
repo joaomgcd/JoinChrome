@@ -32,6 +32,8 @@ chrome.commands.onCommand.addListener(function(command) {
 		});
 	}
 });
+
+var eventBus = new EventBus();
 var repeatLastCommand = function(){	
 	if(localStorage["lastpush"]){
 		window[localStorage["lastpushtype"]](localStorage["lastpush"], true);

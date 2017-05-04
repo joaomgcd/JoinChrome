@@ -66,12 +66,24 @@ var UtilsDevices = {
 		}
 	},
 	"showBatteryInfo":function(device, imageElement, status){
+		if(!imageElement){
+			return;
+		}
+		var newImageElement = document.createElement("img");
+		newImageElement.id = imageElement.id;
+		var classes = imageElement.classList.value;
+		if(classes){
+			newImageElement.setAttribute("class",classes.replace("replaced-svg",""));	
+		}
 		if(status.charging){
-			imageElement.src = "/icons/deviceinfo/charging.svg";
+			newImageElement.src = "/icons/deviceinfo/charging.svg";
 		}else{
-			imageElement.src = UtilsDevices.getDeviceImage(device);
+			newImageElement.src = UtilsDevices.getDeviceImage(device);
 		}
 
+		UtilsDom.replaceElement(imageElement,newImageElement);
+		imageElement = newImageElement;
+		UtilsDom.replaceWithSvgInline(imageElement);
 		var level = status.batteryPercentage;
 		back.console.log("Level: "+ level);
 		if(!level || level == 0){

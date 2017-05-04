@@ -263,6 +263,9 @@ var UtilsDom = {
 		})
 		.catch(e=>console.log(e));
 	},
+	"replaceElement":function(old,newElement){
+		old.parentNode.replaceChild(newElement, old);
+	},
 	"replaceAllSvgInline": function(assignmentFunc){
 		document.querySelectorAll('img[src$=svg]').forEach(function(img){
 			UtilsDom.replaceWithSvgInline(img,null,assignmentFunc);
@@ -300,7 +303,7 @@ var UtilsDom = {
 				assignmentFunc(img,svg);
 			}
 			// Replace image with new SVG
-			img.parentNode.replaceChild(svg, img);
+			UtilsDom.replaceElement(img,svg);
 			return svg;
 		});
 

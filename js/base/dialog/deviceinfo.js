@@ -1,13 +1,19 @@
 var device = null;
-var DeviceUIEventHandler = function(){
+var DeviceUIEventHandlerDeviceInfo = function(){
     var INTERRUPTION_FILTER_ALARMS = 4;
     var INTERRUPTION_FILTER_ALL = 1;
     var INTERRUPTION_FILTER_NONE = 3;
     var INTERRUPTION_FILTER_PRIORITY = 2;
-    var changeSetting = function(funcSetToChange){
-		var gcmChangeSetting = new GCMChangeSetting();
-		funcSetToChange(gcmChangeSetting);
-		gcmChangeSetting.send(device.deviceId);
+    var changeSetting = async function(funcSetToChange){
+		var gcmPush = new GCMPush();
+		funcSetToChange(gcmPush);
+		try{
+			var result = await gcmPush.send(device.deviceId);
+			back.console.log("Result push settings");
+			back.console.log(result);				
+		}catch(e){
+			back.console.error(e);
+		}
     }
 	var setText = function(elementId, text){
 		document.querySelector("#"+elementId).innerHTML = text;
@@ -147,7 +153,7 @@ var DeviceUIEventHandler = function(){
 	}
 
 }
-var eventHandler = new DeviceUIEventHandler();
+var eventHandler = new DeviceUIEventHandlerDeviceInfo();
 back.eventBus.register(eventHandler);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading device info...");

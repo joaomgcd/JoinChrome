@@ -45,7 +45,7 @@ var GCM = function(){
 	this.send = function(deviceId, callback, callbackError) {
 		var params = this.getParams();
 		params.deviceId = deviceId;
-		var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(devices,deviceId);
+		var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(back.devices,deviceId);
 		if(devicesForGroup && devicesForGroup.length > 0){
 			params.deviceId = null;
 			params.deviceIds = devicesForGroup.select(function(device){

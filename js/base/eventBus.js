@@ -8,11 +8,12 @@ var EventBus = function(){
       return "on" + className;
     }
 	me.register = function(obj){	
-		var index = registered.indexOf(obj);
-        if(index != -1){
-          return;
-        }
-		registered.push(obj);
+		  var index = registered.indexOf(obj);
+      if(index != -1){
+        return;
+      }
+		  registered.push(obj);
+      //back.console.log(registered);
 	}
 	me.registerSticky = function(obj){	
 		var index = registeredSticky.indexOf(obj);
@@ -38,25 +39,32 @@ var EventBus = function(){
     }
 	me.unregister = function(obj){		
 		var index = registered.indexOf(obj);
-        if(index != -1){
-          registered.splice(index,1);
-        }
+    if(index != -1){
+      registered.splice(index,1);
+    }
 		var indexSticky = registeredSticky.indexOf(obj);
-        if(indexSticky != -1){
-          registeredSticky.splice(indexSticky,1);
-        }
+    if(indexSticky != -1){
+      registeredSticky.splice(indexSticky,1);
+    }
+
+    //back.console.log(registered);
 	}
     var sendToRegistered = function(data, registered){      
         var className = data.constructor.name;
-		for (var i = 0; i < registered.length; i++) {
-			var subscriber = registered[i];
-			var funcToCall = subscriber[getEventName(className)];
-			if(funcToCall){
-				funcToCall(data);
-			}
-		}
+    		for (var i = 0; i < registered.length; i++) {
+    			var subscriber = registered[i];
+          var eventName = getEventName(className);
+    			var funcToCall = subscriber[eventName];
+    			if(funcToCall){
+            //back.console.log(`Calling ${eventName} on`)
+            //back.console.log(subscriber);
+    				funcToCall(data);
+    			}
+    		}
     }
-	me.post = function(data){    
+	me.post = function(data){
+      //back.console.log("Posting new event:")
+      //back.console.log(data)      
       sendToRegistered(data,registered);
 	}
 	me.postSticky = function(data){        
@@ -98,7 +106,6 @@ var EventBus = function(){
     	return [registered, registeredSticky];
     }
 }
-back.eventBus = new EventBus();
 back.Events = {
 	"TestPush" : function(){		
 	},

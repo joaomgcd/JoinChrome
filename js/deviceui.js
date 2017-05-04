@@ -44,8 +44,8 @@ var DeviceUIEventHandler = function(){
 		ctx.fillText(level + "%",halfSize,size - 5);*/
 	}
 }
-var eventHandler = new DeviceUIEventHandler();
-back.eventBus.register(eventHandler);
+var deviceUIEventHandler = new DeviceUIEventHandler();
+back.eventBus.register(deviceUIEventHandler);
 
 var gcmStatus = new back.GCMStatus();
 gcmStatus.request = true;
@@ -54,7 +54,7 @@ var deviceIdsToGetStatus = back.devices.where(device=>UtilsDevices.canReportStat
 var requestedStatus = false;
 addEventListener("unload", function (event) {
 	back.console.log("Unloading device UI...");
-	back.eventBus.unregister(eventHandler);
+	back.eventBus.unregister(deviceUIEventHandler);
 
 })
 var selectedDeviceElement = null;
