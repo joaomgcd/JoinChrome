@@ -189,6 +189,8 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
         	var errorMessage = error;
         	if(error == "NotRegistered"){
         		errorMessage = "Device not registered!";
+        		back.console.error(errorMessage);
+        		return;
         	}
     		if(!errorMessage){
     			errorMessage = "Unknown Error";
