@@ -13,4 +13,5 @@
 
 	/*Will be generated automaticalle*/
 	--theme-accent-color-light: var(--theme-accent-color);
+	--theme-accent-color-dark: var(--theme-accent-color);
 }

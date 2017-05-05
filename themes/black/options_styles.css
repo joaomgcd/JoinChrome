@@ -1,0 +1,14 @@
+:root {
+	--theme-background-color-options: black;
+	--theme-background-color-options-container: black;
+	--theme-text-color-header2: white;
+	--theme-text-color-header4: white;	
+	--theme-text-color-header5: white;
+}
+
+label.selection .selection_indicator {
+	filter: invert(100%);
+}
+label.selection input:checked ~.selection_indicator {
+	filter: invert(100%);
+}

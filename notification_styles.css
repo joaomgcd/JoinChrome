@@ -26,10 +26,12 @@
 	opacity: 0.5;
 	cursor: pointer; cursor: hand;
 	display:none;
+	z-index: 80;
+	transition: all 0.3s ease;
 }
 #closebutton:hover {
 	opacity: 1;
-	background-color: #F0F0F0;
+	background-color: var(--theme-background-color-panel);
 }
 .notificationBody{
 	display:flex;

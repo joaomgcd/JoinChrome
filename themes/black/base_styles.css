@@ -1,0 +1,7 @@
+:root {
+	--theme-accent-color-lowlight: white;
+	--theme-text-color: white;
+	--theme-background-color: black;
+	--theme-background-color-hover: black;
+	--theme-background-color-panel: black;
+}

@@ -41,7 +41,6 @@ var isMicAvailable = function(navigator){
 	})
 }
 UtilsDom.setCurrentTheme();
-UtilsDom.replaceAllSvgInline();
 document.addEventListener('DOMContentLoaded', function() {
 	isMicAvailable()
 	.then(()=>console.log("Mic in devices"))

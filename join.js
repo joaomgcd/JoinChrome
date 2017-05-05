@@ -965,7 +965,8 @@ var defaultValues = {
     "voiceenabled": false,
     "voicecontinuous": false,
     "voicewakeup": "computer",
-    "themeColorPicker": "#FF9800"
+    "themeColorPicker": "#FF9800",
+    "theme": "auto"
 };
 if(getVoiceContinuous()){
 	onvoicecontinuoussave(null,true);

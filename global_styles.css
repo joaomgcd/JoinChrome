@@ -26,7 +26,7 @@ svg:hover {
 	fill: var(--theme-accent-color);
 }
 li:hover > svg {
-	fill: var(--theme-accent-color);
+	fill: var(--theme-accent-color-dark);
 }
 body.popout {
 	width: 100%;
@@ -105,12 +105,14 @@ body.popout {
     right: -8px;
     border-radius: 20px;
     border: 1px solid black;
-    background-color: black;
+    background-color: var(--theme-text-color);
     opacity: 0.4;
     z-index: 20;
+    fill: var(--theme-background-color);
 }
 .deviceinfo:hover{
 	opacity: 1;
+    fill: var(--theme-background-color);
 }
 .device {
 	align-items: center;
@@ -530,6 +532,12 @@ div#smscontainer > #smsmessagecontainer:first-child {
     border-radius: 36px;
     vertical-align: middle;
 }
+.smscontactpicture > svg {
+	width: 36px;
+	height: 36px;
+    vertical-align: middle;
+    fill: var(--theme-accent-color-dark);
+}
 .smscontactcall {
 	text-align: end;
 	color: #aaaaaa;
@@ -540,7 +548,10 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	visibility: visible;
 }
 .smscontactcall:hover{
-	opacity: 0.9 !important;
+	opacity: 1;
+}
+.smscontactcall:hover > svg{
+	fill: var(--theme-accent-color-dark);
 }
 .smscontactcallanddate {
 	display: flex;

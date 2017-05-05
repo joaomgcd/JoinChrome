@@ -581,7 +581,7 @@ var SmsApp = function(){
 
 						var contactPhoto = contact.photo;
 						if(!contact.photo){
-							contactPhoto = "icons/contact.png";
+							contactPhoto = "icons/contact.svg";
 						}
 						contactPictureElement.src = contactPhoto;						
 						contactElement.addEventListener("click",function(event){
@@ -624,10 +624,11 @@ var SmsApp = function(){
 		var sortDescending = true;
 		try{
 			writeContactsInfo(deviceId, yield contactsGetter.getLocalInfo(sortFunc,sortDescending));
+			UtilsDom.replaceAllSvgInline();
 			if(!local){
 				writeContactsInfo(deviceId, yield contactsGetter.getInfo(sortFunc,sortDescending));
+				UtilsDom.replaceAllSvgInline();
 			}
-			UtilsDom.replaceAllSvgInline();
 		}catch(error){
 			console.error(error);
 			var deviceSelected = yield me.assureDeviceIdSelected();
