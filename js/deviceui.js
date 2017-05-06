@@ -315,27 +315,32 @@ var writeDevices = function(){
 	}
 	/*var dropzoneElement = UtilsDom.createElement(commandsElement,"div","dropzone",{"class":"dropzone"});
 	dropzoneElement.innerHTML = "Drop files here";*/
+	var hiddenCommands = localStorage.hiddenCommands
 	for (var e = 0; e < deviceCommands.length; e++) {
 		var command = deviceCommands[e];
-		var buttonElement = deviceButtonHtml.cloneNode(true);
-		// buttonElement.onmouseover = buttonHover;
-		// buttonElement.onmouseout = buttonHoverOut;
-		var link = buttonElement.querySelector("#link");
-		var image = buttonElement.querySelector("#devicebuttonimage");
-		var dragImage = buttonElement.querySelector("#devicebuttondrag");
-		//UtilsDom.replaceWithSvgInline(dragImage);
-		replaceWithSvg(command,image);
-		commandSortOrder[command.commandId] = e;
-		link.textContent = command.label;
-		buttonElement.onclick = buttonClick;
-		buttonElement.command = command;
-		buttonElement.commandLink = link;
-		buttonElement.commandImage = image;
-		buttonElement.commandIndex = e;
-		buttonElement.ondragstart = buttonDragStart;
-		buttonElement.ondragover = allowDrop;
-		buttonElement.ondrop = buttonDragDrop;
-		buttonsElement.appendChild(buttonElement);
+		var commandId = command.commandId;
+		//would be better to have a property in device commands with .hidden = false
+		if (hiddenCommands.indexOf(commandId) == -1) {
+			var buttonElement = deviceButtonHtml.cloneNode(true);
+			// buttonElement.onmouseover = buttonHover;
+			// buttonElement.onmouseout = buttonHoverOut;
+			var link = buttonElement.querySelector("#link");
+			var image = buttonElement.querySelector("#devicebuttonimage");
+			var dragImage = buttonElement.querySelector("#devicebuttondrag");
+			//UtilsDom.replaceWithSvgInline(dragImage);
+			replaceWithSvg(command,image);
+			commandSortOrder[command.commandId] = e;
+			link.textContent = command.label;
+			buttonElement.onclick = buttonClick;
+			buttonElement.command = command;
+			buttonElement.commandLink = link;
+			buttonElement.commandImage = image;
+			buttonElement.commandIndex = e;
+			buttonElement.ondragstart = buttonDragStart;
+			buttonElement.ondragover = allowDrop;
+			buttonElement.ondrop = buttonDragDrop;
+			buttonsElement.appendChild(buttonElement);
+		}
 	};
 	var lastHoveredDevice = back.devices.first(function(device){
 		return device.deviceId == localStorage.lastHoveredDeviceId;

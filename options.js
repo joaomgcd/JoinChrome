@@ -274,6 +274,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			optionTabSelector.onclick = selectTab;
 		};
 		manageTabs();
+		//manage commands to hide based on text area (rudementary)
+		/* Load all commands from devicecommands.js (if initalized by this point), or load commands in to local storage.
+		Generate a list of checkboxes with each command (e.g. Paste Clipboard, Screenshot, etc.) defaulted to not hidden.
+		Add listener on each checkbox, use to set devicecommands[item].hidden = true/false */
+		var optionsHideCommands = document.getElementById("hidecommands");
+		var timeout = null;
+		//using text area for speed - time out to store values once user has stopped typing
+		optionsHideCommands.onkeydown = function(e) {
+			timeout = setTimeout(function () {
+				localStorage.hiddenCommands = optionsHideCommands.value.split(",");
+			}, 500);
+		};
 		var optionsElement = document.getElementById("options");
 		updatePasswordStatus();
 		var passwordSetButton = document.getElementById("buttonsetpassword");
