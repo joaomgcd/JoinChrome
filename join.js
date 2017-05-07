@@ -1377,7 +1377,7 @@ var pushCall = function(deviceId, notify, contact){
     return Dialog
     .confirm("Calling " + name,"This will call " + name +" ("+number+") on your device. Are you sure?")
     .then(function(){     
-        push.callnumber = number;
+        push.callnumber = number.replace(/[^+0-9]/g, "");
         push
         .send(deviceId)
         .then(function(){
