@@ -7,6 +7,9 @@ chrome.commands.onCommand.addListener(function(command) {
 	}else if(command == "favorite-command"){
 		var favoriteCommand = getFavoriteCommand();
 		favoriteCommand = deviceCommands.first(function(command){return command.label == favoriteCommand;});
+		if(!favoriteCommand){
+			favoriteCommand = deviceCommands[0];
+		}
 		var favoriteCommandDevice = getFavoriteCommandDevice();
 		if(favoriteCommand && favoriteCommandDevice){
 			favoriteCommand.func(favoriteCommandDevice, true,getFavoriteCommandText());

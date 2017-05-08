@@ -317,6 +317,9 @@ var writeDevices = function(){
 	dropzoneElement.innerHTML = "Drop files here";*/
 	for (var e = 0; e < deviceCommands.length; e++) {
 		var command = deviceCommands[e];
+		if(back.getOptionValue("checkbox",command.commandId + "disable")){
+			continue;
+		}
 		var buttonElement = deviceButtonHtml.cloneNode(true);
 		// buttonElement.onmouseover = buttonHover;
 		// buttonElement.onmouseout = buttonHoverOut;

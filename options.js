@@ -242,8 +242,18 @@ var updatePasswordStatus = function(){
 		}
 			passwordStatus.innerHTML = text;
 }
+var generateHideCommandsOptions = function(){
+	var hideCommandsElement = document.querySelector("#hidecommands");
+	for(deviceCommand of deviceCommands){
+		var label = UtilsDom.createElement(hideCommandsElement,"label", deviceCommand.commandId + "label",{"class":"selection"});
+		var text = document.createTextNode(deviceCommand.label);
+		label.appendChild(text);
+		var checkbox = UtilsDom.createElement(label,"input", deviceCommand.commandId + "disable",{"type":"checkbox","joaoappsoption":""});
+		var selectionIndicator = UtilsDom.createElement(label,"div", deviceCommand.commandId + "selectionIndicator",{"class":"selection_indicator"});
+	}
+}
 document.addEventListener('DOMContentLoaded', function() {
-
+ 		generateHideCommandsOptions();
 		var optionVoice = document.querySelector("#voiceenabled");
 		if(!back.getVoiceEnabled()){
 			back.onvoiceenabledsave(optionVoice,false);
@@ -448,6 +458,9 @@ var setFavoriteCommandOptions = function(){
 		};
 		if(selected){
 			selectFavoriteCommand.value = selected;
+		}else{
+			selectFavoriteCommand.selectedIndex = 0;
+			manageFavoriteCommandTextArea(deviceCommands[0]);
 		}
 }
 var OptionsEventHandler = function(){
