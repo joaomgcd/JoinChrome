@@ -599,7 +599,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	min-width: 0;
 }
 .smsmessage.received {
-	background-color: var(--theme-accent-color);
+	background-color: var(--theme-accent-color-light);
 	margin-left: 0;
 	margin-right: 16px;
 }
@@ -618,7 +618,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	left: 4px;
 }
 .smsbubbletrianglereceived polygon {
-	fill: var(--theme-accent-color);
+	fill: var(--theme-accent-color-light);
 }
 .smsmessagetext {
 	word-wrap: break-word;

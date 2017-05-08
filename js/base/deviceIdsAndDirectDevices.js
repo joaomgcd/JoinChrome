@@ -163,11 +163,13 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			}catch(error){
 				var title = "Direct GCM error";
 	            console.log(title);
-	            console.log(error);
-            	showNotificationFunc(title, "Error: " + error.responseText);            	
-				if(serverDevices.length == 0){
-					me.callCallback(callbackError,error.toString());
-				}
+	            console.error(error);
+	            if(error && error.responseText){
+	            	showNotificationFunc(title, "Error: " + error.responseText);            	
+					if(serverDevices.length == 0){
+						me.callCallback(callbackError,error.toString());
+					}	            	
+	            }
 			}			
 		}
 		if(serverDevices.length > 0){

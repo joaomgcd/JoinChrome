@@ -50,6 +50,12 @@ var UtilsDevices = {
 	"canSendSMS":function(device){
 		return device.deviceType == DEVICE_TYPE_ANDROID_PHONE && UtilsDevices.isNotDeviceShare(device);
 	},
+	"isHidden":function(device){
+		return back.getOptionValue("checkbox",device.deviceId + "disable");
+	},
+	"isNotHidden":function(device){
+		return !UtilsDevices.isHidden(device);
+	},
 	"getDeviceImage":function(device){
 		var func = back.deviceImages[""+device.deviceType];
 		var icon = "/icons/" + func(device);

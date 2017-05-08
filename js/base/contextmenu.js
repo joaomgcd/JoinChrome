@@ -258,7 +258,7 @@ var ContextMenu = function(){
 		}
 		var getContextName = contextId => contextId.substring(0,1).toUpperCase() + contextId.substring(1);
 		for(var contextId in contexts){
-			devices.where(device=>UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device=>{
+			devices.where(device=>UtilsDevices.isNotHidden(device) && UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device=>{
 	        	var context = contexts[contextId];
 				context.doForAll(contextMenuItem=>{
 	        		if(contextMenuItem.favorite){
@@ -276,6 +276,9 @@ var ContextMenu = function(){
 		}
         	
 		devices.doForAll(function(device){
+			if(UtilsDevices.isHidden(device)){
+				return;
+			}
 	        chrome.contextMenus.create({
 	            "id": device.deviceId,
 	            "title": device.deviceName,

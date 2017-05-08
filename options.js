@@ -244,7 +244,7 @@ var updatePasswordStatus = function(){
 }
 var generateHideCommandsOptions = function(){
 	var hideCommandsElement = document.querySelector("#hidecommands");
-	for(deviceCommand of deviceCommands){
+	for(var deviceCommand of deviceCommands){
 		var label = UtilsDom.createElement(hideCommandsElement,"label", deviceCommand.commandId + "label",{"class":"selection"});
 		var text = document.createTextNode(deviceCommand.label);
 		label.appendChild(text);
@@ -252,8 +252,20 @@ var generateHideCommandsOptions = function(){
 		var selectionIndicator = UtilsDom.createElement(label,"div", deviceCommand.commandId + "selectionIndicator",{"class":"selection_indicator"});
 	}
 }
+var generateHideDevicesOptions = function(){
+	var hideCommandsElement = document.querySelector("#hidedevices");
+	for(var device of back.devices){
+		var label = UtilsDom.createElement(hideCommandsElement,"label", device.deviceId + "label",{"class":"selection"});
+		var text = document.createTextNode(device.deviceName);
+		label.appendChild(text);
+		var checkbox = UtilsDom.createElement(label,"input", device.deviceId + "disable",{"type":"checkbox","joaoappsoption":""});
+		checkbox.onchange = e => back.contextMenu.update(back.devices);
+		var selectionIndicator = UtilsDom.createElement(label,"div", device.deviceId + "selectionIndicator",{"class":"selection_indicator"});
+	}
+}
 document.addEventListener('DOMContentLoaded', function() {
  		generateHideCommandsOptions();
+ 		generateHideDevicesOptions();
 		var optionVoice = document.querySelector("#voiceenabled");
 		if(!back.getVoiceEnabled()){
 			back.onvoiceenabledsave(optionVoice,false);

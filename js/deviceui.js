@@ -138,6 +138,9 @@ var writeDevices = function(){
 	deviceCommandsElement.appendChild(devicesElement);
 	for (var i = 0; i < back.devices.length; i++) {
 		var device = back.devices[i];
+		if(UtilsDevices.isHidden(device)){
+			continue;
+		}
 		var deviceElement = deviceHtml.cloneNode(true);
 		deviceElement.onclick = deviceHover;
 		deviceElement.device = device;
