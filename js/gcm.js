@@ -155,6 +155,7 @@ var GCMPush = function(){
 		not.title= title;
 		not.text = text;
 		not.appIcon = push.icon;
+		not.image = push.image;
 		not.url = url;
 		not.priority = 2;
 		not.appName = "Join";
