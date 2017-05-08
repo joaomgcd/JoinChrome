@@ -284,6 +284,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		})
 		optionVoice.addEventListener("click", handleVoiceOption);
 		// Apply dark or light theme
+		document.querySelector("#resettheme").onclick = e => {
+			delete localStorage.theme;
+			delete localStorage.themeColorPicker;
+			document.location.reload();
+		}
 		UtilsDom.setCurrentTheme();
         document.getElementById("theme").onchange = e => back.eventBus.post(new back.Events.ThemeChanged(e.target.value));
 		document.getElementById("themeColorPicker").onchange = e => back.eventBus.post(new back.Events.ThemeChanged({
