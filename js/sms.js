@@ -876,7 +876,7 @@ var SmsApp = function(){
 		var contactsGetter = new ContactsGetter(me.deviceId);
 		writeContactListFromInfo(filter, contactsGetter.getLocalInfo(sortFunc,sortDescending),callback);
 	}
-	this.sendSms = function(){
+	this.sendSms = function(){	
 		var text = smsInputElement.value;
 		var mmsfile = mmsAttachment;
 		if(!text && !mmsfile){

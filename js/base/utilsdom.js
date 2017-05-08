@@ -129,18 +129,8 @@ var UtilsDom = {
 	},
 	"setCurrentTheme": function(){
 		var theme = back.getTheme();
-		if(theme == "random"){
-			var items = ["black","","dark"];
-			theme = items[Math.floor(Math.random()*items.length)];
-		}else if(theme == "auto"){
-			var hours = new Date().getHours();
-			if(hours > 17 || hours < 10){
-				theme = "dark";
-			}else{
-				theme = "";
-			}
-		}
-		console.log("Setting theme: " + theme); 
+
+
 		UtilsDom.setTheme({
 			"--theme-accent-color": rootRule => {
 				return back.getThemeAccentColor();
@@ -157,10 +147,24 @@ var UtilsDom = {
 	"setTheme": function(themeToSet){
 		var themeSheets = document.querySelectorAll("link[themesheet]");
 		if(UtilsObject.isString(themeToSet)){
+			console.log("Setting theme: " + themeToSet); 
 			var injectedThemeSheets = document.querySelectorAll("link[injected]");
 			for(var injected of injectedThemeSheets){
 				injected.parentElement.removeChild(injected);
-			}				
+			}		
+			if(themeToSet == "random"){
+				var items = ["black","","dark"];
+				themeToSet = items[Math.floor(Math.random()*items.length)];
+			}else if(themeToSet == "auto"){
+				var hours = new Date().getHours();
+				if(hours > 17 || hours < 10){
+					themeToSet = "dark";
+				}else{
+					themeToSet = "";
+				}
+			}else if(themeToSet == "normal"){
+				themeToSet = "";
+			}		
 		}
 		if(!themeToSet){
 			return;
