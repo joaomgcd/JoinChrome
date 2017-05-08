@@ -4,17 +4,17 @@ var DeviceUIEventHandlerDeviceInfo = function(){
     var INTERRUPTION_FILTER_ALL = 1;
     var INTERRUPTION_FILTER_NONE = 3;
     var INTERRUPTION_FILTER_PRIORITY = 2;
-    var changeSetting = async function(funcSetToChange){
+    var changeSetting = UtilsObject.async(function* (funcSetToChange){
 		var gcmPush = new GCMPush();
 		funcSetToChange(gcmPush);
 		try{
-			var result = await gcmPush.send(device.deviceId);
+			var result = yield gcmPush.send(device.deviceId);
 			back.console.log("Result push settings");
 			back.console.log(result);				
 		}catch(e){
 			back.console.error(e);
 		}
-    }
+    });
 	var setText = function(elementId, text){
 		document.querySelector("#"+elementId).innerHTML = text;
 	}
