@@ -299,6 +299,7 @@ var SmsApp = function(){
 	var smsMmsExtrasElement = document.getElementById("mmsextras");
 	var smsEmojiElement = document.getElementById("smsemoji");
 	var smsAttachFileImageLoadingElement = document.getElementById("smsattachmentimageloading");
+	var smsAttachFileImagePreview = document.getElementById("smsattachmentimagepreview");
 	var smsInputElement = document.getElementById("smsinput");
 	var smsTitleElement = document.getElementById("smstitle");
 	var smsTitlePhotoElement = document.getElementById("contactpictureconversation");
@@ -365,7 +366,7 @@ var SmsApp = function(){
 		   		}else{
 		   			readFile = UtilsDom.readPickedFile(files[0]);
 		   		}
-		   		readFile.then(result=>smsAttachFileImageElement.src = result)
+		   		readFile.then(result=>{smsAttachFileImagePreview.classList.remove("hidden"); smsAttachFileImagePreview.src = result;})
 		   		.then(()=>{
 		   			smsAttachFileImageLoadingElement.classList.remove("hidden");
 		   			return googleDriveManager.uploadFiles({
@@ -561,6 +562,9 @@ var SmsApp = function(){
 		var contact = element.contact;
 		return contact;
 	}
+	var contactSvg = `<svg width="256" height="256" viewBox="-10 -12 283 283" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 130 222.16 C 98 222.16 69.712 205.776 53.2 181.2 C 53.584 155.6 104.4 141.52 130 141.52 C 155.6 141.52 206.416 155.6 206.8 181.2 C 190.288 205.776 162 222.16 130 222.16 M 130 40.4 C 151.208 40.4 168.4 57.59 168.4 78.8 C 168.4 100.01 151.208 117.2 130 117.2 C 108.792 117.2 91.6 100.01 91.6 78.8 C 91.6 57.59 108.792 40.4 130 40.4 M 130 2 C 59.308 2 2 59.306 2 130 C 2 200.694 59.308 258 130 258 C 200.692 258 258 200.694 258 130 C 258 59.216 200.4 2 130 2 Z"/>
+</svg>`;
 	var writeContactsInfo = function(deviceId, contactsInfo){
 		if(contactsInfo && contactsInfo.contacts){
 			var contacts = contactsInfo.contacts;
@@ -570,7 +574,9 @@ var SmsApp = function(){
 					if(contact.lastsms){
 						var contactElement = smsContactHtml.cloneNode(true);
 						contactElement.contact = contact;
-						var contactPictureElement = contactElement.querySelector("#smscontactpicture").querySelector("img");
+						var contactPictureContainer = contactElement.querySelector("#smscontactpicture");
+						var contactPictureElement = contactPictureContainer.querySelector("img");
+						var contactSvgElement = contactPictureContainer.querySelector("svg");
 						var contactNameElement = contactElement.querySelector("#smscontactname");
 						var contactCallElement = contactElement.querySelector("#smscontactcall");
 						var contactTextElement = contactElement.querySelector("#smscontacttext");
@@ -581,9 +587,11 @@ var SmsApp = function(){
 
 						var contactPhoto = contact.photo;
 						if(!contact.photo){
-							contactPhoto = "icons/contact.svg";
+							contactPictureElement.classList.add("hidden");
+						}else{
+							contactPictureElement.src = contactPhoto;
+							contactSvgElement.classList.add("hidden");
 						}
-						contactPictureElement.src = contactPhoto;						
 						contactElement.addEventListener("click",function(event){
 							var contact = findContactForElement(event.target);
 							me.contactsScroll = smsContainerElement.scrollTop;
@@ -896,7 +904,7 @@ var SmsApp = function(){
 		push.responseType = 0;
 		push.requestId = "SMS";
 		var tempAttachId = "sentAttachment";
-		back.UtilsSMS.setCachedAttachment(tempAttachId,smsAttachFileImageElement.src)
+		back.UtilsSMS.setCachedAttachment(tempAttachId,smsAttachFileImagePreview.src)
 		.then(()=>{			
 			var sms = {
 				"text": text,
@@ -942,7 +950,8 @@ var SmsApp = function(){
 		smsMmsExtrasElement.classList.add("hidden")
 		smsInputElement.focus();
 		mmsAttachment = null;
-		smsAttachFileImageElement.src ="icons/attachment.png";		
+		smsAttachFileImageElement.src ="icons/attachment.png";
+		smsAttachFileImagePreview.classList.add("hidden");		
 		delete localStorage.smsDraft;
 	}
 	this.assureDeviceIdSelected = UtilsObject.async(function* (){

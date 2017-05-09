@@ -15,7 +15,7 @@ var UtilsSMS = {
 	},
 	"setCachedAttachment": function(attachmentId,attachment){
 		if(!attachmentId || !attachment){
-			return;
+			return Promise.resolve();
 		}
 		return back.UtilsDB.setMmsImage(attachmentId,attachment);
 		/*try{
