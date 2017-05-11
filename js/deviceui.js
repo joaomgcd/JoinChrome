@@ -151,7 +151,7 @@ var writeDevices = function(){
 		}
 		var imageElement = deviceElement.querySelector("#deviceicon");
 		var imageInfoElement = deviceElement.querySelector("#deviceinfoicon");
-		if(back.getBetaEnabled() && UtilsDevices.canReportStatus(device)){		
+		if(UtilsDevices.canReportStatus(device)){		
 			imageInfoElement.onclick = e => {
 				var device = UtilsDom.findParent(e.target,element=>element.device ? true : false).device;
 				console.log(device);
