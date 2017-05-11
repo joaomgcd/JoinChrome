@@ -890,7 +890,7 @@ var GCMNewSmsReceived = function(){
 		not.smstext = me.text;
 		not.actionId = SMS_ACTION_ID;
 		not.buttons = [];
-		not.appIcon = me.photo || "/icons/contact.png";
+		not.appIcon = me.photo || "/icons/contact.svg";
 		not.gcmDeleteOnCancel = true;
 		if(me.attachmentPartId){
 			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));

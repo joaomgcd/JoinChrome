@@ -963,6 +963,7 @@ var SmsApp = function(){
 			var devicesForSms = back.devices.where(UtilsDevices.canSendSMS);
 			var choices = devicesForSms.select(device=>({"id":device.deviceId,"text":device.deviceName}));
 			try{
+				delete localStorage.smsDeviceId;
 				var chosen = yield Dialog.showMultiChoiceDialog({
 				    items:choices,
 				    title:"Which device for SMS?"
