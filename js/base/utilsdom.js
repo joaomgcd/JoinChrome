@@ -127,26 +127,26 @@ var UtilsDom = {
 			element = element.parentElement;
 		}
 	},
+	"setGeneratedColors" : function(theme){
+		var accentColor = theme ? theme["--theme-accent-color"] : null;
+		if(!accentColor){
+			accentColor = back.getThemeAccentColor();
+		}
+		UtilsDom.setTheme({
+			"--theme-accent-color": rootRule => {
+				return accentColor;
+			}
+		});
+	},
 	"setCurrentTheme": function(){
 		var theme = back.getTheme();
 
-
-		UtilsDom.setTheme({
-			"--theme-accent-color": rootRule => {
-				return back.getThemeAccentColor();
-			},
-			"--theme-accent-color-light": rootRule => {
-				return UtilsDom.increaseBrightnessRule(rootRule, "--theme-accent-color", 50);
-			},
-			"--theme-accent-color-dark": rootRule => {
-				return UtilsDom.increaseBrightnessRule(rootRule, "--theme-accent-color", -20);
-			}
-		});
 		UtilsDom.setTheme(theme);
 	},
 	"setTheme": function(themeToSet){
 		var themeSheets = document.querySelectorAll("link[themesheet]");
 		if(UtilsObject.isString(themeToSet)){
+			UtilsDom.setGeneratedColors(themeToSet);
 			console.log("Setting theme: " + themeToSet); 
 			var injectedThemeSheets = document.querySelectorAll("link[injected]");
 			for(var injected of injectedThemeSheets){
@@ -178,7 +178,16 @@ var UtilsDom = {
 				newNode.href = newNode.href = `/themes/${themeToSet.toLowerCase()}/${sheetName}.css`;
 				newNode.setAttribute("injected","");
 				sheetNode.parentNode.appendChild(newNode)	
-			}else{	
+			}else{
+				UtilsObject.applyProps(themeToSet, {
+					"--theme-accent-color-light": rootRule => {
+						return UtilsDom.increaseBrightnessRule(rootRule, "--theme-accent-color", 50);
+					},
+					"--theme-accent-color-dark": rootRule => {
+						return UtilsDom.increaseBrightnessRule(rootRule, "--theme-accent-color", -20);
+					}
+				}, true);
+			
 				var text = "";
 				for(var color in themeToSet){
 					var colorToSet = null;

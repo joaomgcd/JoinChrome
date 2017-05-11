@@ -1,11 +1,11 @@
 var UtilsObject = {
-	"applyProps":function(obj,objToApply){
+	"applyProps":function(obj,objToApply,applyFunctions){
 		if(!objToApply){
 	        return;
 	    }
 	    for(var prop in objToApply){
 	    	var value = objToApply[prop];
-			if(value !== null && value !== undefined && value !== "" && UtilsObject.toClass(value) != "[object Function]"){
+			if(value !== null && value !== undefined && value !== "" && (UtilsObject.toClass(value) != "[object Function]" || applyFunctions)){
 				obj[prop] = value;
 			}
 	    }
