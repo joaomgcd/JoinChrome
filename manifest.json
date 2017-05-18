@@ -2,7 +2,7 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.5.17",
+	"version": "1.7",
 	"permissions": [
 		"identity",
 		"identity.email",

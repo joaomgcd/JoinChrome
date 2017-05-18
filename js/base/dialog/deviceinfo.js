@@ -72,8 +72,9 @@ var DeviceUIEventHandlerDeviceInfo = function(){
 		var dnd1 = document.querySelector("#dnd1");
 		dnd1.onclick = e =>{
 			if(e.target.checked){
-				changeSetting(gcmChangeSetting => gcmChangeSetting.interruptionFilter = INTERRUPTION_FILTER_NONE);
-				document.querySelector("#dnd" + INTERRUPTION_FILTER_NONE).checked = true;
+				var defaultDND = INTERRUPTION_FILTER_ALARMS;
+				changeSetting(gcmChangeSetting => gcmChangeSetting.interruptionFilter = defaultDND);
+				document.querySelector("#dnd" + defaultDND).checked = true;
 				show("formdnd");
 			}else{
 				changeSetting(gcmChangeSetting => gcmChangeSetting.interruptionFilter = INTERRUPTION_FILTER_ALL);
