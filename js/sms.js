@@ -299,7 +299,9 @@ var SmsApp = function(){
 	var smsMmsExtrasElement = document.getElementById("mmsextras");
 	var smsEmojiElement = document.getElementById("smsemoji");
 	var smsAttachFileImageLoadingElement = document.getElementById("smsattachmentimageloading");
-	var smsAttachFileImagePreview = document.getElementById("smsattachmentimagepreview");
+	var smsAttachFileImagePreviewWrapper = document.getElementById("smsattachmentimagepreview");
+	var smsAttachFileImagePreview = document.getElementById("smsattachmentimagepreviewimage");
+	var smsAttachFileImagePreviewDelete = document.getElementById("smsattachmentimagepreviewdelete");
 	var smsInputElement = document.getElementById("smsinput");
 	var smsTitleElement = document.getElementById("smstitle");
 	var smsTitlePhotoElement = document.getElementById("contactpictureconversation");
@@ -313,6 +315,10 @@ var SmsApp = function(){
 	var mmsAttachment = null;
 	var highlightColor = "#FF9800";
 	var lowlightColor = "#757575";
+	smsAttachFileImagePreviewDelete.onclick = e => {	
+		mmsAttachment = null;
+		smsAttachFileImagePreviewWrapper.classList.add("hidden");		
+	}
 	var setButtonColor = function(e, color){
 		//tintImage(e.target,color);
 	}
@@ -366,7 +372,7 @@ var SmsApp = function(){
 		   		}else{
 		   			readFile = UtilsDom.readPickedFile(files[0]);
 		   		}
-		   		readFile.then(result=>{smsAttachFileImagePreview.classList.remove("hidden"); smsAttachFileImagePreview.src = result;})
+		   		readFile.then(result=>{smsAttachFileImagePreviewWrapper.classList.remove("hidden"); smsAttachFileImagePreview.src = result;})
 		   		.then(()=>{
 		   			smsAttachFileImageLoadingElement.classList.remove("hidden");
 		   			return googleDriveManager.uploadFiles({
@@ -386,12 +392,7 @@ var SmsApp = function(){
 			return Promise.reject(error);
 		}
 	}
-	smsAttachFileImageElement.onclick = e =>{
-		if(mmsAttachment){
-			mmsAttachment = null;
-			smsAttachFileImagePreview.classList.add("hidden");
-			return;
-		}
+	smsAttachFileImageElement.onclick = e =>{		
 		var promise = attachFile();//isPopup ? attachFile() : Promise.reject("Not in popup");
 		promise
 		.catch(error=>makeDropZoneReady(dropzoneElement,"Drop file to attach"))
@@ -716,6 +717,8 @@ var SmsApp = function(){
 		showTitle(true);
 		showInput(true);
 		showContactFind(false);
+		mmsAttachment = null;
+		smsAttachFileImagePreviewWrapper.classList.add("hidden");
 
 		me.clearSmsNotification();
 		smsInputElement.placeholder = "Send message to " + number;
@@ -956,7 +959,7 @@ var SmsApp = function(){
 		smsInputElement.focus();
 		mmsAttachment = null;
 		smsAttachFileImageElement.src ="icons/attachment.png";
-		smsAttachFileImagePreview.classList.add("hidden");		
+		smsAttachFileImagePreviewWrapper.classList.add("hidden");		
 		delete localStorage.smsDraft;
 	}
 	this.assureDeviceIdSelected = UtilsObject.async(function* (){

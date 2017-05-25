@@ -415,8 +415,8 @@ img.tabIcon {
 }
 #smsattachment img{
 	/*width: 0;
-	height: 0;*/
-	position: absolute;
+	height: 0;
+	position: absolute;*/
     width: 48px;
     height: 48px;
 	padding: 8px;
@@ -426,9 +426,21 @@ img.tabIcon {
 	transform: rotate(90deg);
 	margin-right: 6px;
 }
+#smsattachmentimagepreview {
+	position: relative;
+}
+#smsattachmentimagepreviewdelete{
+	position: absolute;    
+	width: 16px;
+    top: 0px;
+    right: 8px;
+    cursor: pointer;
+}
 #smsattachmentimageloading{
     z-index: 1000;
-	cursor: pointer;
+	cursor: pointer;    
+    position: absolute;
+    margin-left: 32px;
 }
 #smsemoji{
 	font-size: 22px;
