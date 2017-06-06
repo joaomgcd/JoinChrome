@@ -1831,8 +1831,9 @@ setTimeout(()=>{
 	var googleDriveManager = new GoogleDriveManager();
 	googleDriveManager.getMyDevicePushes(true,true)
 	.then(device=>{
+		UtilsObject.sort(device.pushes,true,push=>push.date);
+		console.log(device.pushes);
 		for(var push of device.pushes){
-			console.log(push);
 			var gcm = new GCMPush();
 			push.receiveIfNewer = true;
 			gcm.push = push;
