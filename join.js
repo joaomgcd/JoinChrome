@@ -1826,6 +1826,22 @@ var handleAutoClipboard = function(){
 handleAutoClipboard();
 
 contextMenu.update(devices);
+
+setTimeout(()=>{
+	var googleDriveManager = new GoogleDriveManager();
+	googleDriveManager.getMyDevicePushes(true,true)
+	.then(device=>{
+		for(var push of device.pushes){
+			console.log(push);
+			var gcm = new GCMPush();
+			push.receiveIfNewer = true;
+			gcm.push = push;
+			gcm.execute();
+		}
+		return googleDriveManager.clearDevicePushes(device,true);
+	})
+	.catch(error=>{});
+},1000);
 /*UtilsObject.wait(2000,function(timeOut){
    // clearTimeout(timeOut);
 })

@@ -32,6 +32,16 @@ var UtilsObject = {
 	"isFunction": function(obj){
 	  return UtilsObject.toClass(obj) == "[object Function]";
 	},
+	"getStoredNumber": function(key, defaultValue){
+		var value = localStorage[key];
+		if(value){
+			return Number(value);	
+		}
+		return defaultValue;
+	},
+	"setStored": function(key, value){
+		localStorage[key] = value;
+	},
 	"getArrayIfNot": function(obj){
 		if(UtilsObject.isArray(obj)){
 			return obj;

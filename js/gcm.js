@@ -5,6 +5,7 @@ var HANG_UP = "HANG_UP";
 var CALL_BACK = "CALL_BACK";
 var REPLY_ACTION = "REPLY_ACTION";
 var LOCAL_DISMISS = "LOCAL_DISMISS";
+var STORED_LAST_PUSH_DATE = "STORED_LAST_PUSH_DATE";
 var regexNumbers = /[0-9\.]{4,}/g;
 
 var Request = function(){
@@ -124,6 +125,8 @@ GCM.prototype = new Request();
 
 
 var lastTextPushed = null;
+var getLastReceivedDate = () => UtilsObject.getStoredNumber(STORED_LAST_PUSH_DATE,0);
+var setLastReceivedDate = date => UtilsObject.setStored(STORED_LAST_PUSH_DATE,date);
 var GCMPush = function(){
 	var me = this;
 	this.createNotificationFromPush = function(){
@@ -177,7 +180,16 @@ var GCMPush = function(){
 	}
 	this.execute = function() {
 		decryptFields(this.push);
+		if(this.push.receiveIfNewer){
+			if(this.push.date && this.push.date <= getLastReceivedDate()){
+				return;
+			}
+		}
 		console.log("Received push!!");
+		if(!this.push.date){
+			this.push.date = new Date().getTime();
+		}
+		setLastReceivedDate(this.push.date);
 		if(this.push.text){
 			lastTextPushed = this.push.text;
 			var eventGhostPort = getEventghostPort();
