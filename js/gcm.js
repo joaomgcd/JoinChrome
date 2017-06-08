@@ -60,6 +60,7 @@ var GCM = function(){
 		if(params.clipboard){
 			gcmParams[GCM_PARAM_TIME_TO_LIVE] = 0;
 		}
+		params.date = new Date().getTime();
 		var gcm = {"push":params};
 		gcm.getCommunicationType = this.getCommunicationType;
         return new DeviceIdsAndDirectDevices(deviceId)
@@ -70,6 +71,14 @@ var GCM = function(){
                 params.deviceId = null;
                 params.deviceIds = deviceIds.join();
                 doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
+            },
+            onSendSuccess: device => {
+            	if(!UtilsDevices.isChrome(device)){
+            		return;
+            	}
+            	var googleDriveManager = new GoogleDriveManager();
+            	googleDriveManager.addPushToDevice(device.deviceId, params, true)
+            	.then(result=>console.log("Added successful push to other device's stored pushes"));
             }
         })
         .then(function(result){
@@ -181,7 +190,7 @@ var GCMPush = function(){
 	this.execute = function() {
 		decryptFields(this.push);
 		if(this.push.receiveIfNewer){
-			if(this.push.date && this.push.date <= getLastReceivedDate()){
+			if(this.push.date && this.push.date - 10000 <= getLastReceivedDate()){
 				return;
 			}
 		}

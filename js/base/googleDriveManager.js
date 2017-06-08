@@ -327,6 +327,9 @@ var GoogleDriveManager = function(){
 		});
 	}
 	var getDevicePushFileName = function(deviceId, storedPushes){
+		if(!deviceId){
+			throw "No deviceId to get file name for";
+		}		
 		var name = storedPushes ? "stored" : "";
 		return name + "pushes=:="+deviceId;
 	}
@@ -360,7 +363,11 @@ var GoogleDriveManager = function(){
 		});
 	}
 	me.getDevicePushes = function(deviceId, forceDownload, storedPushes){	
-		return 	getDeviceFile(getDevicePushFileName(deviceId,storedPushes),forceDownload);
+		return 	getDeviceFile(getDevicePushFileName(deviceId,storedPushes),forceDownload)
+		.then(device=>{			
+			device.deviceId = deviceId;
+			return device;
+		});
 	}
 	me.getDeviceContacts = function(deviceId, forceDownload){	
 		return 	getDeviceFile(getDeviceContactsFileName(deviceId),forceDownload);
@@ -368,7 +375,10 @@ var GoogleDriveManager = function(){
 	me.getMyDevicePushes = function(forceDownload, storedPushes){		
 		return me.getDevicePushes(localStorage.deviceId, forceDownload,storedPushes);
 	}
-	me.clearDevicePushes = function(device, storedPushes){		
+	me.clearDevicePushes = function(device, storedPushes){
+		if(!device.deviceId){
+			throw "No deviceId to clear pushes";
+		}		
 		var fileName = getDevicePushFileName(device.deviceId,storedPushes);	
 		device.pushes = [];
 		setContentCache(fileName,device);
@@ -379,14 +389,17 @@ var GoogleDriveManager = function(){
 			folderId:device.folderId,
 			content:device,
 			fileName:fileName,
-			folderName:GoogleDriveManager.getBaseFolderForMyDevice() + PUSH_HISTORY_FILES_FOLDER,
+			folderName:GoogleDriveManager.getBaseFolderForDevice(device.deviceId) + PUSH_HISTORY_FILES_FOLDER,
 			overwrite:true
 		});
 
 	}
-	me.addPushToDevice = function(deviceId,push){	
-		var fileName = getDevicePushFileName(deviceId);	
-		return me.getMyDevicePushes(false)
+	me.addPushToDevice = function(deviceId, push, storedPushes, forceDownload){
+		if(!forceDownload){
+			forceDownload = false;
+		}
+		var fileName = getDevicePushFileName(deviceId, storedPushes);	
+		return me.getDevicePushes(deviceId, forceDownload, storedPushes)
 		.catch(function(error){
 			return {};
 		}).then(function(device){
@@ -413,27 +426,38 @@ var GoogleDriveManager = function(){
 				folderId:device.folderId,
 				content:device,
 				fileName:fileName,
-				folderName:GoogleDriveManager.getBaseFolderForMyDevice() + PUSH_HISTORY_FILES_FOLDER,
+				folderName:GoogleDriveManager.getBaseFolderForDevice(deviceId) + PUSH_HISTORY_FILES_FOLDER,
 				overwrite:true
 			});
 		}).then(function(result){
 			console.log("Uploaded push history");
 			console.log(result);
+			return result;
 		}).catch(function(error){
 			console.error("Couldn't upload push history");
-			console.error(error.stack);
+			console.error(error);
+			if(error.stack){
+				console.error(error.stack);				
+			}
 		});
 	}
 	me.addPushToMyDevice = function(push){
 		me.addPushToDevice(localStorage.deviceId,push);
 	}
 }
-GoogleDriveManager.getBaseFolderForMyDevice = function(){
-	var deviceName = localStorage.deviceName;
-	if(!deviceName){
-		deviceName = "Chrome";
+GoogleDriveManager.getBaseFolderForDevice = function(deviceId){
+	if(!deviceId){
+		throw "No device Id to get base folder for";
 	}
+	var device = devices.find(device=>device.deviceId == deviceId);
+	if(!device){
+		throw "No device found to get base folder for deviceId " + deviceId;
+	}
+	var deviceName = device.deviceName;
 	return GoogleDriveManager.getBaseFolder() + "/from " + deviceName;
+}
+GoogleDriveManager.getBaseFolderForMyDevice = function(){
+	return GoogleDriveManager.getBaseFolderForDevice(localStorage.deviceId);
 }
 GoogleDriveManager.getBaseFolder = function(){	
 	return "Join Files";

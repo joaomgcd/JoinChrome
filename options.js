@@ -1,4 +1,5 @@
 
+chrome.extension.getBackgroundPage().setLocalDeviceNameFromDeviceList();
 var createElement = function(parent, tag, id, attributes) {
 		var el = document.createElement(tag);
 		el.setAttribute('id', id);

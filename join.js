@@ -1628,16 +1628,32 @@ var handleRegIdRegistration = function(registrationId, regIdLocalKey){
 		return result;
 	}
 }
+var setLocalDeviceNameFromDeviceList = function(){
+	if(!devices){
+		return;
+	}
+	if(!localStorage.deviceId){
+		return;
+	}
+	var myDevice = devices.find(device=>device.deviceId == localStorage.deviceId);
+	if(!myDevice){
+		return;
+	}
+	localStorage.deviceName = myDevice.deviceName;
+}
 chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},registrationId1=>{
 	var resultRegId1 = handleRegIdRegistration(registrationId1,"regIdLocal");
 	if(resultRegId1.success){
 		chrome.instanceID.getToken({"authorizedEntity":"737484412860","scope":"GCM"},registrationId2=>{
 			var resultRegId2 = handleRegIdRegistration(registrationId2,"regIdLocal2");
 			if(resultRegId2.success){
+				setLocalDeviceNameFromDeviceList();
 				if(!resultRegId1.sameRegId || !resultRegId2.sameRegId || !localStorage.deviceId){
 					registerDevice(function(result){
 						if(!result.sameDeviceId){
 							refreshDevices();	
+						}else{
+							setLocalDeviceNameFromDeviceList();
 						}
 					});	
 				}
@@ -1740,6 +1756,7 @@ var setDevices = function(devicesToSet){
 			};
 			devices.push(deviceFromGroup);
 		}
+		setLocalDeviceNameFromDeviceList();
         UtilsObject.sort(devices,true,device=>device.deviceId.indexOf("group")>=0,device=>device.deviceId.indexOf("share")>=0,device=>device.deviceType,device=>device.deviceName);
 		localStorage["devices"] = JSON.stringify(devices);
 	}
@@ -1831,6 +1848,10 @@ setTimeout(()=>{
 	var googleDriveManager = new GoogleDriveManager();
 	googleDriveManager.getMyDevicePushes(true,true)
 	.then(device=>{
+		if(!device.pushes || device.pushes.length == 0){
+			console.log("No stored pushes to process");
+			return;
+		}
 		UtilsObject.sort(device.pushes,true,push=>push.date);
 		console.log(device.pushes);
 		for(var push of device.pushes){
@@ -1841,7 +1862,7 @@ setTimeout(()=>{
 		}
 		return googleDriveManager.clearDevicePushes(device,true);
 	})
-	.catch(error=>{});
+	.catch(error=>console.error(error));
 },1000);
 /*UtilsObject.wait(2000,function(timeOut){
    // clearTimeout(timeOut);

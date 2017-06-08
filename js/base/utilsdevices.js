@@ -53,6 +53,9 @@ var UtilsDevices = {
 	"isHidden":function(device){
 		return back.getOptionValue("checkbox",device.deviceId + "disable");
 	},
+	"isChrome":function(device){
+		return device.deviceType == DEVICE_TYPE_CHROME_BROWSER;
+	},
 	"isNotHidden":function(device){
 		return !UtilsDevices.isHidden(device);
 	},
