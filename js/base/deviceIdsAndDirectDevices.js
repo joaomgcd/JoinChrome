@@ -174,7 +174,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		}
 		if(serverDevices.length > 0){
 			sendThroughServer(serverDevices.select(device => device.deviceId),result=>{				
-	        	if(options.onSendSuccess){
+	        	if(options && options.onSendSuccess){
 	        		options.onSendSuccess(device);
 	        	}
 	        	if(callback){
@@ -193,7 +193,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
         		setDevices(allDevices);
         	}
         	result.success = true;
-        	if(options.onSendSuccess){
+        	if(options && options.onSendSuccess){
         		options.onSendSuccess(device);
         	}
         }else{
