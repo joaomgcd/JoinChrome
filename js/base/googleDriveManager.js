@@ -449,7 +449,7 @@ GoogleDriveManager.getBaseFolderForDevice = function(deviceId){
 	if(!deviceId){
 		throw "No device Id to get base folder for";
 	}
-	var device = devices.find(device=>device.deviceId == deviceId);
+	var device = back.devices.find(device=>device.deviceId == deviceId);
 	if(!device){
 		throw "No device found to get base folder for deviceId " + deviceId;
 	}
