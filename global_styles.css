@@ -784,7 +784,7 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	color: var(--theme-accent-color-lowlight);
 	overflow:hidden;
 	line-height:1.5em;
-	max-height:7.5em;
+	//max-height:7.5em;
 	opacity: 0.8;
 }
 #date{
