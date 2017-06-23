@@ -807,6 +807,9 @@ var getNotificationRequireInteraction = function(){
 var getAddDismissEverywhereButton = function(){
     return getOptionValue("checkbox","adddimisseverywherebutton");
 }
+var getNeverShowSimilarNotifications = function(){
+    return getOptionValue("checkbox","nevershowsimilarnotifications");
+}
 var getBetaEnabled = function(){
     return getOptionValue("checkbox","showbetafeatures");
 }

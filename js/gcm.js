@@ -728,9 +728,11 @@ var GCMNotification = function(notification, senderId){
 					notifications.removeNotificationsWithSameId(similar.id);
 					shouldNotify = true;
 				}
-				if(not.date - similar.date < 5000){
-					console.log("Similar notification too recent. Showing anyway.");
-					shouldNotify = true;
+				if(!getNeverShowSimilarNotifications()){
+					if(not.date - similar.date < 5000){
+						console.log("Similar notification too recent. Showing anyway.");
+						shouldNotify = true;
+					}	
 				}
 			}else{
 				//if(removed == 0){
