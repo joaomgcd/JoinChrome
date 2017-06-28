@@ -142,7 +142,6 @@ var doPostWithAuth = back.doPostWithAuth;
 
 /*************************NOTIFICATION PAGES***********************/
 var notificationPages = {
-	"com.google.android.gm":"https://mail.google.com/mail/u/0/#search/is%3Aunread",
 	"com.joaomgcd.autoinput":"http://joaoapps.com/autoinput/",
 	"com.joaomgcd.autovoice":"http://joaoapps.com/autovoice/",
 	"com.facebook.lite":"https://www.facebook.com/notifications",
