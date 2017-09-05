@@ -753,13 +753,13 @@ var GCMNotification = function(notification, senderId){
 				chromeNotification.notify();
 			}
 			notifications.push(not);
-			if(not.replyId){
+			if(not.replyId && back.getVoiceEnabled()){
 				back.UtilsVoice.isMicAvailable()
 				.then(()=>true)
 				.catch(()=>false)
 				.then(micAvailable=>{
 					if(micAvailable){
-						if(back.getVoiceEnabled() && back.getVoiceContinuous() && back.getVoiceWakeup()){						
+						if(back.getVoiceContinuous() && back.getVoiceWakeup()){						
 							UtilsObject.doOnce("replywithvoicee",()=>showNotification("Reply With Voice",showNotification("Reply With Voice",`Say "${back.getVoiceWakeup()} reply with hello" for example to reply to this notification with your voice`,30000)));	
 						}
 						if(!back.getVoiceContinuous()){
