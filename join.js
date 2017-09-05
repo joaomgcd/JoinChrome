@@ -1533,7 +1533,9 @@ var registerDevice = function(callback,callbackError){
     if(!registrationId2){
     	registrationId2 = registrationId;
     }
-    return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId2,"deviceName":"Chrome","deviceType":3})
+
+	var myName = "Chrome";
+    return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/",{"deviceId":localStorage.deviceId,"regId":registrationId,"regId2":registrationId2,"deviceName":myName,"deviceType":3})
     .then(function(result){
     	if(localStorage.deviceId == result.deviceId){
     		result.sameDeviceId = true;
@@ -1651,7 +1653,7 @@ chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},reg
 			var resultRegId2 = handleRegIdRegistration(registrationId2,"regIdLocal2");
 			if(resultRegId2.success){
 				setLocalDeviceNameFromDeviceList();
-				if(!resultRegId1.sameRegId || !resultRegId2.sameRegId || !localStorage.deviceId){
+				if(!devices || !resultRegId1.sameRegId || !resultRegId2.sameRegId || !localStorage.deviceId){
 					registerDevice(function(result){
 						if(!result.sameDeviceId){
 							refreshDevices();	
@@ -1733,12 +1735,31 @@ var setDevices = function(devicesToSet){
 		if(localStorage.deviceName){
 			devices.doForAll(function(storedDevice){
 				if(storedDevice.deviceName == localStorage.deviceName && storedDevice.deviceId != localStorage.deviceId){
+
+					/*var findRightName = () => {
+						var baseName = "Chrome";
+						var name = baseName;
+						var i = 0;
+						while(true){
+							if(i>100){
+								return baseName;
+							}
+							if(i > 0){
+								name = baseName + " " + i;
+							}			
+							var otherWithSameName = devices.find(device=>device.deviceId != localStorage.deviceId && device.deviceName == name);			
+							if(!otherWithSameName){
+								return name;
+							}
+							i++;
+						}
+					}*/
 					var newName = prompt("One of your Join devices is already named '" + localStorage.deviceName + "'. What do you want to name this Chrome installation?");
 					var message = "You can always rename your devices by long-touching them in the Android app.";
 					if(newName){
 						localStorage.deviceName = newName;
 						doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId=" + localStorage.deviceId + "&newName=" + encodeURIComponent(newName),{}, function(result){
-							alert("Renamed. " + message);
+							alert("This device was named "+newName+". " + message);
 						},function(error){
 							alert("Error renaming: " + JSON.stringify(error));
 						});
@@ -1847,7 +1868,7 @@ handleAutoClipboard();
 
 contextMenu.update(devices);
 
-setTimeout(()=>{
+var getPushesWhileAway = ()=>{
 	var googleDriveManager = new GoogleDriveManager();
 	googleDriveManager.getMyDevicePushes(true,true)
 	.then(device=>{
@@ -1856,7 +1877,7 @@ setTimeout(()=>{
 			return;
 		}
 		UtilsObject.sort(device.pushes,true,push=>push.date);
-		console.log(device.pushes);
+		console.log(device.pushes);		
 		for(var push of device.pushes){
 			var gcm = new GCMPush();
 			push.receiveIfNewer = true;
@@ -1866,7 +1887,10 @@ setTimeout(()=>{
 		return googleDriveManager.clearDevicePushes(device,true);
 	})
 	.catch(error=>console.error(error));
-},1000);
+};
+setTimeout(getPushesWhileAway,1000);
+
+
 /*UtilsObject.wait(2000,function(timeOut){
    // clearTimeout(timeOut);
 })

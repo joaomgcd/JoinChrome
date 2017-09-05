@@ -745,6 +745,10 @@ var openNewTab = function(url,options, callback){
                 state: "fullscreen"
             });
         }
+		if (url.indexOf("spotify:") == 0) {
+			setTimeout(()=>chrome.tabs.remove(tab.id),500);
+            
+        }
 	}
 	chrome.windows.getCurrent({ 'populate': false }, function(current) {
 		if (current) {
