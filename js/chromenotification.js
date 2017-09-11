@@ -144,6 +144,7 @@ chrome.notifications.onClicked.addListener(function(id){
 	}
 });
 chrome.notifications.onClosed.addListener(function(id,byUser) {
+	return;
 	if(!byUser){
 		return;
 	}
