@@ -60,14 +60,14 @@ var ContextMenu = function(){
 	}
 
 	//Notifications
-	var notificationForUrl = function(device, info, tab, url, title, text){
+	var notificationForUrl = function(device, info, tab, url, title, text, image){
 		if(!title){
 			title = tab.title;
 		}
 		if(!text){
 			text = url;
 		}
-		push(device, {"url": url,"text": text,"title": title});
+		push(device, {"url": url,"text": text,"title": title,"image":image});
 	}
 	var notificationPage = function(device, info, tab){
 		notificationForUrl(device, info, tab, info.pageUrl);
@@ -88,6 +88,9 @@ var ContextMenu = function(){
 		.then(function(title){
 			notificationForUrl(device, info, tab, url, title);
 		});
+	}
+	var notificationImage = function(device, info, tab){
+		notificationForUrl(device, info, tab, info.srcUrl, null, null, info.srcUrl);
 	}
 	var notificationSelection = function(device, info, tab){
 		notificationForUrl(device, info, tab, info.pageUrl, "Note To Self", info.selectionText);
@@ -179,6 +182,7 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(SET_AS_WALLPAPER,setWallpaperSourceUrl),
 		    	new ContextMenuItem(SET_AS_LOCK_WALLPAPER,setLockWallpaperSourceUrl,null,null,device=>device.apiLevel>=24),
 		    	new ContextMenuItem(PASTE,pasteSourceUrl),
+		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationImage, WITH),
 		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ],
