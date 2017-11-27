@@ -230,15 +230,15 @@ var writeDevices = function(){
 			var newIndex = buttonElement.commandIndex;
 			var commandBeingDragged = null;
 			var moveIndex = function(prop, index, value){
-			console.log(index + "=>" + (index + value));
-			index = index + value;
-			commandSortOrder[prop] = index;
+				console.log(index + "=>" + (index + value));
+				index = index + value;
+				commandSortOrder[prop] = index;
 			}
 			var moveIndexForward = function(prop, index){
-			moveIndex(prop,index,1);
+				moveIndex(prop,index,1);
 			};
 			var moveIndexBackward = function(prop, index){
-			moveIndex(prop,index,-1);
+				moveIndex(prop,index,-1);
 			};
 			for(var prop in commandSortOrder){
 				var commandBeingDraggedIndex = commandSortOrder[prop];
@@ -252,7 +252,7 @@ var writeDevices = function(){
 					}
 				}
 				if(commandBeingDraggedIndex == oldIndex){
-					commandBeingDragged = deviceCommands.first(function(command){
+					commandBeingDragged = sortedDeviceCommands.first(function(command){
 						return command.commandId == prop;
 					});
 				}
@@ -273,7 +273,7 @@ var writeDevices = function(){
 	buttonsElement = deviceButtonsHtml.cloneNode(true);
 	deviceCommandsElement.appendChild(commandsElement);
 	commandsElement.appendChild(buttonsElement);
-	sortDeviceCommands();
+	var sortedDeviceCommands = sortDeviceCommands();
 	var dropzoneElement = document.getElementById("dropzonedevices");
 	var isButtonDrag = e => {
 		if(!e.dataTransfer.items){
@@ -306,20 +306,10 @@ var writeDevices = function(){
     		}
     	});
 	}
-	var replaceWithSvg = function(command,image){
-		UtilsDom.replaceWithSvgInline(image,"/icons/commands/" + command.commandId + ".svg").then(svg=>{
-			if(!svg){
-				return;
-			}
-			if(command.transformIcon){
-				svg.style.transform = command.transformIcon;
-			}
-		});
-	}
 	/*var dropzoneElement = UtilsDom.createElement(commandsElement,"div","dropzone",{"class":"dropzone"});
 	dropzoneElement.innerHTML = "Drop files here";*/
-	for (var e = 0; e < deviceCommands.length; e++) {
-		var command = deviceCommands[e];
+	for (var e = 0; e < sortedDeviceCommands.length; e++) {
+		var command = sortedDeviceCommands[e];
 		if(back.getOptionValue("checkbox",command.commandId + "disable")){
 			continue;
 		}
@@ -330,7 +320,7 @@ var writeDevices = function(){
 		var image = buttonElement.querySelector("#devicebuttonimage");
 		var dragImage = buttonElement.querySelector("#devicebuttondrag");
 		//UtilsDom.replaceWithSvgInline(dragImage);
-		replaceWithSvg(command,image);
+		handleDeviceCommandIcon(command,image);
 		commandSortOrder[command.commandId] = e;
 		link.textContent = command.label;
 		buttonElement.onclick = buttonClick;

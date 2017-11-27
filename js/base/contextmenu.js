@@ -1,5 +1,6 @@
 
 var back = chrome.extension.getBackgroundPage();
+
 var ContextMenu = function(){
 	var OPEN = "Open";
 	var PASTE = "Paste";
@@ -155,6 +156,8 @@ var ContextMenu = function(){
 	}
 	this.update = function(devices){
 	    chrome.contextMenus.removeAll();
+
+
 	    var contexts = {
 	    	"page":[
 		    	new ContextMenuItem(OPEN,openPage).setFavorite(),
@@ -197,7 +200,6 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ]
 		};
-		
 		chrome.contextMenus.create({
 			"type":"checkbox",
 			"checked": !getShowChromeNotifications(),
@@ -266,14 +268,17 @@ var ContextMenu = function(){
 	        	var context = contexts[contextId];
 				context.doForAll(contextMenuItem=>{
 	        		if(contextMenuItem.favorite){
-		        		chrome.contextMenus.create({
+	        			var options = {
 			        		"contexts": [contextId],
 			        		"onclick": function(info, tab){
 			        			contextMenuItem.handler(device, info, tab);
 			        		},
-			        		"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName,
-			        		"targetUrlPatterns": contextMenuItem.patterns
-		        		});
+			        		"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName
+		        		};
+			        	if(contextMenuItem.patterns){
+			        		options.targetUrlPatterns = contextMenuItem.patterns;
+			        	}
+		        		chrome.contextMenus.create(options);
 		        	}
 	    		});
 			})
@@ -319,15 +324,18 @@ var ContextMenu = function(){
 		        				return;
 		        			}
 		        		}
-			        	chrome.contextMenus.create({
+		        		var options = {
 			        		"parentId": contextForDevice,
 			        		"contexts": [contextId],
 			        		"onclick": function(info, tab){
 			        			contextMenuItem.handler(device, info, tab);
 			        		},
-			        		"title": actionTitle,
-			        		"targetUrlPatterns": contextMenuItem.patterns
-			        	});
+			        		"title": actionTitle
+			        	};
+			        	if(contextMenuItem.patterns){
+			        		options.targetUrlPatterns = contextMenuItem.patterns;
+			        	}
+			        	chrome.contextMenus.create(options);
 		        	});
 		        }
 			}

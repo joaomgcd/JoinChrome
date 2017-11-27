@@ -16,6 +16,7 @@
     <script src="tests.js"></script>
     <script src="js/devicecommands.js"></script>
     <script src="js/base/utilsdom.js"></script>
+    <script src="js/taskercommands.js"></script>
 </head>
 
 <body>
@@ -49,6 +50,7 @@
                 <div showtab="shortcuts">Shortcuts</div>
                 <div showtab="options">Options</div>
                 <div showtab="clipboard">Clipboard</div>
+                <div showtab="taskercommands">Custom Commands</div>
                 <!--<div showtab="notifications">Notifications</div>-->
                 <div showtab="encryption">Encryption</div>
                 <div showtab="diagnostics">Diagnostics</div>
@@ -176,6 +178,14 @@
             <h4>Send to these devices:</h4>
             <div id="devicesAutoClipboard"></div>
         </div>
+        <div tab="taskercommands" class="optionContainer">
+            <h2>Custom Commands</h2>
+            <h4>These commands will show up in your device command list in the Join popup. Use Tasker (Android) or EventGhost (PC) to react to them. More info <a href="">here</a>.</h4>
+            <div id="taskerCommandsContent"></div>
+            <div id="taskerCommandButtons">
+                <input type="button" id="taskerCommandsAdd" value="Add"></input>
+            </div>
+        </div>
         <div tab="diagnostics" class="optionContainer">
             <h2>Problems?</h2>
             <h4>Test Join to see if everything's working like it should</h4>
@@ -255,6 +265,10 @@
             <div class="help-option">
                 <div class="help-icon"><img src="icons/join.png"></div>
                 <div class="help-links"><a href="https://joaoapps.helprace.com/" target="_blank">Feature Requests</a></div>
+            </div>
+            <div class="help-option">
+                <div class="help-icon"><img src="icons/join.png"></div>
+                <div class="help-links"><a href="http://juanmtech.com/join-by-joaoapps-beginners-guide/" target="_blank">Beguinner's Guide</a></div>
             </div>
             <div class="help-option">
                 <div class="help-icon"><img src="icons/youtube.png"></div>

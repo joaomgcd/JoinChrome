@@ -18,6 +18,8 @@ var createElement = function(parent, tag, id, attributes) {
 		parent.appendChild(el);
 		return el;
 }
+
+var taskerCommandsUI = null;
 var getURLParameter = function(url,name) {
 		return chrome.extension.getBackgroundPage().getURLParameter(url,name);
 }
@@ -439,7 +441,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById("alternativeicon").onclick = function(e){
 			setPopupIcon(e.target.checked);
 		}
+		var taskerCommandsTab = document.querySelector("#taskerCommandsContent");
+		taskerCommandsUI = new TaskerCommandsUI(taskerCommandsTab);
+		taskerCommandsUI.renderCommands();
 
+		var taskerCommandsAddButton = document.querySelector("#taskerCommandsAdd");
+		taskerCommandsAddButton.onclick = e => taskerCommandsUI.add();
 
 		
 });

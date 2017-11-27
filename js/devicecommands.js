@@ -177,6 +177,65 @@ var deviceCommands = [
 		"func":back.showPushHistory
 	},
 ];
+
+var handleDeviceCommandIcon = function(command,image){
+	var setSizeFunc = icon => {
+		icon.removeAttribute("width","auto");
+		icon.removeAttribute("height","24");
+		//icon.setAttribute("viewBox","0 0 24 24");
+	}
+	if(command.icon){
+		if(command.icon.indexOf(".svg")>0){
+			UtilsDom.replaceWithSvgInline(image,command.icon,(img,svg)=>setSizeFunc(svg));
+		}else if(command.icon.indexOf("<svg") == 0){
+			var container = document.createElement('div');
+			container.innerHTML = command.icon;
+			var icon = container.firstChild;
+			setSizeFunc(icon);
+			icon.setAttribute("id",image.id);
+			icon.onclick = image.onclick;
+			//image.parentNode.removeChild(image);
+			UtilsDom.replaceElement(image,icon);
+		}else {
+			if(image.tagName != "img"){
+				var icon = document.createElement("img");
+				icon.setAttribute("id",image.id);
+				icon.onclick = image.onclick;
+				icon.src = command.icon;
+				setSizeFunc(icon);
+				UtilsDom.replaceElement(image,icon);
+			}else{
+				image.src = command.icon;
+			}
+		}
+	}else{
+		UtilsDom.replaceWithSvgInline(image,"/icons/commands/" + command.commandId + ".svg").then(svg=>{
+			if(!svg){
+				return;
+			}
+			if(command.transformIcon){
+				svg.style.transform = command.transformIcon;
+			}
+		});
+	}
+}
+var getDeviceCommands = function(){
+	var result = deviceCommands.slice();
+	var taskerCommands = new TaskerCommands();
+	var getOnClickFunc = command => function(deviceId, notify,text){
+		taskerCommands.performCommand(deviceId,command.commandId);
+	}
+	var getConditionFunc = command => function(device){
+		return command.deviceIds && command.deviceIds.indexOf(device.deviceId)>=0;
+	}
+	for(var command of taskerCommands.getCommands()){
+		command.keepTab = true;
+		command.func = getOnClickFunc(command);
+		command.condition = getConditionFunc(command);
+		result.push(command);
+	}
+	return result;
+}
 var commandSortOrder = {};
 var sortDeviceCommands = function(){
 	if(!localStorage){
@@ -187,6 +246,7 @@ var sortDeviceCommands = function(){
 		return;
 	}
 	var sortOrder = JSON.parse(orderJson);
+	var deviceCommands = getDeviceCommands();
 	deviceCommands.sort(function(c1,c2){
 		var order1 = sortOrder[c1.commandId];
 		var order2 = sortOrder[c2.commandId];
@@ -198,6 +258,7 @@ var sortDeviceCommands = function(){
 		}
 		return order1 - order2;
 	});
+	return deviceCommands;
 }
 
 var storeDeviceCommandOrder = function(){

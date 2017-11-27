@@ -6,6 +6,7 @@ var joinserverBase =  "https://joinjoaomgcd.appspot.com/";
 
 var joinserver =  joinserverBase + "_ah/api/";
 
+var LAST_PUSH_CUSTOM_COMMAND = "customcommand";
 
 var TEST_PUSH_TEXT = "###Testing Join###";
 var TEST_PUSH_EVENT = "testpush";
@@ -944,3 +945,17 @@ var setPopupIcon = function(alternative){
 		});
 	  }
 }
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+};

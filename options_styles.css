@@ -495,3 +495,48 @@ select:focus {
 	}
 }
 
+.taskerCommands{
+	display: flex;
+	flex-direction: column;
+}
+.taskerCommands svg{
+	fill: var(--theme-accent-color-lowlight);
+}
+.taskerCommands svg:hover{
+	fill: var(--theme-accent-color);
+}
+.taskerCommand{
+	margin-top: 16px;
+}
+.taskerCommandTop{
+	display: flex;
+	align-items: center;
+}
+.taskerCommand input{
+    width: 95%;
+}
+.taskerCommandIcon>img,.taskerCommandIcon>svg{
+	width: 24px;
+	padding: 8px;
+	cursor: pointer;
+}
+.taskerCommandName{
+	flex-grow: 1;
+}
+.taskerCommandText{
+	flex-grow: 1;
+}
+.taskerCommandDelete>svg{
+	cursor: pointer;
+}
+#taskerCommandButtons{
+	display: flex;
+}
+#taskerCommandButtons>input{
+	flex-grow: 1;
+	margin: 8px;
+}
+.taskerCommand .devicesToApply{
+	display: flex;
+	overflow-x: auto;
+}

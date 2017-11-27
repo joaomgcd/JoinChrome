@@ -39,7 +39,13 @@ chrome.commands.onCommand.addListener(function(command) {
 var eventBus = new EventBus();
 var repeatLastCommand = function(){	
 	if(localStorage["lastpush"]){
-		window[localStorage["lastpushtype"]](localStorage["lastpush"], true);
+		var deviceId = localStorage["lastpush"];
+		var lastPushFunc = localStorage["lastpushtype"];
+		if(lastPushFunc.indexOf(LAST_PUSH_CUSTOM_COMMAND)==0){
+			new TaskerCommands().performCommand(deviceId,lastPushFunc.split("=:=")[1], true);
+		}else{
+			window[lastPushFunc](deviceId, true);	
+		}
 	}else{
 		createPushClipboardWindowAndCloseAfterCommand();
 	}
