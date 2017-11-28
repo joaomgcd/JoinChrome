@@ -238,15 +238,15 @@ var getDeviceCommands = function(){
 }
 var commandSortOrder = {};
 var sortDeviceCommands = function(){
+	var deviceCommands = getDeviceCommands();
 	if(!localStorage){
-		return;
+		return deviceCommands;
 	}
 	var orderJson = localStorage.deviceCommandsOrder;
 	if(!orderJson){
-		return;
+		return deviceCommands;
 	}
 	var sortOrder = JSON.parse(orderJson);
-	var deviceCommands = getDeviceCommands();
 	deviceCommands.sort(function(c1,c2){
 		var order1 = sortOrder[c1.commandId];
 		var order2 = sortOrder[c2.commandId];
