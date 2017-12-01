@@ -12,3 +12,6 @@ label.selection .selection_indicator {
 label.selection input:checked ~.selection_indicator {
 	filter: invert(100%);
 }
+.taskerCommand {
+	background: var(--theme-accent-color-dark);
+}

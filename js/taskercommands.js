@@ -73,6 +73,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 	var divCommands =  document.createElement('div');
 	divCommands.classList.add("taskerCommands");	
 	var htmlCommand = `
+		<h2 class="taskerCommandTitle"></h2>
 		<div class="taskerCommandTop">
 			<div class="taskerCommandIcon"><img id="commandicon" /></div>			
 			<div class="taskerCommandName" ><input type="text" placeholder="Name" /></input></div>
@@ -137,12 +138,16 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 			var promptTextElement = divCommand.querySelector(".taskerCommandPrompt input");
 			var imageElement = divCommand.querySelector(".taskerCommandIcon>img");
 			var deleteElement = divCommand.querySelector(".taskerCommandDelete");
+			var titleElement = divCommand.querySelector(".taskerCommandTitle");
 
-			if(command.label) nameElement.setAttribute("value",command.label);
+			if(command.label) {nameElement.setAttribute("value",command.label);titleElement.innerHTML = command.label;}
 			if(command.commandText) textElement.setAttribute("value",command.commandText);
 			if(command.promptText) promptTextElement.value = command.promptText;
 			nameElement.onkeyup = e => {
-				findCommand(e).label = e.target.value;
+				var commandElement = findCommandElement(e);
+				var titleElement = commandElement.querySelector(".taskerCommandTitle");
+				commandElement.command.label = e.target.value;
+				titleElement.innerHTML = e.target.value;
 				saveDelayed();
 			}
 			textElement.onkeyup = e => {
