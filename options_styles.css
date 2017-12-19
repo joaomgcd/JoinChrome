@@ -510,28 +510,30 @@ select:focus {
 .taskerCommands svg:hover{
 	fill: var(--theme-accent-color);
 }
-.taskerCommand{
+.taskerCommand {
+	grid-template-columns: 1fr ;
+	grid-template-rows: repeat(auto-fit,minmax(100px, 1fr)) ;
 	background: var(--theme-accent-color-light);
 	padding: 16px;
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
 	position: relative;
-	min-width: 30%;
-	max-width: 90%;
 }
 .taskerCommand .taskerCommandTitle{
 	margin-top: 0px;
 	display: flex;
 	flex-direction: row;
 }
-.taskerCommandTop{
-	display: flex;
-	align-items: center;
-}
 .taskerCommand input{
     width: 100%;    
 	background: transparent;
 	color: var(--theme-text-color);
 	border-bottom-color: var(--theme-text-color);
+}
+.taskerCommand input:focus{
+	opacity: 0.7;
+}
+.taskerCommand input:valid{
+    opacity: 1;
 }
 .taskerCommand input::placeholder{
 	color: var(--theme-text-color);
@@ -571,8 +573,25 @@ select:focus {
 }
 .taskerCommand .devicesToApply{
 	display: flex;
+	flex-direction: column;
 	overflow-x: auto;
+	position: absolute;
+	z-index: 9999;
+	background: var(--theme-accent-color);
+	right: 16px;
 }
 .taskerCommandPrompt input{
 	width: 100%;
+}
+.taskerCommand .devicesToApplySelect{
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	height: 16px;
+	margin: 8px;
+	overflow: hidden;
+}
+.taskerCommand .dropdownindicator{	
+    flex-grow: 1;
+    text-align: right;
 }

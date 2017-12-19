@@ -39,6 +39,11 @@ var TaskerCommands = function(){
 		commands.push(newCommand);
 		return this.saveCommands();
 	}	
+	this.hasCommandDevice = (commandId,deviceIds) => {
+		var command = findCommand(commandId);
+		if(!command) return false;
+		return command.deviceIds.indexOf(commandId)>=0;
+	}
 	this.setCommandDevices = (commandId,deviceIds) => {
 		var command = findCommand(commandId);
 		command.deviceIds = deviceIds;
@@ -75,14 +80,13 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 	var htmlCommand = `
 		<div class="taskerCommandTitle">
 			<div class="taskerCommandIcon"><img id="commandicon" /></div>			
-			<div class="taskerCommandName" ><input type="text" placeholder="Name" /></input></div>
+			<div class="taskerCommandName" ><input required type="text" placeholder="Name" /></input></div>
 			<div class="taskerCommandDelete"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></div>
 		</div>
-		<div class="taskerCommandTop">
-			<div class="taskerCommandText" ><input type="text" placeholder="Command"  /></div>
-		</div>		
-		<div class="taskerCommandPrompt" ><input type="text" placeholder="Prompt Text: if set will use command text above as a prefix and prompt for the suffix when ran"  /></div>
-		<div class="devicesToApply"></div>
+		<div class="taskerCommandText" ><input required type="text" placeholder="Command"  /></div>
+		<div class="taskerCommandPrompt" ><input required type="text" placeholder="Prompt Text: if set will use command text above as a prefix and prompt for the suffix when ran"  /></div>
+		<div class="devicesToApplySelect"><div>Select Devices</div><div class="dropdownindicator">⏷</div></div>
+		<div class="devicesToApply hidden"></div>
 		`
 	var findCommand = event => {
 		var element = findCommandElement(event)
@@ -122,6 +126,10 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 		taskerCommands.addCommand({"commandId":guid(),"label":"","commandText":"","icon":"/icons/commands/tasker.svg"});
 		this.renderCommands();
 	}
+	var refreshSelectedDevicesString = commandElement => {
+		var command = commandElement.command;
+		commandElement.querySelector(".devicesToApplySelect").querySelector("div").innerHTML = command.deviceIds.map(deviceId=>back.devices.first(device=>device.deviceId==deviceId)).map(device=>device.deviceName).join(", ");
+	}
 	var saveDelayed = this.save;
 	this.renderCommands  = () => {
 		divCommands.innerHTML = "";
@@ -140,6 +148,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 			var imageElement = divCommand.querySelector(".taskerCommandIcon>img");
 			var deleteElement = divCommand.querySelector(".taskerCommandDelete");
 			var titleElement = divCommand.querySelector(".taskerCommandTitle");
+			var selectDevicesElement = divCommand.querySelector(".devicesToApplySelect");
 
 			if(command.label) {nameElement.setAttribute("value",command.label);}
 			if(command.commandText) textElement.setAttribute("value",command.commandText);
@@ -160,6 +169,10 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 				saveDelayed();
 			}
 			imageElement.onclick = e => setCommandIcon(e);
+			selectDevicesElement.onclick = e => {
+				var devices = findCommandElement(e).querySelector(".devicesToApply");
+				devices.classList.toggle("hidden");
+			}
 			handleDeviceCommandIcon(command,imageElement);
 			deleteElement.onclick = e => {
 				var element = e.target;
@@ -169,13 +182,16 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 				taskerCommands.removeCommand(element.command);this.renderCommands()
 			};
 			var elementDevices = divCommand.querySelector(".devicesToApply");
+			refreshSelectedDevicesString(divCommand);
+			var countSelected = 0;
 			for(var device of back.devices){
 				var label = UtilsDom.createElement(elementDevices,"label", device.deviceId + "=:="+command.commandId,{"class":"selection"});
 				var text = document.createTextNode(device.deviceName);
 				label.appendChild(text);
-				var checkbox = UtilsDom.createElement(label,"input", device.deviceId + "=:=" + command.commandId + "enablecommand",{"type":"checkbox","class":"devicecommandstatus"});
+				var checkbox = UtilsDom.createElement(label,"input", device.deviceId + "=:=" + command.commandId + "enablecommand",{"type":"checkbox","class":"devicecommandstatus hidden"});
 				if(command.deviceIds && command.deviceIds.indexOf(device.deviceId)>=0){
 					checkbox.checked = true;
+					countSelected++;
 				}
 				checkbox.device = device;
 				checkbox.onchange = e => {
@@ -184,6 +200,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 					var checkboxes = commandElement.querySelectorAll(".devicecommandstatus");
 					var deviceIds = Array.prototype.map.call(Array.prototype.filter.call(checkboxes,checkbox=>checkbox.checked),checkbox => checkbox.device.deviceId);
 					taskerCommands.setCommandDevices(command.commandId, deviceIds);
+					refreshSelectedDevicesString(commandElement);
 				}
 				var selectionIndicator = UtilsDom.createElement(label,"div", device.deviceId + "=:="+command.commandId+ "selectionIndicator",{"class":"selection_indicator"});
 			}

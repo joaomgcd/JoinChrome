@@ -447,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		var taskerCommandsAddButton = document.querySelector("#taskerCommandsAdd");
 		taskerCommandsAddButton.onclick = e => taskerCommandsUI.add();
+		
 
 		
 });
