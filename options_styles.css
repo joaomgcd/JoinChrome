@@ -495,10 +495,9 @@ select:focus {
 	}
 }
 
-.taskerCommands{
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr) ) ;
-	grid-gap: 16px;
+.taskerCommands{ 
+	display: flex;
+  	flex-wrap: wrap;
 }
 .taskerCommand:last-child{
 //	background: red;
@@ -511,8 +510,9 @@ select:focus {
 	fill: var(--theme-accent-color);
 }
 .taskerCommand {
-	grid-template-columns: 1fr ;
-	grid-template-rows: repeat(auto-fit,minmax(100px, 1fr)) ;
+	flex-grow: 1;
+	width: 40%;
+  	margin: 8px;
 	background: var(--theme-accent-color-light);
 	padding: 16px;
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
@@ -524,7 +524,7 @@ select:focus {
 	flex-direction: row;
 }
 .taskerCommand input{
-    width: 100%;    
+    flex-grow: 1;
 	background: transparent;
 	color: var(--theme-text-color);
 	border-bottom-color: var(--theme-text-color);
@@ -547,6 +547,7 @@ select:focus {
 	cursor: pointer;
 }
 .taskerCommandName{
+	display: flex;
 	flex-grow: 1;
 	margin-right: 8px;
 }
@@ -554,8 +555,11 @@ select:focus {
 	border-bottom-color: transparent;
 	font-size: 200%;
 	font-weight: bold;
+	overflow-x: hidden;    
+	width: 0px;
 }
 .taskerCommandText{
+	display: flex;
 	flex-grow: 1;
 }
 .taskerCommandDelete{
@@ -580,8 +584,8 @@ select:focus {
 	background: var(--theme-accent-color);
 	right: 16px;
 }
-.taskerCommandPrompt input{
-	width: 100%;
+.taskerCommandPrompt{
+	display: flex;
 }
 .taskerCommand .devicesToApplySelect{
 	cursor: pointer;
