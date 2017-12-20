@@ -128,6 +128,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 	}
 	var refreshSelectedDevicesString = commandElement => {
 		var command = commandElement.command;
+		if(!command.deviceIds) return;
 		commandElement.querySelector(".devicesToApplySelect").querySelector("div").innerHTML = command.deviceIds.map(deviceId=>back.devices.first(device=>device.deviceId==deviceId)).map(device=>device.deviceName).join(", ");
 	}
 	var saveDelayed = this.save;
