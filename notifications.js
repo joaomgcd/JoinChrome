@@ -132,15 +132,15 @@ var writeNotifications = function(filter){
 				date_format = date_format + " #AMPM#";
 			}
 			dateElement.innerHTML = new Date(not.date).customFormat(date_format);
-			titleElement.innerHTML = DOMPurify.sanitize(not.title);
+			titleElement.innerHTML = back.sanitizeHTML(not.title);
 			if(not.lines && not.lines.length>0){
 				var linesText = "";
 				not.lines.doForAll(function(line){
 					linesText += line + "<br/>";
 				});
-				textElement.innerHTML = DOMPurify.sanitize(linesText);
+				textElement.innerHTML = back.sanitizeHTML(linesText);
 			}else{
-				textElement.innerHTML = DOMPurify.sanitize(not.text.replace(/(?:\r\n|\r|\n)/g, '<br />'));
+				textElement.innerHTML = back.sanitizeHTML(not.text.replace(/(?:\r\n|\r|\n)/g, '<br />'));
 			}
 			var buttonsElement = notificationElement.querySelector("#buttons");
 			if(not.buttons){
@@ -157,7 +157,7 @@ var writeNotifications = function(filter){
 					//     button.icon = not.appIcon;
 					// }
 					// pushIconToDownloadIfNeeded(buttonIconElement,button.icon);
-					buttonTextElement.innerHTML = DOMPurify.sanitize(button.text);
+					buttonTextElement.innerHTML = back.sanitizeHTML(button.text);
 					buttonElement.id = button.actionId;
 					buttonsElement.appendChild(buttonElement);
 				};

@@ -588,7 +588,7 @@ var SmsApp = function(){
 						var contactTextElement = contactElement.querySelector("#smscontacttext");
 						var contactDateElement = contactElement.querySelector("#smscontactdate");
 						contactNameElement.innerHTML = contact.name;
-						contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ DOMPurify.sanitize(contact.lastsms.text);
+						contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ back.sanitizeHTML(contact.lastsms.text);
 						contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
 						var contactPhoto = contact.photo;
@@ -750,9 +750,9 @@ var SmsApp = function(){
 				if(smsText){
 					smsText = smsText.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>")	
 				}
-				smsTextElement.innerHTML = DOMPurify.sanitize(Autolinker.link(smsText,{"stripPrefix" : false}));
+				smsTextElement.innerHTML = back.sanitizeHTML(Autolinker.link(smsText,{"stripPrefix" : false}));
 				if(sms.subject){
-					smsSubjectElement.innerHTML = `Subject: ${DOMPurify.sanitize(sms.subject)}`;
+					smsSubjectElement.innerHTML = `Subject: ${back.sanitizeHTML(sms.subject)}`;
 				}else{
 					smsSubjectElement.classList.add("hidden");
 				}

@@ -1873,7 +1873,7 @@ var handleAutoClipboard = function(){
 handleAutoClipboard();
 
 contextMenu.update(devices);
-
+var sanitizeHTML = DOMPurify.sanitize;
 var getPushesWhileAway = ()=>{
 	var googleDriveManager = new GoogleDriveManager();
 	googleDriveManager.getMyDevicePushes(true,true)
