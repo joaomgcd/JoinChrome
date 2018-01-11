@@ -255,14 +255,37 @@ var ContactMessagesGetter = function(deviceId, contact){
 				setRefreshing(false);
 				return;
 			}
-			me.messages = messages;
-			if(me.messages.smses){
-				me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
+			try{
+				if(messages.smses){
+					messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
+					var allRemotesExist = true;
+					for (var i = 0; i < messages.smses.length; i++) {
+						var remote = messages.smses[i];
+						if(i<me.messages.smses.length){
+							var local = me.messages.smses[i];
+							if(remote.date != remote.date){
+								allRemotesExist = false;
+								break;
+							}	
+						}else{
+							allRemotesExist = false;
+							break;
+						}
+					}
+					if(allRemotesExist){
+						return;
+					}
+				}
+				me.messages = messages;
+			}finally{
+				if(me.messages.smses){
+					me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
+				}
+				addStoredSmsToMyMessages(true);
+				callback(me.messages);
+				me.saveLocalMessages();
+				setRefreshing(false);
 			}
-			addStoredSmsToMyMessages(true);
-			callback(me.messages);
-			me.saveLocalMessages();
-			setRefreshing(false);
 		}catch(error){
 			console.log("Error downloading lastsms file: " + error);
 			delete localStorage[fileKey];
