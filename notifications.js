@@ -133,15 +133,20 @@ var writeNotifications = function(filter){
 			}
 			dateElement.innerHTML = new Date(not.date).customFormat(date_format);
 			titleElement.innerHTML = back.sanitizeHTML(not.title);
+			var notificationText = null;
 			if(not.lines && not.lines.length>0){
 				var linesText = "";
 				not.lines.doForAll(function(line){
 					linesText += line + "<br/>";
 				});
-				textElement.innerHTML = back.sanitizeHTML(linesText);
+				notificationText = linesText;
 			}else{
-				textElement.innerHTML = back.sanitizeHTML(not.text.replace(/(?:\r\n|\r|\n)/g, '<br />'));
+				notificationText = not.text.replace(/(?:\r\n|\r|\n)/g, '<br />');
 			}
+			if(!notificationText){
+				notificationText = "";
+			}
+			textElement.innerHTML = back.sanitizeHTML(Autolinker.link(notificationText,{"stripPrefix" : false}));
 			var buttonsElement = notificationElement.querySelector("#buttons");
 			if(not.buttons){
 				buttonsElement.style.display = "flex";
@@ -198,6 +203,12 @@ var writeNotifications = function(filter){
 			notificationright.style.cursor = "pointer";
 		}
 		notificationright.onclick = function(event){
+			var url = event.target["href"]
+			if(url){
+				event.preventDefault();
+				openTab(url);
+				return true;
+			}
 			var not = event.currentTarget.notification;
 			var opened = openNotificationPage(not);
 			if(!opened){
