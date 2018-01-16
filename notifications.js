@@ -146,7 +146,7 @@ var writeNotifications = function(filter){
 			if(!notificationText){
 				notificationText = "";
 			}
-			textElement.innerHTML = back.sanitizeHTML(Autolinker.link(notificationText,{"stripPrefix" : false}));
+			textElement.innerHTML = back.sanitizeHTML(back.Autolinker.link(notificationText,{"stripPrefix" : false}));
 			var buttonsElement = notificationElement.querySelector("#buttons");
 			if(not.buttons){
 				buttonsElement.style.display = "flex";

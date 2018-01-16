@@ -259,17 +259,21 @@ var ContactMessagesGetter = function(deviceId, contact){
 				if(messages.smses){
 					messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
 					var allRemotesExist = true;
-					for (var i = 0; i < messages.smses.length; i++) {
-						var remote = messages.smses[i];
-						if(i<me.messages.smses.length){
-							var local = me.messages.smses[i];
-							if(remote.date != remote.date){
+					if(!me.messages){
+						allRemotesExist = false;
+					}else{
+						for (var i = 0; i < messages.smses.length; i++) {
+							var remote = messages.smses[i];
+							if(i<me.messages.smses.length){
+								var local = me.messages.smses[i];
+								if(remote.date != remote.date){
+									allRemotesExist = false;
+									break;
+								}	
+							}else{
 								allRemotesExist = false;
 								break;
-							}	
-						}else{
-							allRemotesExist = false;
-							break;
+							}
 						}
 					}
 					if(allRemotesExist){
@@ -773,7 +777,7 @@ var SmsApp = function(){
 				if(smsText){
 					smsText = smsText.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>")	
 				}
-				smsTextElement.innerHTML = back.sanitizeHTML(Autolinker.link(smsText,{"stripPrefix" : false}));
+				smsTextElement.innerHTML = back.sanitizeHTML(back.Autolinker.link(smsText,{"stripPrefix" : false}));
 				if(sms.subject){
 					smsSubjectElement.innerHTML = `Subject: ${back.sanitizeHTML(sms.subject)}`;
 				}else{
