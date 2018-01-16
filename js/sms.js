@@ -266,7 +266,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 							var remote = messages.smses[i];
 							if(i<me.messages.smses.length){
 								var local = me.messages.smses[i];
-								if(remote.date != remote.date){
+								if(remote.date != local.date){
 									allRemotesExist = false;
 									break;
 								}	
