@@ -276,6 +276,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 							}
 						}
 					}
+					back.console.log(`All remotes exist: ${allRemotesExist}`);
 					if(allRemotesExist){
 						return;
 					}
@@ -576,6 +577,8 @@ var SmsApp = function(){
 		contactsGetter.addSms(sms);
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
 		contactMessagesGetter.addSms(sms);
+		//back.console.log("Added SMS");
+		//back.console.log(sms);	
 	}
 	me.receiveSms= function(deviceId, sms){
 		if(!sms.date){
@@ -583,6 +586,8 @@ var SmsApp = function(){
 		}
 		sms.received = true;
 		me.addSms(deviceId,sms);
+		//back.console.log("Added received SMS");
+		//back.console.log(sms);		
 	}
 	if(textFromUrl){
 		//me.receiveSms(deviceIdFromUrl,{"number":numberFromUrl,"text":textFromUrl});
@@ -772,7 +777,16 @@ var SmsApp = function(){
 				var smsAttachmentElement = smsMessageElement.querySelector("#smsmessageattachment");
 				var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
 				var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
-
+				
+				smsTextElement.onclick = event => {
+					var url = event.target["href"]
+					if(url){
+						event.preventDefault();
+						openTab(url);
+						return true;
+					}
+					return false;
+				}
 				var smsText = sms.text;
 				if(smsText){
 					smsText = smsText.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>")	
@@ -1062,8 +1076,8 @@ var phoneCall = function(event){
 back.addEventListener("phonecall",phoneCall,false);
 
 var smsReceived = function(event){
-	// console.log("Received SMS in popup from " + event.deviceId);
-	// console.log(event.sms);
+	//back.console.log("Received SMS in popup from " + event.deviceId);
+	//back.console.log(event.sms);
 	smsApp.receiveSms(event.deviceId,event.sms);
 	smsApp.refresh(true);
 	smsApp.clearSmsNotification();
