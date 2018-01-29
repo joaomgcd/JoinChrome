@@ -317,6 +317,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 var SmsApp = function(){
 
 	var me = this;
+	me.isShowingNumberMessages = false;
 	var googleDriveManager = new GoogleDriveManager();
 	var smsTitleContainerElement = document.getElementById("smstitlecontainer");
 	var smsInputContainerElement = document.getElementById("smssendcontainer");
@@ -604,6 +605,9 @@ var SmsApp = function(){
   <path d="M 130 222.16 C 98 222.16 69.712 205.776 53.2 181.2 C 53.584 155.6 104.4 141.52 130 141.52 C 155.6 141.52 206.416 155.6 206.8 181.2 C 190.288 205.776 162 222.16 130 222.16 M 130 40.4 C 151.208 40.4 168.4 57.59 168.4 78.8 C 168.4 100.01 151.208 117.2 130 117.2 C 108.792 117.2 91.6 100.01 91.6 78.8 C 91.6 57.59 108.792 40.4 130 40.4 M 130 2 C 59.308 2 2 59.306 2 130 C 2 200.694 59.308 258 130 258 C 200.692 258 258 200.694 258 130 C 258 59.216 200.4 2 130 2 Z"/>
 </svg>`;
 	var writeContactsInfo = function(deviceId, contactsInfo){
+		if(me.isShowingNumberMessages){
+			return;
+		}
 		if(contactsInfo && contactsInfo.contacts){
 			var contacts = contactsInfo.contacts;
 			smsContainerElement.innerHTML = "";
@@ -651,6 +655,7 @@ var SmsApp = function(){
 		}
 	};
 	me.writeSms = UtilsObject.async(function* (deviceId, local){
+		me.isShowingNumberMessages = false;
 		me.number = null;
 		me.contact = null;
 		delete localStorage.smsDeviceContact;
@@ -741,6 +746,7 @@ var SmsApp = function(){
 		localStorage.smsDeviceContact = JSON.stringify(me.contact);
 		var name = contact.name;
 		var number = contact.number;
+		me.isShowingNumberMessages = true;
 		me.number = number;
 		setPlaceholderText("Getting Messages for "+ name +"...");
 		var title = name;
@@ -757,6 +763,9 @@ var SmsApp = function(){
 		me.focusSmsInput();
 		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
 		contactMessagesGetter.getInfo(function(contactMessages){
+			if(!me.isShowingNumberMessages){
+				return;
+			}
 			var smses = contactMessages.smses;
 			if(!contactMessages || !contactMessages.smses){
 				setPlaceholderText("No messages for " + name);
