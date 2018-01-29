@@ -129,7 +129,15 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 	var refreshSelectedDevicesString = commandElement => {
 		var command = commandElement.command;
 		if(!command.deviceIds) return;
-		commandElement.querySelector(".devicesToApplySelect").querySelector("div").innerHTML = command.deviceIds.map(deviceId=>back.devices.first(device=>device.deviceId==deviceId)).map(device=>device.deviceName).join(", ");
+		var selectedDevices = command.deviceIds.map(deviceId=>back.devices.first(device=>device.deviceId==deviceId));
+		var deviceNames = selectedDevices.filter(device=>{
+			if(device){
+				return true;
+			}else{
+				return false;
+			}
+		}).map(device=>device.deviceName);
+		commandElement.querySelector(".devicesToApplySelect").querySelector("div").innerHTML = deviceNames.join(", ");
 	}
 	var saveDelayed = this.save;
 	this.renderCommands  = () => {
