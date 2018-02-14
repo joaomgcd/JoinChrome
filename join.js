@@ -1470,11 +1470,13 @@ var showSmsPopup = function(deviceId,number,name,isReply,text){
 addEventListener(EVENT_SMS_HANDLED,function(event){
 	var text = event.text;
 	var deviceId = event.deviceId;
-	if(!text || !deviceId){
+	var address = event.address;
+	if(!text || !deviceId || !address){
 		return;
 	}
 	var gcm = new GCMSMSHandled();
 	gcm.text = text;
+	gcm.address = address;
 	gcm.send(deviceId);
 });
 var sendSmsFromButtonCommand = function(deviceId){
@@ -1699,6 +1701,8 @@ deviceImages[""+DEVICE_TYPE_IOS_PHONE] =function(device){return "iphone.png";};
 deviceImages[""+DEVICE_TYPE_IOS_TABLET]=function(device){return"ipad.png";};
 deviceImages[""+DEVICE_TYPE_CHROME_BROWSER]=function(device){return"chrome.png";};
 deviceImages[""+DEVICE_TYPE_WIDNOWS_PC]=function(device){return"windows10.png";};
+deviceImages[""+DEVICE_TYPE_IFTTT]=function(device){return"ifttt.png";};
+deviceImages[""+DEVICE_TYPE_IP]=function(device){return"ip.png";};
 deviceImages[""+DEVICE_TYPE_FIREFOX]=function(device){return"firefox.png";};
 deviceImages[""+DEVICE_TYPE_GROUP]=function(device){return device.deviceId.substring(6) + ".png"};
 deviceImages[""+DEVICE_TYPE_ANDROID_TV]=function(device){return "tv.png"};

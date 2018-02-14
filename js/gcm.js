@@ -73,9 +73,9 @@ var GCM = function(){
                 doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
             },
             onSendSuccess: device => {
-            	if(!UtilsDevices.isChrome(device)){
-            		return;
-            	}
+            	if(!device) return;
+            	if(!UtilsDevices.isChrome(device)) return;
+            	
             	var googleDriveManager = new GoogleDriveManager();
             	googleDriveManager.addPushToDevice(device.deviceId, params, true)
             	.then(result=>console.log("Added successful push to other device's stored pushes"));
@@ -292,6 +292,13 @@ var GCMPush = function(){
 					gcmLocation.send(me.push.senderId);
 				});
 			}
+		}
+		if(this.push.say){
+			var options = {};
+			if(this.push.language){
+				options.lang = this.push.language;
+			}
+			chrome.tts.speak(this.push.say, options);
 		}
 		var googleDriveManager = new GoogleDriveManager();
 		googleDriveManager.addPushToMyDevice(this.push);
@@ -543,7 +550,7 @@ var GCMNotification = function(notification, senderId){
 			}
 			not.cancel = function(localOnly){
 				if(not.isSmsNotification(not.actionId)){
-					back.dispatch(EVENT_SMS_HANDLED,{"text":not.text,"deviceId":not.senderId});
+					back.dispatch(EVENT_SMS_HANDLED,{"text":not.smstext,"address":not.smsnumber,"deviceId":not.senderId});
 				}
 				notifications.removeNotificationsWithSameId(this.id);
 				if(!localOnly && this.gcmDeleteOnCancel){

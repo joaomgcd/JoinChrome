@@ -6,7 +6,7 @@ var deviceCommands = [
 		"func":back.pushUrl,
 		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_URL);
+			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_URL) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{
@@ -15,7 +15,7 @@ var deviceCommands = [
 		"func":back.pushClipboard,
 		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_CLIPBOARD);
+			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_CLIPBOARD) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{
@@ -24,7 +24,7 @@ var deviceCommands = [
 		"func":back.writeText,
 		"showForGroups":joindevices.groups.deviceGroups.androidGroups,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_CLIPBOARD);
+			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_CLIPBOARD) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		},
 		"hasText":true
 	},
@@ -96,7 +96,7 @@ var deviceCommands = [
 		"commandId":"location",
 		"func":back.requestLocation,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_LOCATE);
+			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_LOCATE) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{
@@ -129,12 +129,30 @@ var deviceCommands = [
 		}
 	},
 	{
+		"label":"Send a Maker event",
+		"commandId":"maker",
+		"func":back.pushTaskerCommand,
+		"hasText":true,
+		"condition":function(device){
+			return device.deviceType == DEVICE_TYPE_IFTTT  && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);
+		}
+	},
+	{
+		"label":"Send a Command",
+		"commandId":"command",
+		"func":back.pushTaskerCommand,
+		"hasText":true,
+		"condition":function(device){
+			return  device.deviceType == DEVICE_TYPE_IP && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);
+		}
+	},
+	{
 		"label":"Open PC Clipboard as file on device",
 		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
 		"commandId":"openclipboard",
 		"func":back.openClipboard,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_SEND_FILE);
+			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_SEND_FILE) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{
@@ -159,7 +177,7 @@ var deviceCommands = [
 		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
 		"func":back.noteToSelf,
 		"condition":function(device){
-			return UtilsDevices.canReceiveNotifications(device);
+			return UtilsDevices.canReceiveNotifications(device) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{
@@ -174,7 +192,10 @@ var deviceCommands = [
 	{
 		"label":"Check Device's Push History",
 		"commandId":"pushhistory",
-		"func":back.showPushHistory
+		"func":back.showPushHistory,
+		"condition":function(device){
+			return device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
+		}
 	},
 ];
 

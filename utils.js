@@ -1,7 +1,7 @@
 
 /*************************CONSTANTS***********************/
 
-//var joinserverBase =  "http://192.168.1.67:8080/";
+//var joinserverBase =  "http://192.168.1.80:8080/";
 var joinserverBase =  "https://joinjoaomgcd.appspot.com/";
 
 var joinserver =  joinserverBase + "_ah/api/";
@@ -33,6 +33,8 @@ var DEVICE_TYPE_GROUP = 7;
 var DEVICE_TYPE_ANDROID_TV = 8;
 var DEVICE_TYPE_IOS_PHONE = 10;
 var DEVICE_TYPE_IOS_TABLET = 11;
+var DEVICE_TYPE_IFTTT = 12;
+var DEVICE_TYPE_IP = 13;
 
 
 var GCM_PARAM_TIME_TO_LIVE = "time_to_live";
@@ -81,6 +83,8 @@ joindevices.groups.DeviceGroups = function(){
 	this.deviceTypeGroups[DEVICE_TYPE_IOS_TABLET] = [DEVICE_GROUP_ALL,DEVICE_GROUP_IOS,DEVICE_GROUP_TABLET];
 	this.deviceTypeGroups[DEVICE_TYPE_CHROME_BROWSER] = [DEVICE_GROUP_ALL,DEVICE_GROUP_CHROME,DEVICE_GROUP_PC];
 	this.deviceTypeGroups[DEVICE_TYPE_WIDNOWS_PC] = [DEVICE_GROUP_ALL,DEVICE_GROUP_WINDOWS10,DEVICE_GROUP_PC];
+	this.deviceTypeGroups[DEVICE_TYPE_IFTTT] = [DEVICE_GROUP_ALL];
+	this.deviceTypeGroups[DEVICE_TYPE_IP] = [DEVICE_GROUP_ALL];
 	this.deviceTypeGroups[DEVICE_TYPE_FIREFOX] = [DEVICE_GROUP_ALL,DEVICE_GROUP_FIREFOX,DEVICE_GROUP_PC];
 	this.deviceTypeGroups[DEVICE_TYPE_ANDROID_TV] = [DEVICE_GROUP_ALL,DEVICE_GROUP_ANDROID];
 	this.putDevicesIntoGroups = function(devices){

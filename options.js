@@ -256,6 +256,7 @@ var generateHideCommandsOptions = function(){
 	}
 }
 var generateHideDevicesOptions = function(){
+	if(!UtilsObject.isArray(back.devices)) return;
 	var hideCommandsElement = document.querySelector("#hidedevices");
 	for(var device of back.devices){
 		var label = UtilsDom.createElement(hideCommandsElement,"label", device.deviceId + "label",{"class":"selection"});
@@ -273,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		if(!back.getVoiceEnabled()){
 			back.onvoiceenabledsave(optionVoice,false);
 		}
-		UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
+		/*UtilsObject.doOnce("voicereminderrrrrrrrrrrrrrrrrr",()=>{
 			Dialog.showOkCancelDialog({
 				"title": "Control Join with your voice",
 				"subtitle": "You can control Join with your voice.<br/><br/>Want to give it a try?"
@@ -284,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				handleVoiceOption();
 			})
 			.catch(()=>console.log("dont show voice intro"));
-		})
+		})*/
 		optionVoice.addEventListener("click", handleVoiceOption);
 		// Apply dark or light theme
 		document.querySelector("#resettheme").onclick = e => {

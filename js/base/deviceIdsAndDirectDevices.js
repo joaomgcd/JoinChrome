@@ -98,7 +98,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		devicesForId.doForAll(function(deviceForId){
 			var devicesExpanded = me.convertGroupToDeviceIds(deviceForId);
 			devicesExpanded.doForAll(function(deviceForId){
-				if(deviceForId.regId2){
+				if(deviceForId.regId2 && deviceForId.deviceType != DEVICE_TYPE_IFTTT && deviceForId.deviceType != DEVICE_TYPE_IP){
 					me.directDevices.removeIf(function(device){
 						return device.deviceId == deviceForId.deviceId;
 					});

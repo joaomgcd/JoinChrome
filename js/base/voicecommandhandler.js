@@ -64,6 +64,14 @@ var VoiceCommandHandlerDeviceCommands = function(){
 			alias:["windows","browser","pc"]
 		},
 		{
+			type:DEVICE_TYPE_IFTTT,
+			alias:["ift","cloud"]
+		},
+		{
+			type:DEVICE_TYPE_IP,
+			alias:["machine"]
+		},
+		{
 			type:DEVICE_TYPE_FIREFOX,
 			alias:["browser","pc","firefox"]
 		},
