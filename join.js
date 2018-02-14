@@ -1728,7 +1728,8 @@ var setDevices = function(devicesToSet){
 	if(devicesToSet){
 		for (var i = 0; i < devicesToSet.length; i++) {
 			var device = devicesToSet[i];
-			if(!localStorage.deviceId || localStorage.deviceId != device.deviceId){
+			if(!joindevices.groups.deviceGroups.isDeviceInGroup(device)) continue;
+			if((!localStorage.deviceId || localStorage.deviceId != device.deviceId)){
 				devices.push(device);
 			}else{
                 devices.unshift(device);

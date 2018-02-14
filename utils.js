@@ -92,7 +92,10 @@ joindevices.groups.DeviceGroups = function(){
 		for (var i = 0; i < this.allDeviceGroups.length; i++) {
 			var deviceGroup = this.allDeviceGroups[i];
 			deviceGroup.devices = devices.where(function(device){
-				return UtilsDevices.isNotDeviceShare(device) && device.deviceType != DEVICE_TYPE_GROUP && me.deviceTypeGroups[device.deviceType].indexOf(deviceGroup) >=0;
+				var groupForDevice = me.deviceTypeGroups[device.deviceType];
+				if(!groupForDevice) return false;
+
+				return UtilsDevices.isNotDeviceShare(device) && device.deviceType != DEVICE_TYPE_GROUP && groupForDevice.indexOf(deviceGroup) >=0;
 			});
 		}
 		//Check equal groups and remove devices from them
@@ -133,6 +136,12 @@ joindevices.groups.DeviceGroups = function(){
 			return [];
 		}
 		return group.devices;
+	}
+	this.isDeviceInGroup =function(device){		
+		return this.getGroupForDevice(device.deviceType) ? true : false;
+	}
+	this.getGroupForDevice = function(deviceType){
+		return me.deviceTypeGroups[deviceType];
 	}
 
 }

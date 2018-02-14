@@ -145,7 +145,10 @@ var writeDevices = function(){
 		deviceElement.onclick = deviceHover;
 		deviceElement.device = device;
 		deviceElement.querySelector("#devicename").textContent = device.deviceId == localStorage.deviceId ? "This device" : device.deviceName;
-		var deviceIcon = deviceImages[""+device.deviceType](device);
+		var iconGetter = deviceImages[""+device.deviceType];
+		if(!iconGetter) continue;
+		
+		var deviceIcon = iconGetter(device);
 		if(!deviceIcon && device.deviceType == DEVICE_TYPE_GROUP){
 			deviceIcon = device.deviceId.substring(6) + ".png";
 		}
