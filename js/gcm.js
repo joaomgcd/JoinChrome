@@ -129,6 +129,16 @@ var GCM = function(){
 		}
 		this.encryptSpecific(params,password);
 	}
+
+    this.toGcmRaw = function(){
+    	return {
+            "json": JSON.stringify(this),
+            "type": this.getCommunicationType()
+	    }
+    }
+    this.toGcmRawString = function(){
+    	return JSON.stringify(this.toGcmRaw());
+    }
 }
 GCM.prototype = new Request();
 
@@ -203,30 +213,42 @@ var GCMPush = function(){
 			lastTextPushed = this.push.text;
 			var eventGhostPort = getEventghostPort();
 			if(eventGhostPort){
-				var oReq = new XMLHttpRequest();
-				oReq.addEventListener("load", function(result){
-					console.log(result);
-					var response = result.target.responseText;
-					if(response && response == "OK"){
-						//showNotification("Redirected to EventGhost",me.push.text,5000);
-					}else{
-						if(!response){
-							response = result.target.statusText;
+				var redirectFullPush = getRedirectFullPush();
+				if(!redirectFullPush){
+					var oReq = new XMLHttpRequest();
+					oReq.addEventListener("load", function(result){
+						console.log(result);
+						var response = result.target.responseText;
+						if(response && response == "OK"){
+							//showNotification("Redirected to EventGhost",me.push.text,5000);
+						}else{
+							if(!response){
+								response = result.target.statusText;
+							}
+						   // showNotification("Couldn't redirect to EventGhost",response,5000);
 						}
-					   // showNotification("Couldn't redirect to EventGhost",response,5000);
-					}
-					if(!me.push.title){
-						//me.createNotificationFromPush();
-					}
-				});
-				oReq.addEventListener("error", function(result){
+						if(!me.push.title){
+							//me.createNotificationFromPush();
+						}
+					});
+					oReq.addEventListener("error", function(result){
 
-					if(!me.push.title){
-						//me.createNotificationFromPush();
+						if(!me.push.title){
+							//me.createNotificationFromPush();
+						}
+					});
+					oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" +encodeURIComponent(this.push.text));
+					oReq.send();
+				}else{
+					var options = {
+						method: 'POST',
+						body: this.toGcmRawString(), 
+						headers: {
+							'Content-Type': 'application/json'
+						}
 					}
-				});
-				oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" +encodeURIComponent(this.push.text));
-				oReq.send();
+			    	fetch(`http://localhost:${eventGhostPort}/push`,options)
+				}
 			}else{
 				if(!me.push.title){
 					me.createNotificationFromPush();

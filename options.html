@@ -235,11 +235,15 @@
                 <input joaoappsoption type="checkbox" id="prefixtaskercommands" />
                 <div class="selection_indicator"></div>
             </label>
-            <h2>EventGhost</h2>
-            <h4>If set, will redirect received Tasker Commands to the AutoRemote plugin in EventGhost in the specified port</h4>
-            <div>EventGhost Port:
+            <h2>EventGhost, Node-RED</h2>
+            <h4>If set, will redirect received Commands to the specified port (<a href="https://joaoapps.com/autoremote/eventghost/">AutoRemote plugin in EventGhost</a> or <a href="https://github.com/joaomgcd/node-red-contrib-join-joaoapps">Join plugin in Node-RED</a>)</h4>
+            <div>Port:
                 <input joaoappsoption type="text" id="eventghostport" placeholder="Port" />
             </div>
+            <label class="selection">Send Full Push (enable if you use Node-RED)
+                <input joaoappsoption type="checkbox" id="redirectionfullpush" />
+                <div class="selection_indicator"></div>
+            </label>
             <h2>General</h2>
             <label class="selection">Alternative popup icon
                 <input joaoappsoption type="checkbox" id="alternativeicon" />

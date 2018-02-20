@@ -1,5 +1,5 @@
 var emojRange = [
-  [128513, 128592] ,[128640,128704]
+  [128513, 128592] ,[128072,128073],[128640,128704]
 ];
 document.addEventListener('DOMContentLoaded', function() {
 	var initResult = Dialog.init();

@@ -852,6 +852,9 @@ var getShowInfoNotifications = function(){
 var getEventghostPort = function(){
 	return getOptionValue("text","eventghostport");
 }
+var getRedirectFullPush = function(){
+	return getOptionValue("checkbox","redirectionfullpush");
+}
 var getFavoriteCommandText = function(){
 	return getOptionValue("text","text_favourite_command");
 }

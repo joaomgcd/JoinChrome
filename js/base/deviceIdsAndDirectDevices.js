@@ -98,7 +98,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		devicesForId.doForAll(function(deviceForId){
 			var devicesExpanded = me.convertGroupToDeviceIds(deviceForId);
 			devicesExpanded.doForAll(function(deviceForId){
-				if(deviceForId.regId2 && deviceForId.deviceType != DEVICE_TYPE_IFTTT && deviceForId.deviceType != DEVICE_TYPE_IP){
+				if(deviceForId.regId2){
 					me.directDevices.removeIf(function(device){
 						return device.deviceId == deviceForId.deviceId;
 					});
@@ -129,6 +129,99 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			},reject,options);
 		});
 	}
+	var doIftttRequest = function(options){
+		var text = options.gcm.push.text;
+		if(!text) return Promise.reject("Push to IFTTT needs text");
+
+		return Promise.all(options.devices.map(device=>{			
+			var autoAppsCommand = new AutoAppsCommand(text,"value1,value2,value3");
+			var valuesForIfttt = {};
+			var url = `https://maker.ifttt.com/trigger/${autoAppsCommand.command}/with/key/${device.regId}`;
+			if(autoAppsCommand.values.length > 0){
+				url += "?"
+			}
+			for (var i = 0; i < autoAppsCommand.values.length; i++) {
+				var value = autoAppsCommand.values[i]
+				var varName = `value${i+1}`;
+				valuesForIfttt[varName] = value;
+				if(i>0){
+					url += "&";
+				}
+				url += `${varName}=${encodeURIComponent(value)}`;
+			}			
+			//console.log(valuesForIfttt);
+			var postOptions = {
+				method: 'GET',
+				//body: JSON.stringify(valuesForIfttt), 
+				headers: {
+					'Content-Type': 'application/json; charset=UTF-8'
+				}
+			}
+			//console.log(url);
+			var getSucess = text => ({"success":true,"message_id":UtilsObject.guid()})
+			return fetch(url,postOptions).then(getSucess).catch(getSucess);
+		}))
+		.then(allResults => ({"results":allResults}));
+	}
+	var doDirectIpRequest = function(options){
+		var rawGcm = {
+			"json": options.gcmString,
+			"type": options.gcmType
+		}
+		return Promise.all(options.devices.map(device => {
+
+			var doForOneDevice = function(options){
+				var regId = options.secondTry ? device.regId : device.regId2;
+				var postOptions = {
+					method: 'POST',
+					body: JSON.stringify(rawGcm), 
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}
+				var url = `http://${regId}/push`;
+				var getSucess = text => ({"success":true,"message_id":UtilsObject.guid()})
+				var getError = error => {
+					if(options.secondTry) return {"success":false,"error":UtilsObject.isString(error) ? error : error.message};
+					options.secondTry = true;
+					return doForOneDevice(options);
+				}
+		    	return fetch(url,postOptions).then(result=>result.text()).then(getSucess).catch(getError)
+			}
+			return doForOneDevice(options);
+		}))
+		.then(allResults => ({"results":allResults}))
+		
+	}
+	var deviceTypesDirectFuncs = {};
+	deviceTypesDirectFuncs[DEVICE_TYPE_IP+""] = {"func":doDirectIpRequest,"onlySendPushes":true};
+	deviceTypesDirectFuncs[DEVICE_TYPE_IFTTT+""] = {"func":doIftttRequest,"onlySendPushes":true};
+	this.getDeviceTypeFunc = type => deviceTypesDirectFuncs[type+""];
+
+
+	var sendAndHandleResult = UtilsObject.async(function* (funcToCall,options){
+		var devices = options.devices;
+		var gcmString = options.gcmString;
+		var gcm = options.gcm;
+		var gcmParams = options.gcmParams;
+		var callback = options.callback;
+		var serverDevices = options.serverDevices;
+		var regIds = devices.select(device => device.regId2);
+		var multicastResult = yield funcToCall({regIds:regIds,gcmString:gcmString,gcmType:gcm.getCommunicationType(),gcmParams:gcmParams,devices:devices,gcm:gcm});
+
+		for (var i = 0; i < devices.length; i++) {
+			var device = devices[i];
+			var result = multicastResult.results[i];
+			me.handleGcmResult(device, result, options);
+		}
+		
+		if(serverDevices.length == 0){
+			me.callCallback(callback,result);
+		}
+
+        console.log("Posted direct GCM");
+        console.log(gcmString);
+	});
 	this.send = UtilsObject.async(function* (sendThroughServer, gcm, gcmParams,callback, callbackError, options){
 		if(!gcm){
 			me.callCallback(callbackError,"No message to push");
@@ -142,24 +235,39 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			directDevices = [];
 		}
 		if(directDevices.length > 0){
-			var regIds = directDevices.select(device => device.regId2);
 			if(!gcmParams){
 				gcmParams = {};
 			}
 			try{
-				var multicastResult = yield doDirectGCMRequest({regIds:regIds,gcmString:gcmString,gcmType:gcm.getCommunicationType(),gcmParams:gcmParams});
-				for (var i = 0; i < directDevices.length; i++) {
-					var device = directDevices[i];
-					var result = multicastResult.results[i];
-					me.handleGcmResult(device, result, options);
+				if(!options){
+					options = {};
 				}
-				
-				if(serverDevices.length == 0){
-					me.callCallback(callback,result);
-				}
+				options.gcmString = gcmString;
+				options.gcm = gcm;
+				options.gcmParams = gcmParams;	
+				options.callback = callback;	
+				options.serverDevices = serverDevices;
+				var groupsByCustomFunc = directDevices.groupBy(device=>this.getDeviceTypeFunc(device.deviceType)?true:false);
+				for(var groupKeyCustomFunc in groupsByCustomFunc){
+					var groupCustomFunc = groupsByCustomFunc[groupKeyCustomFunc];					
+					if(groupKeyCustomFunc == "false"){
+						options.devices = groupCustomFunc;
+						yield sendAndHandleResult(doDirectGCMRequest,options);
+					}else{
+						var groups = groupCustomFunc.groupBy(device=>device.deviceType);
+						for(var groupKey in groups){
+							var group = groups[groupKey];
+							var forThisType = this.getDeviceTypeFunc(group[0].deviceType);
 
-	            console.log("Posted direct GCM");
-	            console.log(gcmString);
+							if(forThisType.onlySendPushes && !gcm.push) continue;
+
+							var funcToCall = forThisType.func;
+							options.devices = group;
+							yield sendAndHandleResult(funcToCall,options);
+						}
+					}
+					
+				}
 			}catch(error){
 				var title = "Direct GCM error";
 	            console.log(title);
@@ -175,7 +283,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		if(serverDevices.length > 0){
 			sendThroughServer(serverDevices.select(device => device.deviceId),result=>{				
 	        	if(options && options.onSendSuccess){
-	        		options.onSendSuccess(device);
+	        		options.onSendSuccess();
 	        	}
 	        	if(callback){
 	        		callback(result);

@@ -271,3 +271,17 @@ Array.prototype.first = function(func) {
 	};
 	return null;
 };
+Array.prototype.partition = function(filter) {
+  return this.reduce(
+    (r, e, i, a) => {
+      r[filter(e, i, a) ? 0 : 1].push(e);
+      return r;
+    }, [[], []]);
+}
+Array.prototype.groupBy = function(keyGetter) {
+  return this.reduce(function(rv, x) {
+  	var key = keyGetter(x);
+    (rv[key] = rv[key] || []).push(x);
+    return rv;
+  }, {});
+}
