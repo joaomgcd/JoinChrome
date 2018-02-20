@@ -846,6 +846,9 @@ var getPlayNotificationSound = function(){
 var getAlternativePopupIcon = function(){
 	return getOptionValue("checkbox","alternativeicon");
 }
+var getHideNotificationCount = function(){
+	return getOptionValue("checkbox","hidenotificationcount");
+}
 var getShowInfoNotifications = function(){
 	return getOptionValue("checkbox","showinfonotifications");
 }
@@ -971,6 +974,7 @@ var defaultValues = {
 	"notificationnopopuppackages":"",
 	"prefixtaskercommands":false,
 	"hidenotificationtext": false,
+    "hidenotificationcount": false,
 	"playnotificationsound": true,
     "showinfonotifications": true,
     "autoopenlinks": true,

@@ -442,6 +442,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById("alternativeicon").onclick = function(e){
 			setPopupIcon(e.target.checked);
 		}
+		document.getElementById("hidenotificationcount").onclick = function(e){
+			back.updateBadgeText(e.target.checked);
+		}
 		var taskerCommandsTab = document.querySelector("#taskerCommandsContent");
 		taskerCommandsUI = new TaskerCommandsUI(taskerCommandsTab);
 		taskerCommandsUI.renderCommands();

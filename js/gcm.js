@@ -522,8 +522,8 @@ var Notifications = function(){
 };
 Notifications.prototype = new Array();
 var notifications = new Notifications();
-var updateBadgeText = function(){
-	if(!notifications || notifications.length == 0){
+var updateBadgeText = function(shouldHide){
+	if(!notifications || notifications.length == 0 || back.getHideNotificationCount() || shouldHide === true){
 		UtilsBadge.setBadge("");
 	}else{
 		UtilsBadge.setBadge(notifications.length);
