@@ -71,7 +71,7 @@ var deviceCommands = [
 		"keepTab":true,
 		"showForGroups":joindevices.groups.deviceGroups.allDeviceGroups,
 		"condition":function(device){
-			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_SEND_FILE);
+			return UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_SEND_FILE) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{
