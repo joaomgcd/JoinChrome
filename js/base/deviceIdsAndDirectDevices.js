@@ -164,33 +164,76 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		.then(allResults => ({"results":allResults}));
 	}
 	var doDirectIpRequest = function(options){
+		function IPnumber(IPaddress) {
+			var colonPosition = IPaddress.indexOf(":");
+			if(colonPosition>=0){
+				IPaddress = IPaddress.substring(0,colonPosition);
+			}
+		    var ip = IPaddress.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+		    if(ip) {
+		        return (+ip[1]<<24) + (+ip[2]<<16) + (+ip[3]<<8) + (+ip[4]);
+		    }
+		    // else ... ?
+		    return null;
+		}
+
+		function IPmask(maskSize) {
+		    return -1<<(32-maskSize)
+		}
+		function getMyIp(){
+			return new Promise((resolve,reject)=>{
+
+				var pc = new RTCPeerConnection({iceServers:[]}), noop = function(){};      
+				pc.createDataChannel('');//create a bogus data channel
+				pc.createOffer(pc.setLocalDescription.bind(pc), noop);// create offer and set local description
+				pc.onicecandidate = ice =>
+				{
+					if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+
+					var regexResult = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate);
+					if(!regexResult) return;
+
+					var myIP = regexResult[1];   
+					pc.onicecandidate = noop;
+					resolve(myIP)
+				};
+			});
+		}
+		function isInSameLocalNetwork(ipToCheck,myIp){
+			if(ipToCheck.indexOf("localhost")>=0) return true;
+			return (IPnumber(ipToCheck) & IPmask('24')) == (IPnumber(myIp) & IPmask('24'));
+		}
 		var rawGcm = {
 			"json": options.gcmString,
 			"type": options.gcmType
 		}
-		return Promise.all(options.devices.map(device => {
-
-			var doForOneDevice = function(options){
-				var regId = options.secondTry ? device.regId : device.regId2;
-				var postOptions = {
-					method: 'POST',
-					body: JSON.stringify(rawGcm), 
-					headers: {
-						'Content-Type': 'application/json'
+		return getMyIp()
+		.then(myIp=>{
+			return Promise.all(options.devices.map(device => {
+				var doForOneDevice = function(options){
+					var sameNetwork  = isInSameLocalNetwork(device.regId2,myIp);
+					var regId = options.secondTry || !sameNetwork ? device.regId : device.regId2;
+					var postOptions = {
+						method: 'POST',
+						body: JSON.stringify(rawGcm), 
+						headers: {
+							'Content-Type': 'application/json'
+						}
 					}
+					var url = `http://${regId}/push`;
+					var getSucess = text => ({"success":true,"message_id":UtilsObject.guid()})
+					var getError = error => {
+						if(options.secondTry) return {"success":false,"error":UtilsObject.isString(error) ? error : error.message};
+						options.secondTry = true;
+						return doForOneDevice(options);
+					}
+			    	return fetch(url,postOptions).then(result=>result.text()).then(getSucess).catch(getError)
 				}
-				var url = `http://${regId}/push`;
-				var getSucess = text => ({"success":true,"message_id":UtilsObject.guid()})
-				var getError = error => {
-					if(options.secondTry) return {"success":false,"error":UtilsObject.isString(error) ? error : error.message};
-					options.secondTry = true;
-					return doForOneDevice(options);
-				}
-		    	return fetch(url,postOptions).then(result=>result.text()).then(getSucess).catch(getError)
-			}
-			return doForOneDevice(options);
-		}))
-		.then(allResults => ({"results":allResults}))
+				return doForOneDevice(options);
+			}))
+			.then(allResults => ({"results":allResults}));
+		});				
+		
 		
 	}
 	var deviceTypesDirectFuncs = {};
