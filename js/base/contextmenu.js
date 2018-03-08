@@ -154,9 +154,9 @@ var ContextMenu = function(){
 	var callNumberLink = function(device, info, tab){ 
 		callNumber(device, info.linkUrl);
 	}
-	this.update = function(devices){
+	this.update = function(devices, blockMenu){
 	    chrome.contextMenus.removeAll();
-
+		if(blockMenu) return;
 
 	    var contexts = {
 	    	"page":[

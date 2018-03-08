@@ -442,6 +442,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById("alternativeicon").onclick = function(e){
 			setPopupIcon(e.target.checked);
 		}
+		document.querySelector("#hidecontextmenu").onclick = e => back.updateContextMenu();
+
 		document.getElementById("hidenotificationcount").onclick = function(e){
 			back.updateBadgeText(e.target.checked);
 		}

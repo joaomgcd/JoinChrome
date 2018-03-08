@@ -849,6 +849,9 @@ var getAlternativePopupIcon = function(){
 var getHideNotificationCount = function(){
 	return getOptionValue("checkbox","hidenotificationcount");
 }
+var getHideContextMenu = function(){
+	return getOptionValue("checkbox","hidecontextmenu");
+}
 var getShowInfoNotifications = function(){
 	return getOptionValue("checkbox","showinfonotifications");
 }
@@ -939,9 +942,11 @@ var onautoclipboardsave = function(option, value){
         handleAutoClipboard();   
     }
 }
+
+var updateContextMenu = () => contextMenu.update(devices, getHideContextMenu());
 var onchromenotificationssave = function(option, value){
     console.log("Changed chrome notification popup setting: " + value);
-    contextMenu.update(devices);
+   	updateContextMenu();
 }
 var onshowbetafeaturessave = function(option, value){
 	if(!option){
@@ -975,6 +980,7 @@ var defaultValues = {
 	"prefixtaskercommands":false,
 	"hidenotificationtext": false,
     "hidenotificationcount": false,
+    "hidecontextmenu": false,
 	"playnotificationsound": true,
     "showinfonotifications": true,
     "autoopenlinks": true,
@@ -1802,7 +1808,7 @@ var setDevices = function(devicesToSet){
         UtilsObject.sort(devices,true,device=>device.deviceId != localStorage.deviceId,device=>device.deviceId.indexOf("group")>=0,device=>device.deviceId.indexOf("share")>=0,device=>device.deviceType,device=>device.deviceName);
 		localStorage["devices"] = JSON.stringify(devices);
 	}
-	contextMenu.update(devices);
+	updateContextMenu();
   	refreshDevicesPopup();
 }
 function directCopy(str,setLastClipboard){
@@ -1884,7 +1890,8 @@ var handleAutoClipboard = function(){
 }
 handleAutoClipboard();
 
-contextMenu.update(devices);
+
+updateContextMenu();
 var sanitizeHTML = DOMPurify.sanitize;
 var getPushesWhileAway = ()=>{
 	var googleDriveManager = new GoogleDriveManager();
