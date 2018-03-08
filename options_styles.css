@@ -523,6 +523,9 @@ select:focus {
 	display: flex;
 	flex-direction: row;
 }
+input.wide{
+	width: 100%;
+}
 .taskerCommand input{
     flex-grow: 1;
 	background: transparent;

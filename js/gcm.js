@@ -212,6 +212,7 @@ var GCMPush = function(){
 		if(this.push.text){
 			lastTextPushed = this.push.text;
 			var eventGhostPort = getEventghostPort();
+			var eventGhostServer = getEventghostServer() || "localhost";
 			if(eventGhostPort){
 				var redirectFullPush = getRedirectFullPush();
 				if(!redirectFullPush){
@@ -237,7 +238,7 @@ var GCMPush = function(){
 							//me.createNotificationFromPush();
 						}
 					});
-					oReq.open("GET", "http://localhost:"+eventGhostPort+"/?message=" +encodeURIComponent(this.push.text));
+					oReq.open("GET", `http://${eventGhostServer}:${eventGhostPort}/?message=${encodeURIComponent(this.push.text)}`);
 					oReq.send();
 				}else{
 					var options = {
@@ -247,7 +248,7 @@ var GCMPush = function(){
 							'Content-Type': 'application/json'
 						}
 					}
-			    	fetch(`http://localhost:${eventGhostPort}/push`,options)
+			    	fetch(`http://${eventGhostServer}:${eventGhostPort}/push`,options)
 				}
 			}else{
 				if(!me.push.title){

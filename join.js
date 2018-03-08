@@ -858,6 +858,9 @@ var getShowInfoNotifications = function(){
 var getEventghostPort = function(){
 	return getOptionValue("text","eventghostport");
 }
+var getEventghostServer = function(){
+	return getOptionValue("text","eventghostserver");
+}
 var getRedirectFullPush = function(){
 	return getOptionValue("checkbox","redirectionfullpush");
 }
