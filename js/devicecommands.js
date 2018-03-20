@@ -131,7 +131,7 @@ var deviceCommands = [
 	{
 		"label":"Send a Maker event",
 		"commandId":"maker",
-		"func":back.pushTaskerCommand,
+		"func":back.pushIFTTTEvent,
 		"hasText":true,
 		"condition":function(device){
 			return device.deviceType == DEVICE_TYPE_IFTTT  && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);
@@ -140,7 +140,7 @@ var deviceCommands = [
 	{
 		"label":"Send a Command",
 		"commandId":"command",
-		"func":back.pushTaskerCommand,
+		"func":back.pushCustomCommand,
 		"hasText":true,
 		"condition":function(device){
 			return  device.deviceType == DEVICE_TYPE_IP && UtilsDevices.hasPermissions(device,UtilsDevices.PERMISSION_TASKER);

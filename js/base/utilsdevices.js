@@ -179,6 +179,18 @@ UtilsDevices.PERMISSION_CREATE_NOTIFICATIONS = 0b10000000; //128
 UtilsDevices.PERMISSION_ALL = 0b1111111111111111111111111111111;
 var versions = [
     {
+        "version": 28,
+        "name": "P (9.0)"
+    },
+    {
+        "version": 27,
+        "name": "Oreo (8.1)"
+    },
+    {
+        "version": 26,
+        "name": "Oreo (8.0)"
+    },
+    {
         "version": 25,
         "name": "Nougat (7.1)"
     },

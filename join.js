@@ -1354,10 +1354,19 @@ var pushUrl = function(deviceId, notify,callback){
 		}
 	});
 }
+var pushIFTTTEvent = function(deviceId, notify,text){
+	pushCustomCommand(deviceId, notify,text,"Write your Maker event.\n\nSetup an applet in IFTTT to react to it.","pushIFTTTEvent")
+}
+var pushCustomCommand = function(deviceId, notify,text){
+	pushCustomCommand(deviceId, notify,text,"Write your command.","pushCustomCommand")
+}
 var pushTaskerCommand = function(deviceId, notify,text){
-    var push = new GCMPush();
+	pushCustomCommand(deviceId, notify,text,"Write your Tasker command.\n\nSetup a profile with the AutoApps condition to react to it.","pushTaskerCommand")
+}
+var pushCustomCommand = function(deviceId, notify, text, promptText, funcName){
+	var push = new GCMPush();
     if(!text || (typeof text) != "string" ){
-        text = prompt("Write your Tasker command.\n\nSetup a profile with the AutoApps condition to react to it.");
+        text = prompt(promptText);
     }
     if(!text){
         return;
@@ -1373,7 +1382,7 @@ var pushTaskerCommand = function(deviceId, notify,text){
     },function(error){
         showNotification("Couldn't push tasker command", error);
     });
-    setLastPush(deviceId, "pushTaskerCommand"); 
+    setLastPush(deviceId, funcName); 
 }
 var selectContactForCall = function(deviceId){
     if(!popupWindow && !popupWindowClipboard){
