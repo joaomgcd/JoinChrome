@@ -213,6 +213,12 @@ if(onlyTabToShow){
 		if(notification.id==back.UtilsSMS.getNotificationId())
 	}*/
 	if(!tabToShow){
+		var defaultTab = back.getDefaultTab();
+		if(defaultTab && defaultTab != "auto"){
+			tabToShow = defaultTab;
+		}
+	}
+	if(!tabToShow){
 		if(back.localStorage.areNotificationsUnread == "true"){
 			back.console.log("yes notifications")
 			var previousTab = back.localStorage.selectedTab;

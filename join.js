@@ -879,6 +879,9 @@ var getVoiceWakeup = function(){
 var getThemeAccentColor = function(){
 	return getOptionValue("color","themeColorPicker");
 }
+var getDefaultTab = function(){
+	return getOptionValue("select","defaulttabb");
+}
 var onvoiceenabledsave = UtilsObject.async(function* (option, value){
 	if(!option){
 		return;
@@ -994,7 +997,8 @@ var defaultValues = {
     "voicecontinuous": false,
     "voicewakeup": "computer",
     "themeColorPicker": "#FF9800",
-    "theme": "auto"
+    "theme": "auto",
+    "defaulttabb": "auto"
 };
 if(getVoiceContinuous()){
 	onvoicecontinuoussave(null,true);
