@@ -36,6 +36,7 @@ var Dialog = function(htmlPath, input){
 				back.removeEventListener("dialogcancel",arguments.callee);
 				reject(new Error(event.result));
 			};
+
 			back.addEventListener("dialogresult",resultListener,false);
 			back.addEventListener("dialogcancel",cancelListener,false);
 		});
@@ -121,6 +122,21 @@ Dialog.showOkCancelDialog = function(input,options){
 		return Dialog.show("okcancel",input,options);	
 	}
 }
+
+Dialog.showColorSelectDialog = function(input,options){
+	return function(){
+		if(!options){
+			options = {};
+		}
+		options.width = 600;
+		options.height = 605;
+		if(!input.subtitle){
+			options.height = 605;
+		}
+		return Dialog.show("color",input,options);	
+	}
+}
+
 Dialog.showOkDialog = function(input,options){
 	return function(){
 		if(!options){

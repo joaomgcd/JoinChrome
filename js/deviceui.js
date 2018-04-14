@@ -153,6 +153,7 @@ var writeDevices = function(){
 			deviceIcon = device.deviceId.substring(6) + ".png";
 		}
 		var imageElement = deviceElement.querySelector("#deviceicon");
+
 		var imageInfoElement = deviceElement.querySelector("#deviceinfoicon");
 		if(UtilsDevices.canReportStatus(device)){		
 			imageInfoElement.onclick = e => {
@@ -167,7 +168,17 @@ var writeDevices = function(){
 		}else{
 			imageInfoElement.classList.add("hidden");
 		}
-		imageElement.src = "icons/" + deviceIcon;	
+		
+		imageElement.src = "icons/" + deviceIcon;
+		
+		var containerElement = deviceElement.querySelector("#deviceiconcontainer");
+		
+		if(back.deviceColors){
+			for(var j = 0; j < back.deviceColors.length; j++){
+				var colorObj = back.deviceColors.first(function(targetDevice){return targetDevice.deviceId == device.deviceId});
+				if(colorObj){containerElement.style.backgroundColor = colorObj.deviceColor;}
+			}
+		}
 		devicesElement.appendChild(deviceElement);
 		deviceElements.push(deviceElement);
 	};

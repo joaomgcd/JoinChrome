@@ -156,6 +156,14 @@ var deviceCommands = [
 		}
 	},
 	{
+		"label":"Change device color",
+		"commandId":"changecolor",
+		"func":back.changeDeviceColor,
+		"condition":function(device){
+			return UtilsDevices.isNotDeviceShare(device);
+		}
+	},
+	{
 		"label":"Rename device",
 		"commandId":"rename",
 		"func":back.renameDevice,
@@ -197,6 +205,7 @@ var deviceCommands = [
 			return device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
+
 ];
 
 var handleDeviceCommandIcon = function(command,image){

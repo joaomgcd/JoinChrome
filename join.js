@@ -1220,6 +1220,40 @@ var getScreenshot = function(deviceId, notify){
 var getScreenCapture = function(deviceId, notify){
     doRequestFile(deviceId, notify, REQUEST_TYPE_VIDEO,"getScreenCapture","screen capture","Toggling screen capture...");
 }
+
+var changeDeviceColor = function(deviceId, notify) {
+	var device = devices.first(function(device){return device.deviceId == deviceId;});
+	if(!device){
+		return;
+	}
+	var currentAccentColor = getThemeAccentColor();
+	return Promise.resolve()
+	.then(
+		Dialog.showColorSelectDialog({
+		"title": "Change " + device.deviceName + "'s color.",
+		"subtitle": "Click the button below to choose a color.",
+		"initValue": currentAccentColor
+	}))
+	.then(function(confirm){
+		if(confirm){
+			if(!deviceColors) deviceColors = [];
+			var colorObj = deviceColors.first(function(device){return device.deviceId == deviceId;});
+			if(colorObj){
+				colorObj.deviceColor = confirm;
+			}
+			else{
+				colorObj = {"deviceId":""+device.deviceId, "deviceColor":""+confirm};
+				deviceColors.push(colorObj);
+			}
+			
+			localStorage["deviceColors"] = JSON.stringify(deviceColors);
+			console.log(localStorage["deviceColors"]);
+			setDevices(devices);
+			showNotification("Change Color","" + device.deviceName + "'s color has been set to " + confirm, 5000);
+		}
+	}).catch(UtilsObject.ignoreError);
+}
+
 var renameDevice = function(deviceId, notify){
 	var device = devices.first(function(device){return device.deviceId == deviceId;});
 	if(!device){
@@ -1736,12 +1770,17 @@ deviceImages[""+DEVICE_TYPE_FIREFOX]=function(device){return"firefox.png";};
 deviceImages[""+DEVICE_TYPE_GROUP]=function(device){return device.deviceId.substring(6) + ".png"};
 deviceImages[""+DEVICE_TYPE_ANDROID_TV]=function(device){return "tv.png"};
 var devicesJson = localStorage["devices"];
+var deviceColorsJson = localStorage["deviceColors"];
 
 var devices = null;
 if(devicesJson){
 	devices = JSON.parse(devicesJson);
 }
 
+var deviceColors = null;
+if(deviceColorsJson){
+	deviceColors = JSON.parse(deviceColorsJson);
+}
 
 var getDeviceById = function(deviceId){
 	for (var i = 0; i < devices.length; i++) {
@@ -1827,6 +1866,7 @@ var setDevices = function(devicesToSet){
 	updateContextMenu();
   	refreshDevicesPopup();
 }
+
 function directCopy(str,setLastClipboard){
 	if(!str){
 		return;
