@@ -108,6 +108,22 @@ var deviceCommands = [
 		}
 	},
 	{
+		"label":"Open an App",
+		"commandId":"openapp",
+		"func":back.openApp,
+		"condition":function(device){
+			return (device.deviceType == DEVICE_TYPE_ANDROID_PHONE || device.deviceType == DEVICE_TYPE_ANDROID_TABLET) && UtilsDevices.isNotDeviceShare(device);
+		}
+	},
+	{
+		"label":"Speak",
+		"commandId":"speak",
+		"func":back.speak,
+		"condition":function(device){
+			return UtilsDevices.isNotDeviceShare(device);
+		}
+	},
+	{
 		"label":"Send a Tasker command",
 		"commandId":"tasker",
 		"showForGroups":joindevices.groups.deviceGroups.androidGroups,

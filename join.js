@@ -1154,6 +1154,36 @@ var findDevice = function(deviceId, notify, ignorePrompt){
 	setLastPush(deviceId, "findDevice");
 	
 }
+var sendPushFromCommand =  UtilsObject.async(function* (deviceId, notify, text, options){
+	if(!text || (typeof text) != "string"){
+		text = yield Dialog.showInputDialog({
+	        title:options.title,
+	        placeholder:options.placeholder
+	    })();
+	}   
+    var push = new GCMPush();
+    options.pushModifier(push,text);
+	var pushResult = yield push.send(deviceId);
+	setLastPushAndNotify(deviceId, notify, options.funcName,options.notificationTextGetter(text))();
+});
+var speak =  function(deviceId, notify, text){
+	sendPushFromCommand(deviceId,notify,text,{
+		title:"Text to Say",
+	    placeholder:"Type some text",
+	    pushModifier: (push,text) => push.say = text,
+	    funcName: "speak",
+	    notificationTextGetter: text => `Saying ${text} out loud...`
+	});
+}
+var openApp =  function(deviceId, notify, text){
+	sendPushFromCommand(deviceId,notify,text,{
+		title:"App to Open",
+	    placeholder:"Type the app's name",
+	    pushModifier: (push,text) => push.app = text,
+	    funcName: "openApp",
+	    notificationTextGetter: text => `Opening ${text}...`
+	});
+}
 var getClipboardPush = function(text){    
     var push = new GCMPush();
     push.clipboard = text;
