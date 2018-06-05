@@ -120,7 +120,7 @@ var deviceCommands = [
 		"commandId":"speak",
 		"func":back.speak,
 		"condition":function(device){
-			return UtilsDevices.isNotDeviceShare(device);
+			return UtilsDevices.isNotDeviceShare(device) && device.deviceType != DEVICE_TYPE_IFTTT && device.deviceType != DEVICE_TYPE_IP;
 		}
 	},
 	{

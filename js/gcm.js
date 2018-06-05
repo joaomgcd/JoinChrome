@@ -211,44 +211,48 @@ var GCMPush = function(){
 		setLastReceivedDate(this.push.date);
 		if(this.push.text){
 			lastTextPushed = this.push.text;
-			var eventGhostPort = getEventghostPort();
+			var eventGhostPorts = getEventghostPort();
 			var eventGhostServer = getEventghostServer() || "localhost";
-			if(eventGhostPort){
-				var redirectFullPush = getRedirectFullPush();
-				if(!redirectFullPush){
-					var oReq = new XMLHttpRequest();
-					oReq.addEventListener("load", function(result){
-						console.log(result);
-						var response = result.target.responseText;
-						if(response && response == "OK"){
-							//showNotification("Redirected to EventGhost",me.push.text,5000);
-						}else{
-							if(!response){
-								response = result.target.statusText;
+			
+			if(eventGhostPorts){
+				eventGhostPorts = eventGhostPorts.split(",");
+				for(var eventGhostPort of eventGhostPorts){
+					var redirectFullPush = getRedirectFullPush();
+					if(!redirectFullPush){
+						var oReq = new XMLHttpRequest();
+						oReq.addEventListener("load", function(result){
+							console.log(result);
+							var response = result.target.responseText;
+							if(response && response == "OK"){
+								//showNotification("Redirected to EventGhost",me.push.text,5000);
+							}else{
+								if(!response){
+									response = result.target.statusText;
+								}
+							   // showNotification("Couldn't redirect to EventGhost",response,5000);
 							}
-						   // showNotification("Couldn't redirect to EventGhost",response,5000);
-						}
-						if(!me.push.title){
-							//me.createNotificationFromPush();
-						}
-					});
-					oReq.addEventListener("error", function(result){
+							if(!me.push.title){
+								//me.createNotificationFromPush();
+							}
+						});
+						oReq.addEventListener("error", function(result){
 
-						if(!me.push.title){
-							//me.createNotificationFromPush();
+							if(!me.push.title){
+								//me.createNotificationFromPush();
+							}
+						});
+						oReq.open("GET", `http://${eventGhostServer}:${eventGhostPort}/?message=${encodeURIComponent(this.push.text)}`);
+						oReq.send();
+					}else{
+						var options = {
+							method: 'POST',
+							body: this.toGcmRawString(), 
+							headers: {
+								'Content-Type': 'application/json'
+							}
 						}
-					});
-					oReq.open("GET", `http://${eventGhostServer}:${eventGhostPort}/?message=${encodeURIComponent(this.push.text)}`);
-					oReq.send();
-				}else{
-					var options = {
-						method: 'POST',
-						body: this.toGcmRawString(), 
-						headers: {
-							'Content-Type': 'application/json'
-						}
+				    	fetch(`http://${eventGhostServer}:${eventGhostPort}/push`,options)
 					}
-			    	fetch(`http://${eventGhostServer}:${eventGhostPort}/push`,options)
 				}
 			}else{
 				if(!me.push.title){
