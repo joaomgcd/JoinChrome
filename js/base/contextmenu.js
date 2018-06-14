@@ -123,13 +123,19 @@ var ContextMenu = function(){
 	}
 
 	//Tasker Commands
+	var sendCustomCommand = function(device, prefix, text){ 
+        if(prefix){
+        	text = prefix + "=:=" + text;
+        }
+        text = prefix + "=:=" + text;
+		push(device, {"text": text});
+	}
 	var sendTaskerCommand = function(device, text){ 
         var prefix = prompt("Enter Tasker command prefix.\n\nSent command will be 'prefix=:=selection'");
         if(!prefix){
             return;
         }
-        text = prefix + "=:=" + text;
-		push(device, {"text": text});
+        sendCustomCommand(device,prefix,text);
 	}
 	var sendTaskerCommandLink = function(device, info, tab){
 		sendTaskerCommand(device, info.linkUrl);
@@ -143,6 +149,28 @@ var ContextMenu = function(){
 	var sendTaskerCommandSourceUrl = function(device, info, tab){
 		sendTaskerCommand(device, info.srcUrl);
 	}
+
+	//Actions
+	var contextValues = {
+		"page":info=>info.pageUrl,
+		"selection":info=>info.selectionText,
+		"link":info=>info.linkUrl,
+		"image":info=>info.srcUrl,
+		"video":info=>info.srcUrl,
+		"audio":info=>info.srcUrl
+	}
+	var sendAction = function(device, info, tab, contextMenuItem){ 
+		var action = contextMenuItem.action;
+		if(!action) return;
+
+		var actionValue = null;
+		var actionValueGetter = contextValues[contextMenuItem.contextId];
+		if(actionValueGetter){
+			actionValue = actionValueGetter(info);
+		}
+	    action.func(device.deviceId,true,tab,actionValue);
+    }
+      
 
 	//Calls
 	var callNumber = function(device, number){ 
@@ -200,6 +228,7 @@ var ContextMenu = function(){
 		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
 		    ]
 		};
+
 		chrome.contextMenus.create({
 			"type":"checkbox",
 			"checked": !getShowChromeNotifications(),
@@ -262,16 +291,35 @@ var ContextMenu = function(){
 		for(var contextName in contexts){
 			contextNames.push(contextName);
 		}
+        var deviceCommands = back.getDeviceCommands();
 		var getContextName = contextId => contextId.substring(0,1).toUpperCase() + contextId.substring(1);
+		var getContextMenuItemsFromCustomCommands = function(customCommandsForDevice, contextId){
+			var result = [];
+			for(var customCommand of customCommandsForDevice){
+        		var contextMenuItem = new ContextMenuItem(customCommand.label,sendAction).setFavorite();
+        		contextMenuItem.action = customCommand;
+        		contextMenuItem.contextId = contextId;
+        		result.push(contextMenuItem);
+        	}
+        	return result;
+		}
+		var getCustomDeviceCommandsFilter = function(device, withPromptText){
+			return command=>/*command.showInContextMenu &&*/ ((withPromptText && command.promptText)||(!withPromptText && !command.promptText)) && command.deviceIds && command.deviceIds.indexOf(device.deviceId)>=0
+		}
 		for(var contextId in contexts){
 			devices.where(device=>UtilsDevices.isNotHidden(device) && UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device=>{
 	        	var context = contexts[contextId];
-				context.doForAll(contextMenuItem=>{
+    			var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, false))
+    			var contextWithCustomCommands = Array.from(context);
+    			if(customCommandsForDevice.length>0){
+    				contextWithCustomCommands = contextWithCustomCommands.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice, contextId));	
+    			}
+				contextWithCustomCommands.doForAll(contextMenuItem=>{
 	        		if(contextMenuItem.favorite){
 	        			var options = {
 			        		"contexts": [contextId],
 			        		"onclick": function(info, tab){
-			        			contextMenuItem.handler(device, info, tab);
+			        			contextMenuItem.handler(device, info, tab, contextMenuItem);
 			        		},
 			        		"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName
 		        		};
@@ -283,7 +331,6 @@ var ContextMenu = function(){
 	    		});
 			})
 		}
-        	
 		devices.doForAll(function(device){
 			if(UtilsDevices.isHidden(device)){
 				return;
@@ -293,8 +340,11 @@ var ContextMenu = function(){
 	            "title": device.deviceName,
 	            "contexts": contextNames
 	        });
+    		var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device,true));
+    	 		
 	        for(var contextId in contexts){
 	        	var context = contexts[contextId];
+	        	context = context.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice,contextId));
 	        	if(!UtilsObject.isArray(context)){
 	        		continue;
 	        	}
@@ -328,7 +378,7 @@ var ContextMenu = function(){
 			        		"parentId": contextForDevice,
 			        		"contexts": [contextId],
 			        		"onclick": function(info, tab){
-			        			contextMenuItem.handler(device, info, tab);
+			        			contextMenuItem.handler(device, info, tab, contextMenuItem);
 			        		},
 			        		"title": actionTitle
 			        	};

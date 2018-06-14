@@ -10,12 +10,13 @@ var TaskerCommands = function(){
 	var commands = localStorage.taskerCommands ? JSON.parse(localStorage.taskerCommands) : [];
 	var saveCommandsImmediate = () => {
 		localStorage.taskerCommands = JSON.stringify(commands);
+		back.updateContextMenu();
 		return this.getCommands();
 	}
 	this.saveCommands = debounce(saveCommandsImmediate,1000);
 	
 	var findCommand = commandId => this.getCommands().find(command=>command.commandId == commandId)
-	this.performCommand = UtilsObject.async(function* (deviceId, commandId){
+	this.performCommand = UtilsObject.async(function* (deviceId, commandId, possibleArg){
 		var command = findCommand(commandId);
 		if(!command){
 			back.console.error(`Command ${commandId} not found`);
@@ -23,11 +24,15 @@ var TaskerCommands = function(){
 		}
 		var extraText = null;
 		if(command.promptText){
-			extraText = yield Dialog.showInputDialog({
-			    title: command.label,
-			    placeholder: "",
-			    subtitle: command.promptText
-			})();
+			if(possibleArg){
+				extraText = possibleArg;
+			}else{
+				extraText = yield Dialog.showInputDialog({
+				    title: command.label,
+				    placeholder: "",
+				    subtitle: command.promptText
+				})();
+			}
 		}
 		var text = extraText ? `${command.commandText}=:=${extraText}` : command.commandText;
 		back.pushTaskerCommand(deviceId,true,text);
@@ -87,6 +92,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 		<div class="taskerCommandPrompt" ><input required type="text" placeholder="Prompt Text: if set will use command text above as a prefix and prompt for the suffix when ran"  /></div>
 		<div class="devicesToApplySelect"><div>Select Devices</div><div class="dropdownindicator">⏷</div></div>
 		<div class="devicesToApply hidden"></div>
+		<div class="showInContextMenu" hidden><input type="checkbox" />Show in context menu</div>
 		`
 	var findCommand = event => {
 		var element = findCommandElement(event)
@@ -153,6 +159,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 
 			var nameElement = divCommand.querySelector(".taskerCommandName input");
 			var textElement = divCommand.querySelector(".taskerCommandText input");
+			var showInContextMenuElement = divCommand.querySelector(".showInContextMenu input");
 			var promptTextElement = divCommand.querySelector(".taskerCommandPrompt input");
 			var imageElement = divCommand.querySelector(".taskerCommandIcon>img");
 			var deleteElement = divCommand.querySelector(".taskerCommandDelete");
@@ -161,6 +168,7 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 
 			if(command.label) {nameElement.setAttribute("value",command.label);}
 			if(command.commandText) textElement.setAttribute("value",command.commandText);
+			if(command.showInContextMenu) showInContextMenuElement.checked = true;
 			if(command.promptText) promptTextElement.value = command.promptText;
 			nameElement.onkeyup = e => {
 				var commandElement = findCommandElement(e);
@@ -171,6 +179,10 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 			}
 			textElement.onkeyup = e => {
 				findCommand(e).commandText = e.target.value;
+				saveDelayed();
+			}
+			showInContextMenuElement.onchange = e => {
+				findCommand(e).showInContextMenu = e.target.checked;
 				saveDelayed();
 			}
 			promptTextElement.onkeyup = e => {

@@ -6,7 +6,7 @@ chrome.commands.onCommand.addListener(function(command) {
 		repeatLastCommand();
 	}else if(command == "favorite-command"){
 		var favoriteCommand = getFavoriteCommand();
-		favoriteCommand = deviceCommands.first(function(command){return command.label == favoriteCommand;});
+		favoriteCommand = getDeviceCommands().first(function(command){return command.label == favoriteCommand;});
 		if(!favoriteCommand){
 			favoriteCommand = deviceCommands[0];
 		}
@@ -1937,7 +1937,7 @@ var handleAutoClipboard = function(){
 handleAutoClipboard();
 
 
-updateContextMenu();
+
 var sanitizeHTML = DOMPurify.sanitize;
 var getPushesWhileAway = ()=>{
 	var googleDriveManager = new GoogleDriveManager();

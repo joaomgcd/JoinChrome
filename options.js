@@ -477,6 +477,7 @@ var setFavoriteCommandOptions = function(){
 			return;
 		}
 		selectFavoriteCommand.innerHTML = "";
+		var deviceCommands = getDeviceCommands();
 		for (var i = 0; i < deviceCommands.length; i++) {
 			var deviceCommand = deviceCommands[i];
 			if(!deviceCommand.condition || deviceCommand.condition(device)){

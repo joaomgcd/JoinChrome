@@ -259,8 +259,8 @@ var handleDeviceCommandIcon = function(command,image){
 var getDeviceCommands = function(){
 	var result = deviceCommands.slice();
 	var taskerCommands = new TaskerCommands();
-	var getOnClickFunc = command => function(deviceId, notify,text){
-		taskerCommands.performCommand(deviceId,command.commandId);
+	var getOnClickFunc = command => function(deviceId, notify, tab, text){
+		taskerCommands.performCommand(deviceId,command.commandId,text);
 	}
 	var getConditionFunc = command => function(device){
 		return command.deviceIds && command.deviceIds.indexOf(device.deviceId)>=0;
