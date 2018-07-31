@@ -1088,6 +1088,9 @@ function downloadFile(fileId, callback) {
 /**************************************************************************************/
 
 var resetNotifications = function(){
+	if(notifications){
+		notifications.forEach(n=>notifications.removeNotificationsWithSameId(n.id));
+	}
 	notifications = new Notifications();
 	updateBadgeText();
 }

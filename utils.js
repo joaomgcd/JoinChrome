@@ -2,6 +2,7 @@
 /*************************CONSTANTS***********************/
 
 //var joinserverBase =  "http://192.168.1.80:8080/";
+//var joinserverBase =  "https://testsjoaomgcd.appspot.com/";
 var joinserverBase =  "https://joinjoaomgcd.appspot.com/";
 
 var joinserver =  joinserverBase + "_ah/api/";

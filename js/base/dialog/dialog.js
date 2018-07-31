@@ -62,7 +62,7 @@ Dialog.showInputDialog = function(input,options){
 Dialog.showNotificationReplyDialog = function(notification, shouldShow){
 	return Dialog.showInputDialog({
 		title:notification.title + " said",
-		subtitle:"\"" + notification.text + "\"",
+		subtitle: notification.text,
 		placeholder:"Type your reply"
 	},{
 		shouldShow: shouldShow
