@@ -39,21 +39,33 @@
 	</div>
 	<div id="tabscontainer" class="tabselement">
 		<div id="tabs"  class="tabselement">
-			<div id="tab-devices" class="tab waves-effect waves-light"><div class="tabIcon"><p>Devices</p></div></div>
-			<div id="tab-notifications" class="tab waves-effect waves-light"><div class="tabIcon"><p>Notifications</p></div></div>
-			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p>SMS/Phone</p></div></div>
+			<div id="tab-devices" class="tab waves-effect waves-light"><div class="tabIcon"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="none" d="M0 0h24v24H0V0z" />
+                            <path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z" /></svg></p></div></div>
+			<div id="tab-notifications" class="tab waves-effect waves-light"><div class="tabIcon"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="none" d="M0 0h24v24H0V0z" />
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" /></svg></p></div></div>
+			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="none" d="M0 0h24v24H0V0z" />
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm8 0h2v2h-2zm-4 0h2v2h-2z" /></svg></p></div></div>
 		</div>
-		<div id="tools" class="tabselement">
-			<div id="refresh" class="tab waves-effect waves-light"><img class="tabIcon" src="icons/refresh.png" id="topBarRefresh" title="Refresh" /></div>
-			<div id="settings" class="tab"><img class="tabIcon" src="icons/settings.png" id="settings" title="Settings"/></div>
-			<div id="popout" class="tab"><img class="tabIcon" src="icons/popout.png" id="topBarPopout" title="Popout" /></div>
+		<div id="tools tab" class="tabselement">
+			<div id="refresh" class="tab waves-effect waves-light"><svg class="tabIcon" id="topBarRefresh" title="Refresh" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path id="topBarRefresh" fill="none" d="M0 0h24v24H0V0z" />
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" /></div>
+			<div id="popout" class="tab"><svg class="tabIcon" id="topBarPopout" title="Popout" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="none" d="M0 0h24v24H0V0z" />
+                            <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" /></div>
+      <div id="settings" class="tab"><svg class="tabIcon" id="settings" title="Settings" xmlns="https://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="w2DTdc">
+                            <path d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></div>
 		</div>
 	</div>
 	<div id="currenttabtitle" class="tabselement"></div>
 	<div id="notifications"></div>
 	<div id="sms">
 		<div id="smstitlecontainer" class="card">
-			<div id="smsback"><img src="icons/back.png"></div><img id="contactpictureconversation" src="icons/contact_white.png" /><div id="smstitle"></div>
+			<div id="smsback"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div><img id="contactpictureconversation" src="icons/contact_white.png" /><div id="smstitle"></div>
 		</div>
 		<div class="fixed-action-btn" id="newsmsbutton">
 			<a class="btn-floating btn-large">
@@ -76,7 +88,7 @@
 			</div>
 			<div id="smsattachment">
 				<svg id="smsattachmentimage" class="waves-effect" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24">
-					<path d="M16.5,6V17.5A4,4 0 0,1 12.5,21.5A4,4 0 0,1 8.5,17.5V5A2.5,2.5 0 0,1 11,2.5A2.5,2.5 0 0,1 13.5,5V15.5A1,1 0 0,1 12.5,16.5A1,1 0 0,1 11.5,15.5V6H10V15.5A2.5,2.5 0 0,0 12.5,18A2.5,2.5 0 0,0 15,15.5V5A4,4 0 0,0 11,1A4,4 0 0,0 7,5V17.5A5.5,5.5 0 0,0 12.5,23A5.5,5.5 0 0,0 18,17.5V6H16.5Z" />
+					<path d="M18 20H4V6h9V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9h-2v9zm-7.79-3.17l-1.96-2.36L5.5 18h11l-3.54-4.71zM20 4V1h-2v3h-3c.01.01 0 2 0 2h3v2.99c.01.01 2 0 2 0V6h3V4h-3z" />
 				</svg>
 				<div id="smsattachmentimagepreview" class="hidden">
 					<img id="smsattachmentimagepreviewimage" />
@@ -91,11 +103,11 @@
 					</svg>
 				</div>
 				<img id="smsattachmentimageloading" src="/icons/loading.gif" class="hidden" />
-				<div id="smsemoji"  class="waves-effect">😃</div>
+				<div id="smsemoji"  class="waves-effect"><svg xmlns="https://www.w3.org/2000/svg" width="24" height="24"><path d="M0 0h24v24H0z" fill="none"></path><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"></path></svg></div>
 			</div>
 			<textarea placeholder="Send message" type="text" class="validate materialize-textarea" id="smsinput"></textarea>
 			<div id="smssend" class="waves-effect" title="Long-click for Subject">
-				<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" /></svg>
+				<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M4.01 6.03l7.51 3.22-7.52-1 .01-2.22m7.5 8.72L4 17.97v-2.22l7.51-1M2.01 3L2 10l15 2-15 2 .01 7L23 12 2.01 3z" /></svg>
 			</div>
 		</div>
 	</div>
