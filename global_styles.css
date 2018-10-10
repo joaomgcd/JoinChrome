@@ -275,6 +275,9 @@ td {
 	padding: 0px 6px 0px 6px;
 	transition: all 0.3s ease;
 }
+.tab svg {
+	fill: #fff;
+}
 .tab:not(.selected):hover {
 	background-color: var(--theme-accent-color-light);
 }
