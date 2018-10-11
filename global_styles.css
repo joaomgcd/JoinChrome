@@ -256,7 +256,9 @@ td {
 }
 #tabs {
 	flex-grow: 1;
-
+}
+#tabs .tab {
+	padding: 0 1em;
 }
 #tools {
 	align-items: center;
