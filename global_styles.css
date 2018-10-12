@@ -256,7 +256,9 @@ td {
 }
 #tabs {
 	flex-grow: 1;
-
+}
+#tabs .tab {
+	padding: 0 1em;
 }
 #tools {
 	align-items: center;
@@ -274,6 +276,9 @@ td {
 	opacity: 0.6;
 	padding: 0px 6px 0px 6px;
 	transition: all 0.3s ease;
+}
+.tab svg {
+	fill: #fff;
 }
 .tab:not(.selected):hover {
 	background-color: var(--theme-accent-color-light);
@@ -430,7 +435,7 @@ img.tabIcon {
 	position: relative;
 }
 #smsattachmentimagepreviewdelete{
-	position: absolute;    
+	position: absolute;
 	width: 16px;
     top: 0px;
     right: 8px;
@@ -438,12 +443,11 @@ img.tabIcon {
 }
 #smsattachmentimageloading{
     z-index: 1000;
-	cursor: pointer;    
+	cursor: pointer;
     position: absolute;
     margin-left: 32px;
 }
 #smsemoji{
-	font-size: 22px;
 	cursor: pointer;
 }
 .hidden{
