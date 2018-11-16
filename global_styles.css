@@ -661,6 +661,9 @@ div#smscontainer > #smsmessagecontainer:first-child {
 .smsmessageattachment  {
 	font-size: 16px;
 }
+.smsmessageattachment svg {
+	vertical-align: middle;
+}
 .smsmessageattachment img  {
 	max-width: 90%;
 }
