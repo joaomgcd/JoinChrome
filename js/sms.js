@@ -776,8 +776,6 @@ var SmsApp = function(){
 				var sms = smses[i];
 				var smsMessageContainerElement = smsMessageHtml.cloneNode(true);
 				smsMessageContainerElement.sms = sms;
-				var triangleElement = smsMessageContainerElement.querySelector("#smsbubbletriangle");
-				var triangleElementReceived = smsMessageContainerElement.querySelector("#smsbubbletrianglereceived");
 				var smsMessageElement = smsMessageContainerElement.querySelector("#smsmessage");
 				var smsTextElement = smsMessageElement.querySelector("#smsmessagetext");
 				var smsSubjectElement = smsMessageElement.querySelector("#smsmessagesubject");
@@ -848,10 +846,8 @@ var SmsApp = function(){
 				smsDateElement.innerHTML = sms.date.formatDate(true);
 				if(sms.received){
 					smsMessageElement.classList.add("received");
-					triangleElement.style.display = "none";
 				}else{
 					smsMessageContainerElement.classList.add("sent");
-					triangleElementReceived.style.display = "none";
 				}
 				if(!sms.progress){
 					smsLoaderElement.classList.add("hidden");
