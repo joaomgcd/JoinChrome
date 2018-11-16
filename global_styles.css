@@ -559,13 +559,13 @@ div#smscontainer > #smsmessagecontainer:first-child {
 	font-size: 16px;
 }
 .smscontactpicture > img {
-	width: 36px;
-    border-radius: 36px;
+	width: 45px;
+    border-radius: 45px;
     vertical-align: middle;
 }
 .smscontactpicture > svg {
-	width: 36px;
-	height: 36px;
+	width: 45px;
+	height: 45px;
     vertical-align: middle;
     fill: var(--theme-accent-color-dark);
 }
