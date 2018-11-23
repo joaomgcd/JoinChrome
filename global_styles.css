@@ -410,8 +410,8 @@ img.tabIcon {
 	margin-left: 5px;
     z-index: 1;
     padding: 10px;
-	background: #fff;
-	width: 50px;
+	background: var(--theme-background-color);
+	width: 55px;
 }
 #smssend img {
 	opacity: 0.8;
