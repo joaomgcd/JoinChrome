@@ -15,7 +15,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 			var gcmType = options.gcmType;
 			var gcmParams = options.gcmParams;
 		    var req = new XMLHttpRequest();
-		    req.open("POST", "https://gcm-http.googleapis.com/gcm/send", true);
+		    req.open("POST", "https://fcm.googleapis.com/fcm/send", true);
 		    req.setRequestHeader("Authorization", "key=AIzaSyDvDS_KGPYTBrCG7tppCyq9P3_iVju9UkA");
 		    req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
 		    req.onload = function() {

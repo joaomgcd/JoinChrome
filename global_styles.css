@@ -56,6 +56,17 @@ body.popout {
 	overflow-y: auto;
 	height: 100vh;
 }
+
+.button-container {
+	align-items: flex-start;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
 .dropzone {
 	position: absolute;
     /* top: 50%; */
@@ -205,16 +216,6 @@ a#link {
 	padding: 8px;
 	background-color: var(--theme-background-color-panel);
 	overflow-y: scroll;
-}
-.button-container {
-	align-items: flex-start;
-	display: flex;
-	flex-direction: column;
-	flex-wrap: wrap;
-	justify-content: space-around;
-	list-style: none;
-	margin: 0;
-	padding: 0;
 }
 .button {
 	color: white;

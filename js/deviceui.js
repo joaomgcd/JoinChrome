@@ -50,7 +50,7 @@ back.eventBus.register(deviceUIEventHandler);
 var gcmStatus = new back.GCMStatus();
 gcmStatus.request = true;
 gcmStatus.deviceId = localStorage.deviceId;
-var deviceIdsToGetStatus = back.devices.where(device=>UtilsDevices.canReportStatus(device)).select(device=>device.deviceId);
+var deviceIdsToGetStatus = back.devices ? back.devices.where(device=>UtilsDevices.canReportStatus(device)).select(device=>device.deviceId) : [];
 var requestedStatus = false;
 addEventListener("unload", function (event) {
 	back.console.log("Unloading device UI...");
@@ -66,6 +66,9 @@ var writeDevices = function(){
 	var deviceButtonHtml = document.querySelector('link[href="components/device-button.html"]').import.querySelector('#devicebutton');
 	var deviceButtonsHtml = document.querySelector('link[href="components/device-buttons.html"]').import.querySelector('#devicebuttons');
 	var buttonsElement = null;
+	if(!back.devices){
+		return;
+	}
 	var selectedDevice = back.devices.first(device=>device.deviceId == localStorage.lastHoveredDeviceId);
 
 	var deviceHover = function(e){
@@ -344,8 +347,15 @@ var writeDevices = function(){
 	}else{
 		deviceHover({"target":deviceElements[0]});
 	}
+	
+
 
 }
 document.addEventListener('DOMContentLoaded', function() {
 	writeDevices();
+	const devicelistElement = document.querySelector("#devicelist");
+	const tabscontainerElement = document.querySelector("#tabscontainer");
+	const commandsElement = document.querySelector("#commands");
+	const commandsHeight = `calc(100vh - ${devicelistElement.clientHeight + tabscontainerElement.clientHeight}px)`
+	commandsElement.style.height = commandsHeight;
 });

@@ -243,6 +243,7 @@ document.onkeydown = function(e){
 	}
 }
 
+
 document.getElementById("optionslink").addEventListener("click",function(event){
    openTab(OPTIONS_URL);
 });

@@ -1012,6 +1012,9 @@ var SmsApp = function(){
 		if(!localStorage.smsDeviceId){
 			return true;
 		}
+		if(!back.devices){
+			return true;
+		}
 		if(!me.deviceId || !back.devices.first(device=>device.deviceId == me.deviceId)){
 			console.error("SMS Device doesn't exist!");
 			var devicesForSms = back.devices.where(UtilsDevices.canSendSMS);
