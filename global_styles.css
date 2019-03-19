@@ -249,7 +249,7 @@ td {
 .tabselement {
 	background-color: var(--theme-tab-color);
 	display: flex;
-	font-size: 16px;
+	//font-size: 8px;
 }
 #tabscontainer {
 	box-shadow: 0px -1px 6px black;
