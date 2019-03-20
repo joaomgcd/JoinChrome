@@ -602,3 +602,10 @@ input.wide{
     flex-grow: 1;
     text-align: right;
 }
+#test{
+	margin: 10px;
+}
+#iconstatus{
+	width: 20px;
+	margin-right: 10px;
+}

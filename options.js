@@ -433,9 +433,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		loadOptions();
 		setFavoriteCommandOptions();
-		document.getElementById("starttests").addEventListener("click",function(){
+		document.getElementById("starttests").addEventListener("click",async function(){
 			var tests = new Tests();
-			tests.init();
+			await tests.init();
 			tests.execute(document.getElementById("tests"));
 		});
 		setUserInfo();

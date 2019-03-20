@@ -973,3 +973,17 @@ function debounce(func, wait, immediate) {
 		if (callNow) func.apply(context, args);
 	};
 };
+
+const importComponent = async (path,childElementSelector) => {
+	const module = await import(path);
+	const root = htmlToElement(module.template);
+	if(!childElementSelector) return root;
+
+	return root.querySelector(childElementSelector);
+};
+function htmlToElement(html) {
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content;
+}

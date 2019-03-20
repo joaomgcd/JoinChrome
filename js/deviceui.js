@@ -57,14 +57,15 @@ addEventListener("unload", function (event) {
 	back.eventBus.unregister(deviceUIEventHandler);
 
 })
+
 var selectedDeviceElement = null;
-var writeDevices = function(){
+var writeDevices = async function(){
 	var commandContainerElement = document.getElementById("devices");
 	commandContainerElement.innerHTML = "";
-	var deviceCommandsHtml = document.querySelector('link[href="components/device-commands.html"]').import;
-	var deviceHtml = document.querySelector('link[href="components/device.html"]').import.querySelector('#device');
-	var deviceButtonHtml = document.querySelector('link[href="components/device-button.html"]').import.querySelector('#devicebutton');
-	var deviceButtonsHtml = document.querySelector('link[href="components/device-buttons.html"]').import.querySelector('#devicebuttons');
+	var deviceCommandsHtml = await importComponent('../components/device-commands.js');
+	var deviceHtml = await importComponent('../components/device.js','#device');
+	var deviceButtonHtml = await importComponent('../components/device-button.js','#devicebutton');
+	var deviceButtonsHtml = await importComponent('../components/device-buttons.js','#devicebuttons');
 	var buttonsElement = null;
 	if(!back.devices){
 		return;
@@ -224,7 +225,7 @@ var writeDevices = function(){
 		e.dataTransfer.setData("index",buttonElement.commandIndex);
 		console.log(buttonElement);
 	}
-	var buttonDragDrop = function(e){
+	var buttonDragDrop = async function(e){
 
 		if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0){
 			return;
@@ -269,7 +270,7 @@ var writeDevices = function(){
 		commandSortOrder[commandBeingDragged.commandId] = newIndex;
 		/*commandSortOrder[buttonElement.command.commandId] = oldIndex;*/
 		storeDeviceCommandOrder();
-		writeDevices();
+		await writeDevices();
 		document.querySelector("#commands").scrollTop = buttonScroll;
 	}
 	var allowDrop = function(e){
@@ -351,11 +352,7 @@ var writeDevices = function(){
 
 
 }
-document.addEventListener('DOMContentLoaded', function() {
-	writeDevices();
-	const devicelistElement = document.querySelector("#devicelist");
-	const tabscontainerElement = document.querySelector("#tabscontainer");
-	const commandsElement = document.querySelector("#commands");
-	const commandsHeight = `calc(100vh - ${devicelistElement.clientHeight + tabscontainerElement.clientHeight}px)`
-	commandsElement.style.height = commandsHeight;
+document.addEventListener('DOMContentLoaded', async function() {
+	await writeDevices();
+	setDeviceCommandHeight();
 });

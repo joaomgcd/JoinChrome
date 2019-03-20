@@ -1,6 +1,12 @@
-var smsHtml = document.querySelector('link[href="components/sms.html"]').import;
-var smsContactHtml = smsHtml.querySelector('link[href="sms-contact.html"]').import.querySelector('#smscontact');
-var smsMessageHtml = smsHtml.querySelector('link[href="sms-message.html"]').import.querySelector('#smsmessagecontainer');
+const importSmsComponents = async () => {
+	var smsHtml = await import('../components/sms.js');
+	var smsContactHtml = await smsHtml.getSmsContact();
+	var smsMessageHtml = await smsHtml.getSmsMessage();
+	return {
+		"smsContactHtml":smsContactHtml,
+		"smsMessageHtml":smsMessageHtml
+	}
+}
 
 var smsElement = document.getElementById("sms");
 
@@ -609,49 +615,52 @@ var SmsApp = function(){
 			return;
 		}
 		if(contactsInfo && contactsInfo.contacts){
-			var contacts = contactsInfo.contacts;
-			smsContainerElement.innerHTML = "";
-			for (var i = 0; i < contacts.length; i++) {
-					var contact = contacts[i];
-					if(contact.lastsms){
-						var contactElement = smsContactHtml.cloneNode(true);
-						contactElement.contact = contact;
-						var contactPictureContainer = contactElement.querySelector("#smscontactpicture");
-						var contactPictureElement = contactPictureContainer.querySelector("img");
-						var contactSvgElement = contactPictureContainer.querySelector("svg");
-						var contactNameElement = contactElement.querySelector("#smscontactname");
-						var contactCallElement = contactElement.querySelector("#smscontactcall");
-						var contactTextElement = contactElement.querySelector("#smscontacttext");
-						var contactDateElement = contactElement.querySelector("#smscontactdate");
-						contactNameElement.innerHTML = contact.name;
-						contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ back.sanitizeHTML(contact.lastsms.text);
-						contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
+			importSmsComponents().then(result=>{
+				const {smsContactHtml,smsMessageHtml} = result;
+				var contacts = contactsInfo.contacts;
+				smsContainerElement.innerHTML = "";
+				for (var i = 0; i < contacts.length; i++) {
+						var contact = contacts[i];
+						if(contact.lastsms){
+							var contactElement = smsContactHtml.cloneNode(true);
+							contactElement.contact = contact;
+							var contactPictureContainer = contactElement.querySelector("#smscontactpicture");
+							var contactPictureElement = contactPictureContainer.querySelector("img");
+							var contactSvgElement = contactPictureContainer.querySelector("svg");
+							var contactNameElement = contactElement.querySelector("#smscontactname");
+							var contactCallElement = contactElement.querySelector("#smscontactcall");
+							var contactTextElement = contactElement.querySelector("#smscontacttext");
+							var contactDateElement = contactElement.querySelector("#smscontactdate");
+							contactNameElement.innerHTML = contact.name;
+							contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ back.sanitizeHTML(contact.lastsms.text);
+							contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
-						var contactPhoto = contact.photo;
-						if(!contact.photo){
-							contactPictureElement.classList.add("hidden");
-						}else{
-							contactPictureElement.src = contactPhoto;
-							contactSvgElement.classList.add("hidden");
+							var contactPhoto = contact.photo;
+							if(!contact.photo){
+								contactPictureElement.classList.add("hidden");
+							}else{
+								contactPictureElement.src = contactPhoto;
+								contactSvgElement.classList.add("hidden");
+							}
+							contactElement.addEventListener("click",function(event){
+								var contact = findContactForElement(event.target);
+								me.contactsScroll = smsContainerElement.scrollTop;
+								me.writeContactMessages(deviceId, contact);
+							});
+							contactCallElement.addEventListener("click",function(event){
+								var contact = findContactForElement(event.target);
+								back.pushCall(me.deviceId,true,contact);
+								event.stopPropagation();
+							});
+							smsContainerElement.appendChild(contactElement);
 						}
-						contactElement.addEventListener("click",function(event){
-							var contact = findContactForElement(event.target);
-							me.contactsScroll = smsContainerElement.scrollTop;
-							me.writeContactMessages(deviceId, contact);
-						});
-						contactCallElement.addEventListener("click",function(event){
-							var contact = findContactForElement(event.target);
-							back.pushCall(me.deviceId,true,contact);
-							event.stopPropagation();
-						});
-						smsContainerElement.appendChild(contactElement);
-					}
-			}
-			if(me.contactsScroll){
-				smsContainerElement.scrollTop = me.contactsScroll;
-			}else{						
-				smsContainerElement.scrollTop = 0;
-			}
+				}
+				if(me.contactsScroll){
+					smsContainerElement.scrollTop = me.contactsScroll;
+				}else{						
+					smsContainerElement.scrollTop = 0;
+				}
+			});			
 		}
 	};
 	me.writeSms = UtilsObject.async(function* (deviceId, local){
@@ -740,7 +749,8 @@ var SmsApp = function(){
 			linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement, true);	*/
 		});
 	}
-	me.writeContactMessages = function (deviceId, contact, local){
+	me.writeContactMessages = async function (deviceId, contact, local){
+		const {smsContactHtml,smsMessageHtml} = await importSmsComponents();
 		me.deviceId = deviceId;
 		me.contact = contact;
 		localStorage.smsDeviceContact = JSON.stringify(me.contact);
@@ -886,7 +896,9 @@ var SmsApp = function(){
 				filter = filter.toLowerCase();
 			}
 			var addContactToList = function(contact){
-				var contactElement = smsContactHtml.cloneNode(true);
+				importSmsComponents().then(result=>{
+					const {smsContactHtml,smsMessageHtml} = result;
+					var contactElement = smsContactHtml.cloneNode(true);
 					contactElement.contact = contact;
 					var contactNameElement = contactElement.querySelector("#smscontactname");
 					var contactCallElement = contactElement.querySelector("#smscontactcall");
@@ -912,6 +924,7 @@ var SmsApp = function(){
 							callback(me.deviceId, contact);
 						}
 					}
+				});
 			}
 			for (var i = 0; i < contacts.length; i++) {
 					var contact = contacts[i];
@@ -1066,8 +1079,8 @@ var sendSms = function(event){
 	if(sms && sms.number){
 		var contactsGetter = new ContactsGetter(event.deviceId);
 		contactsGetter.getContactForNumber(sms.number,true)
-		.then(function(contact){
-			smsApp.writeContactMessages(event.deviceId,contact,false);
+		.then(async function(contact){
+			await smsApp.writeContactMessages(event.deviceId,contact,false);
 			smsReceived(event);
 		});
 	} else {

@@ -1,8 +1,4 @@
-<html>
-<head>
-<meta charset="UTF-8">
-</head>
-<body>
+export var template = `
 <div class='smsmessagecontainer' id="smsmessagecontainer">
 	<div class='smsmessage' id="smsmessage">
 			<div class='smsmessagesender' id="smsmessagesender">Sender</div>
@@ -15,6 +11,4 @@
 				<div class='smsmessageprogress' id="smsmessageprogress"><img class="smsloader" src="../icons/loading.gif"></img></div>
 		</div>
 	</div>
-</div>
-</body>
-</html>
+</div>`

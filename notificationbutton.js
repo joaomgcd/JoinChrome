@@ -1,10 +1,4 @@
-<html>
-<head>
-<meta charset="UTF-8">
-</head>
-<body>
+export var template = `
 		<div id="notificationbutton" class="notificationbutton">
 			<div class="buttontext" id="text">Do stuff</div>
-		</div>
-</body>
-</html>
+		</div>`

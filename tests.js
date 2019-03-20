@@ -1,12 +1,12 @@
 
 var back = chrome.extension.getBackgroundPage();
-var testHtml = document.querySelector('link[href="test.html"]').import.querySelector('#test');
 
 var Tests = function(){
 	var me = this;
 	var testButton = document.getElementById("starttests");
 	me.elementToInsertResults = null;
-	this.init = function(){
+	this.init = async function(){
+		this.testHtml = await importComponent('./test.js','#test');
 		this.push(new TestAccount());
 		this.push(new TestRegister());
 		this.push(new TestAuthToken());
@@ -58,7 +58,7 @@ var Tests = function(){
 		document.body.scrollTop = document.body.scrollHeight;
 	}
 	this.executeTest = function(test){
-		var testElement = testHtml.cloneNode(true);
+		var testElement = me.testHtml.cloneNode(true);
 		test.testElement = testElement;
 		var textElement = testElement.querySelector("#text");
 		textElement.textContent = test.description + "...";

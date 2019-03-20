@@ -1,8 +1,4 @@
-<html>
-<head>
-<meta charset="UTF-8">
-</head>
-<body>
+export var template = `
 <div class='device waves-effect' id="device">
 		<div id="deviceiconcontainer" class="waves-effect">
 			<img id='deviceicon' class='deviceicon' src='/icons/icon.png'/>
@@ -11,6 +7,4 @@
 			</div>
 		</div>
 		<div colspan='2' class='devicename' id="devicename">DEVICE_NAME</div>
-</div>
-</body>
-</html>
+</div>`

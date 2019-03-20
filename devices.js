@@ -16,10 +16,11 @@ var doGetWithAuthPromise = back.doGetWithAuthPromise;
 var doPutWithAuthPromise = back.doPutWithAuthPromise;
 var refreshDevices = function(callback){
 	return chrome.extension.getBackgroundPage().refreshDevices(function(){
-		writeDevices();
-		if(callback){
-			callback();
-		}
+		writeDevices().then(()=>{
+			if(callback){
+				callback();
+			}
+		});
 	});
 }
 var isMicAvailable = function(navigator){
@@ -156,7 +157,17 @@ var selectTab = function(idToShow){
 	if (isPopup) {
 		$('body').toggleClass('popout', isPopup)
 	}
+	setDeviceCommandHeight();
+}
 
+const setDeviceCommandHeight = ()=>{
+	const devicelistElement = document.querySelector("#devicelist");
+	if(!devicelistElement) return;
+	
+	const tabscontainerElement = document.querySelector("#tabscontainer");	
+	const commandsElement = document.querySelector("#commands");
+	const commandsHeight = `calc(100vh - ${devicelistElement.clientHeight + tabscontainerElement.clientHeight}px)`
+	commandsElement.style.height = commandsHeight;
 }
 var refreshTabVisibility = function(){
 	var smsTab = document.getElementById("tab-sms");

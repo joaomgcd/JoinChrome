@@ -1,9 +1,4 @@
-<html>
-<head>
-<meta charset="UTF-8">
-<!-- <link type="text/css" id="notification_styles" rel="stylesheet" href="notification_styles.css"/> -->
-</head>
-<body>
+export var template = `
 	<div id="notification" class="notification card">
 			<img src="/icons/close.svg" id="closebutton"/>
 			<div id="notificationTop"><div id="appname">App Name</div><div>-</div><div class="notificationdevice" id="device">Nexus 6</div></div>
@@ -25,6 +20,4 @@
 			</div>
 			<div class="notificationbuttons" id="buttons">
 			</div>
-		</div>
-</body>
-</html>
+		</div>`

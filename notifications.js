@@ -1,7 +1,12 @@
-var notificationsHtml = document.querySelector('link[href$="notifications.html"]').import;
-var notificationHtml = notificationsHtml.querySelector('link[href$="notification.html"]').import.querySelector('#notification');
-var notificationButtonHtml = notificationsHtml.querySelector('link[href$="notificationbutton.html"]').import.querySelector('#notificationbutton');
-
+const importNotifications = async () => {
+	var notificationsHtml = await import('./notifications-component.js');
+	var notificationHtml = await notificationsHtml.getNotification();
+	var notificationButtonHtml = await notificationsHtml.getNotificationButton();
+	return {
+		"notificationHtml":notificationHtml,
+		"notificationButtonHtml":notificationButtonHtml
+	}
+}
 var notificationsElement = document.getElementById("notifications");
 var getNotifications = function(){
 	return chrome.extension.getBackgroundPage().notifications;
@@ -11,10 +16,11 @@ window.onbeforeunload = function(){
 }
 var refreshNotifications = function(callback){
 	chrome.extension.getBackgroundPage().getNotifications(function(notifications){
-		writeNotifications();
-		if(callback){
-			callback();
-		}
+		writeNotifications().then(()=>{
+			if(callback){
+				callback();
+			}
+		});
 	});
 }
 var getHeight = function(){
@@ -24,7 +30,8 @@ var getWidth = function(){
 	return chrome.extension.getBackgroundPage().getNotificationPopupWidth();
 }
 
-var writeNotifications = function(filter){
+var writeNotifications = async function(filter){
+	const {notificationHtml,notificationButtonHtml} = await importNotifications();
 	notificationsElement.innerHTML = "";
 	var notifications = getNotifications();
 	if(notifications.length == 0){

@@ -1,4 +1,4 @@
-<!-- <div class='smscontact' id="smscontact">
+export var template = `<!-- <div class='smscontact' id="smscontact">
 		
 		<div class='smscontactnameandphone'>
 				<div class='smscontactpicture' id="smscontactpicture"><img src=""/></div>
@@ -32,4 +32,4 @@
 				<div class='smscontactdate' id="smscontactdate">CONTACT_DATE</div>
 		</div>
 
-</div>
+</div>`
