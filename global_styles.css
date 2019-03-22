@@ -35,6 +35,8 @@ body.popout {
 }
 #devices {
 	background-color: var(--theme-background-color);
+	height: 100vh;
+	overflow: auto;
 }
 #tabsplaceholder {
 	overflow: hidden;
