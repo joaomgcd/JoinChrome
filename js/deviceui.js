@@ -361,5 +361,5 @@ var writeDevices = async function(){
 }
 document.addEventListener('DOMContentLoaded', async function() {
 	await writeDevices();
-	setDeviceCommandHeight();
+//	setDeviceCommandHeight();
 });

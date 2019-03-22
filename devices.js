@@ -157,7 +157,7 @@ var selectTab = function(idToShow){
 	if (isPopup) {
 		$('body').toggleClass('popout', isPopup)
 	}
-	setDeviceCommandHeight();
+//	setDeviceCommandHeight();
 }
 
 const setDeviceCommandHeight = ()=>{
