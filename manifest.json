@@ -2,8 +2,9 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.8.9",
-	"permissions": [
+	"version": "1.8.10",
+	"content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
+    "permissions": [
 		"identity",
 		"identity.email",
 		"background",
@@ -23,7 +24,8 @@
 		"contextMenus",
 		"geolocation",
 		"activeTab",
-		"tts"
+		"tts",
+        "https://www.googleapis.com/"
 	],
 	"icons": {
 		"16": "icons/small.png",

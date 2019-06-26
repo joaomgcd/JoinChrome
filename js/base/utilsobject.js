@@ -33,6 +33,7 @@ var UtilsObject = {
 	  return UtilsObject.toClass(obj) == "[object Function]";
 	},
 	"getStoredNumber": function(key, defaultValue){
+		if(!localStorage) return;
 		var value = localStorage[key];
 		if(value){
 			return Number(value);	
@@ -40,6 +41,7 @@ var UtilsObject = {
 		return defaultValue;
 	},
 	"setStored": function(key, value){
+		if(!localStorage) return;
 		localStorage[key] = value;
 	},
 	"getArrayIfNot": function(obj){
@@ -255,6 +257,7 @@ var UtilsObject = {
 		return result;
 	},
 	"doOnce" : function(controlId,func){
+		if(!localStorage) return;
 		if(!localStorage[controlId]){
 			localStorage[controlId] = true;
 			func();

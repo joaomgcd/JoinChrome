@@ -1627,7 +1627,7 @@ var registerDevice = function(callback,callbackError){
         }   
     });
 }
-chrome.gcm.onMessage.addListener(function(message){
+const handlePushMessage = message => {
 	console.log(message);
 	var multiIndexString = message.data.multi;
 	var type = message.data.type;
@@ -1647,7 +1647,32 @@ chrome.gcm.onMessage.addListener(function(message){
 			executeGcm(complete.type,complete.json);
 		}
 	}
+}
+chrome.gcm.onMessage.addListener(payload=>{
+	payload.pushHandler = "gcm";
+	handlePushMessage(payload);
 });
+/*chrome.gcm.onMessage.addListener(function(message){
+	console.log(message);
+	var multiIndexString = message.data.multi;
+	var type = message.data.type;
+	if(!multiIndexString){
+		executeGcm(message.data.type,message.data.json);
+	}else{
+		var multiIndex = Number(multiIndexString);
+		var length = Number(message.data.length);
+		console.log("Got multi message index: " + multiIndex+"/"+length);
+		var id = message.data.id;
+		var value = message.data.value;
+		var gcmMultis = gcmMultiMap.add(id,multiIndex,value,type,length);
+		var complete = gcmMultis.getComplete();
+		if(complete){
+			console.log("GCM complete! Executing of type " + type);
+			delete gcmMultiMap[id];
+			executeGcm(complete.type,complete.json);
+		}
+	}
+});*/
 var executeGcm = function(type, json){
 	var gcmFunc = window[type];
 	if(!gcmFunc){
@@ -1716,7 +1741,43 @@ var setLocalDeviceNameFromDeviceList = function(){
 	}
 	localStorage.deviceName = myDevice.deviceName;
 }
-chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},registrationId1=>{
+const getInstanceIdToken = senderId => {
+	return new Promise((resolve,reject)=>{
+		chrome.instanceID.getToken({"authorizedEntity":senderId,"scope":"GCM"},resolve);
+	});
+}
+//const fcmClient = new FCMClientImplementation();
+/*fcmClient.getTokens()
+	.then(result=>{
+		console.log("Got FCM Tokens!",result);
+	});*/
+/*fcmClient.onMessage(payload=>{
+	payload.pushHandler = "fcm";
+	handlePushMessage(payload);
+});*/
+const initPushTokens = async ()=>{
+	const registrationId1 = await getInstanceIdToken("596310809542");
+	//const registrationId2 = await fcmClient.getToken("737484412860");
+	const registrationId2 = await getInstanceIdToken("737484412860");
+
+	var resultRegId1 = handleRegIdRegistration(registrationId1,"regIdLocal");
+	if(!resultRegId1.success) return;
+
+	var resultRegId2 = handleRegIdRegistration(registrationId2,"regIdLocal2");
+	if(!resultRegId2.success) return;
+
+	setLocalDeviceNameFromDeviceList();
+	if(devices && resultRegId1.sameRegId && resultRegId2.sameRegId && localStorage.deviceId) return;
+
+	const result = await registerDevice();
+	if(!result.sameDeviceId){
+		refreshDevices();	
+	}else{
+		setLocalDeviceNameFromDeviceList();
+	}
+};
+initPushTokens();
+/*chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},registrationId1=>{
 	var resultRegId1 = handleRegIdRegistration(registrationId1,"regIdLocal");
 	if(resultRegId1.success){
 		chrome.instanceID.getToken({"authorizedEntity":"737484412860","scope":"GCM"},registrationId2=>{
@@ -1735,7 +1796,7 @@ chrome.instanceID.getToken({"authorizedEntity":"596310809542","scope":"GCM"},reg
 			}
 		});		
 	}
-});
+});*/
 
 /*chrome.gcm.register(["596310809542","737484412860"],function(registrationId) {
 	if (registrationId == null || registrationId == "") {

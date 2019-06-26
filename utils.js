@@ -790,12 +790,16 @@ var openTab = function(url,options,callback){
 			return tab.url == url;
 		});
 		if(correctTab){
-			var finalOptions = {selected: true};
+			var finalOptions = {"active": true};
 			if(options){
 				for(var prop in options){
 					finalOptions[prop] = options[prop];
 				}
 			}			
+
+			chrome.windows.update(correctTab.windowId, {"focused":true,"drawAttention":true},()=>{
+				chrome.tabs.update(correctTab.id, finalOptions,callback);
+			});
 			chrome.tabs.update(correctTab.id, finalOptions,callback);
 		}else{
 			openNewTab(url,options,callback);
