@@ -787,7 +787,12 @@ var openTab = function(url,options,callback){
 
 	chrome.tabs.query({},function(result){
 		var correctTab = result.first(function(tab){
-			return tab.url == url;
+			var tabUrl = tab.url;
+			const indexOfHash = tabUrl.indexOf("#");
+			if(indexOfHash>0){
+				tabUrl = tabUrl.substring(0,indexOfHash);
+			}
+			return tabUrl == url;
 		});
 		if(correctTab){
 			var finalOptions = {"active": true};
