@@ -1956,6 +1956,7 @@ function doForDevices(action) {
 	}
 }
 
+var sentLastAutoClipboard = false;
 var lastClipboard = null;
 var autoCheckClipboard = getAutoClipboard();
 var checkClipboardRecursive = function(){
@@ -1965,21 +1966,26 @@ var checkClipboardRecursive = function(){
 	getClipboard(function(clipboardData){
 		if(lastClipboard != clipboardData){
 			lastClipboard = clipboardData;
-			var devicesToSendClipboard = getDeviceIdsToSendAutoClipboard();
-			if(devicesToSendClipboard.length>0){
-				var gcmParams = {};
-				gcmParams[GCM_PARAM_TIME_TO_LIVE] = 0;
-				var params = {"deviceIds" : devicesToSendClipboard, "text":encrypt(clipboardData)};
-				var gcmAutoClipboard = new GCMAutoClipboard();
-				gcmAutoClipboard.text = params.text;
-				new DeviceIdsAndDirectDevices(devicesToSendClipboard).send(function(serverDeviceIds,callback, callbackError){
-					params.deviceIds = serverDeviceIds;
-					doPostWithAuth(joinserver + "messaging/v1/sendAutoClipboard/",params,callback, callbackError);
-				},gcmAutoClipboard,gcmParams, function(result){
-					  console.log("Sent clipboard automatically: " + JSON.stringify(result));
-					},function(error){
-						console.log("Error: " + error);
-				});
+			if(!sentLastAutoClipboard){
+				var devicesToSendClipboard = getDeviceIdsToSendAutoClipboard();
+				if(devicesToSendClipboard.length>0){
+					sentLastAutoClipboard = true;
+					var gcmParams = {};
+					gcmParams[GCM_PARAM_TIME_TO_LIVE] = 0;
+					var params = {"deviceIds" : devicesToSendClipboard, "text":encrypt(clipboardData)};
+					var gcmAutoClipboard = new GCMAutoClipboard();
+					gcmAutoClipboard.text = params.text;
+					new DeviceIdsAndDirectDevices(devicesToSendClipboard).send(function(serverDeviceIds,callback, callbackError){
+						params.deviceIds = serverDeviceIds;
+						doPostWithAuth(joinserver + "messaging/v1/sendAutoClipboard/",params,callback, callbackError);
+					},gcmAutoClipboard,gcmParams, function(result){
+						  console.log("Sent clipboard automatically: " + JSON.stringify(result));
+						},function(error){
+							console.log("Error: " + error);
+					});
+				}	
+			}else{				
+				sentLastAutoClipboard = false;
 			}
 		}
 	});

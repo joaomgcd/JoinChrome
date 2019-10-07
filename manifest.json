@@ -2,7 +2,7 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.8.12",
+	"version": "1.8.13",
 	"content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
     "permissions": [
 		"identity",
