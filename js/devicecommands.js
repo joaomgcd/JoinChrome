@@ -222,17 +222,17 @@ var handleDeviceCommandIcon = function(command,image){
 		//icon.setAttribute("viewBox","0 0 24 24");
 	}
 	if(command.icon){
-		if(command.icon.indexOf(".svg")>0){
-			UtilsDom.replaceWithSvgInline(image,command.icon,(img,svg)=>setSizeFunc(svg));
-		}else if(command.icon.indexOf("<svg") == 0){
+		if(command.icon.indexOf("<svg") >= 0){
 			var container = document.createElement('div');
 			container.innerHTML = command.icon;
-			var icon = container.firstChild;
+			var icon = container.querySelector("svg");
 			setSizeFunc(icon);
 			icon.setAttribute("id",image.id);
 			icon.onclick = image.onclick;
 			//image.parentNode.removeChild(image);
 			UtilsDom.replaceElement(image,icon);
+		}else if(command.icon.indexOf(".svg")>0){
+			UtilsDom.replaceWithSvgInline(image,command.icon,(img,svg)=>setSizeFunc(svg));
 		}else {
 			if(image.tagName != "img"){
 				var icon = document.createElement("img");
