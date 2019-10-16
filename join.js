@@ -1946,6 +1946,11 @@ function getClipboard(callback){
 	document.execCommand("paste");
 	document.onpaste = undefined;
 }
+function getClipboardAsync(){
+	return new Promise((resolve,reject)=>{
+		getClipboard(clipboard=>resolve(clipboard));
+	});
+}
 function doForDevices(action) {
 	if(!devices || devices.length == 0){
 		return;

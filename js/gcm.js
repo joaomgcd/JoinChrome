@@ -421,8 +421,11 @@ var GCMAutoClipboard = function(){
 	this.getCommunicationType = function() {
 		return "GCMAutoClipboard";
 	}
-	this.execute = function() {
+	this.execute = async function() {
 		this.text = decryptString(this.text);
+		const clipboard = await getClipboardAsync();
+		if(this.text == clipboard) return;
+
 		directCopy(this.text,true);
 		if(getAutoClipboardNotification()){
 			showNotification("Clipboard Automatically Set", this.text ,5000);
