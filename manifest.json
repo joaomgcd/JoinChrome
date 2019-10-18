@@ -3,10 +3,10 @@
 	"short_name": "Join",
 	"description": "Bring your devices together",
 	"version": "1.8.15",
-	"content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
+	//"content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
     "permissions": [
 		"identity",
-		"identity.email",
+		//"identity.email",
 		"background",
 		"gcm",
 		"storage",
@@ -17,15 +17,15 @@
 		"tabs",
 		"clipboardRead",
 		"clipboardWrite",
-		"https://localhost:8080/",
-		"http://localhost/",
+		/*"https://localhost:8080/",
+		"http://localhost/",*/
 		"https://joinjoaomgcd.appspot.com/",
-		"https://accounts.google.com/o/oauth2/v2/auth/",
+		//"https://accounts.google.com/o/oauth2/v2/auth/",
 		"contextMenus",
 		"geolocation",
 		"activeTab",
-		"tts",
-        "https://www.googleapis.com/"
+		"tts"/*,
+        "https://www.googleapis.com/"*/
 	],
 	"icons": {
 		"16": "icons/small.png",
