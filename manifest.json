@@ -23,7 +23,7 @@
 		//"https://accounts.google.com/o/oauth2/v2/auth/",
 		"contextMenus",
 		"geolocation",
-		"activeTab",
+		//"activeTab",
 		"tts"/*,
         "https://www.googleapis.com/"*/
 	],
