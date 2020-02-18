@@ -2,9 +2,10 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.8.16",
+	"version": "1.8.18",
     "permissions": [
 		"identity",
+		"identity.email",
 		"background",
 		"gcm",
 		"storage",
@@ -16,6 +17,7 @@
 		"clipboardRead",
 		"clipboardWrite",
 		"https://joinjoaomgcd.appspot.com/",
+		"https://accounts.google.com/o/oauth2/v2/auth/",
 		"contextMenus",
 		"geolocation",
 		"tts"

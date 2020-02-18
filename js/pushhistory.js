@@ -6,8 +6,6 @@ var PushHistory = function(deviceId){
 	var me = this;
 	var fileNamePlaceholder = "File";
 	var googleDriveManager = new GoogleDriveManager();
-	var pushItemHtml = document.querySelector('link[href="push-item.html"]').import.querySelector('#pushitem');
-	var pushItemFileHtml = document.querySelector('link[href="push-item-file.html"]').import.querySelector('#pushitemfile');
 	this.get = function(forceDownload){
 		if(forceDownload === undefined){
 			forceDownload = true;
@@ -78,7 +76,7 @@ var PushHistory = function(deviceId){
 	var savedFilter = "";
 	var cachedHistory = {};
 	var contactInfo = null;
-	this.render = function(targetElement,forceDownload,history){
+	this.render = async function(targetElement,forceDownload,history){
 		var resetTargetElement = function(){
 			targetElement.innerHTML = "";
 			var filterElement = UtilsDom.createElement(targetElement,"input","filter",{"type":"text","placeholder":"Filter Pushes","value":savedFilter});
@@ -145,7 +143,7 @@ var PushHistory = function(deviceId){
 				return history;
 			}
 		})
-		.then(function(history){
+		.then(async function(history){
 			if(!history){			
 				history = {
 					pushes:[
@@ -176,6 +174,9 @@ var PushHistory = function(deviceId){
 			}
 			resetTargetElement();
 			var notifications = [];
+
+			const pushItemHtml = await importComponent('./components/push-item.js','#pushitem'); //document.querySelector('link[href="push-item.html"]').import.querySelector('#pushitem');
+			const pushItemFileHtml = await importComponent('./components/push-item-file.js','#pushitemfile'); //document.querySelector('link[href="push-item-file.html"]').import.querySelector('#pushitemfile');
 			for (var i = 0; i < history.pushes.length; i++) {
 				var pushItem = history.pushes[i];
 				var notification = {

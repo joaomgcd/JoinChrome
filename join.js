@@ -211,6 +211,7 @@ var getAuthTokenBackground = function(callback,selectAccount){
 			token = token.substring(0, token.indexOf("&"))
 			var expiresIn = response.substring(response.indexOf("expires_in=") + 11);
 			expiresIn = expiresIn.substring(0, expiresIn.indexOf("\""));
+			expiresIn = parseInt(expiresIn.match(/\d+/)[0]);
 			setLocalAccessToken(token,expiresIn);
 			console.log(token);
 			console.log(expiresIn);
@@ -347,16 +348,16 @@ var getAuthToken = function(callback, selectAccount, token){
 		return;
 	}
 	chrome.identity.getProfileUserInfo(function(userInfoFromChrome){
-		if(!userInfoFromChrome.email){
-			getAuthTokenFromTab(callback,selectAccount);
-			return;
-		}
 		if(localStorage.userinfo){
 			var userInfoFromStorage = JSON.parse(localStorage.userinfo);
 			if(userInfoFromStorage.email && userInfoFromStorage.email != userInfoFromChrome.email){
 				getAuthTokenBackground(callback,selectAccount);
 				return;
 			}
+		}
+		if(!userInfoFromChrome.email){
+			getAuthTokenFromTab(callback,selectAccount);
+			return;
 		}
 		chrome.identity.getAuthToken({ 'interactive': true }, function(token) {
 			if(callback){

@@ -1,4 +1,4 @@
-<div id="pushitem" class="pushitem card">
+export var template = `<div id="pushitem" class="pushitem card">
 	<div id="left">
 		<div id="title"></div>
 		<div id="text"></div>
@@ -17,3 +17,4 @@
 		<img id="icon"></img>
 	</div>
 </div>
+`;
