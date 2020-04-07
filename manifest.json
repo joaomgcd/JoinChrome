@@ -2,7 +2,7 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.8.18",
+	"version": "1.8.20",
     "permissions": [
 		"identity",
 		"identity.email",
@@ -10,8 +10,6 @@
 		"gcm",
 		"storage",
 		"unlimitedStorage",
-		"webRequest",
-		"webRequestBlocking",
 		"notifications",
 		"tabs",
 		"clipboardRead",

@@ -999,7 +999,13 @@ var defaultValues = {
     "voicewakeup": "computer",
     "themeColorPicker": "#FF9800",
     "theme": "auto",
-    "defaulttabb": "auto"
+    "defaulttabb": "auto",
+    "favoritepageOpenenable": true,
+    "favoriteselectionPasteenable": true,
+    "favoritelinkOpenenable": true,
+    "favoriteimageDownloadenable": true,
+    "favoritevideoDownloadenable": true,
+    "favoriteaudioDownloadenable": true
 };
 if(getVoiceContinuous()){
 	onvoicecontinuoussave(null,true);

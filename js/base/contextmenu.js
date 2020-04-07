@@ -11,6 +11,15 @@ var ContextMenu = function(){
 	var CALL = "Call";
 	var WITH = "With";
 	var DOWNLOAD = "Download";
+	
+	const CONTEXT_PAGE = "page";
+	const CONTEXT_LINK = "link";
+	const CONTEXT_SELECTION = "selection";
+	const CONTEXT_EDITABLE = "editable";
+	const CONTEXT_IMAGE = "image";
+	const CONTEXT_VIDEO = "video";
+	const CONTEXT_AUDIO = "audio";
+	
 	var me = this;
 	var timeOut = null;
 	var push = function(device,data){
@@ -164,7 +173,7 @@ var ContextMenu = function(){
 		if(!action) return;
 
 		var actionValue = null;
-		var actionValueGetter = contextValues[contextMenuItem.contextId];
+		var actionValueGetter = contextValues[contextMenuItem.context];
 		if(actionValueGetter){
 			actionValue = actionValueGetter(info);
 		}
@@ -186,49 +195,48 @@ var ContextMenu = function(){
 	    chrome.contextMenus.removeAll();
 		if(blockMenu) return;
 
-	    var contexts = {
-	    	"page":[
-		    	new ContextMenuItem(OPEN,openPage).setFavorite(),
-		    	new ContextMenuItem(PASTE,pastePage),
-		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationPage, WITH),
-		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandPage, WITH),
-		    ],
-		    "selection":[
-		    	new ContextMenuItem(OPEN,openSelection),
-		    	new ContextMenuItem(PASTE,pasteSelection).setFavorite(),
-		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationSelection, WITH),
-		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSelection, WITH),
-		    	new ContextMenuItem(CALL,callNumberSelection),
-		    ],
-		    "link":[		    	
-		    	new ContextMenuItem(OPEN,openLink).setFavorite(),
-		    	new ContextMenuItem(PASTE,pasteLink),
-		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationLink, WITH),
-		    	new ContextMenuItem(DOWNLOAD,downloadLink),
-		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandLink, WITH),
-		    	new ContextMenuItem(CALL,callNumberLink),
-	    	],
-		    "editable":[],
-		    "image":[
-		    	new ContextMenuItem(SET_AS_WALLPAPER,setWallpaperSourceUrl),
-		    	new ContextMenuItem(SET_AS_LOCK_WALLPAPER,setLockWallpaperSourceUrl,null,null,device=>device.apiLevel>=24),
-		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(CREATE_NOTIFICATION,notificationImage, WITH),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
-		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
-		    ],
-		    "video":[
-		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
-		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
-		    ],
-		    "audio":[
-		    	new ContextMenuItem(PASTE,pasteSourceUrl),
-		    	new ContextMenuItem(DOWNLOAD,downloadSourceUrl).setFavorite(),
-		    	new ContextMenuItem(SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
-		    ]
-		};
-
+	    var contexts = {};
+		contexts[CONTEXT_PAGE] = [
+			new ContextMenuItem(CONTEXT_PAGE,OPEN,openPage)/*.setFavorite()*/,
+			new ContextMenuItem(CONTEXT_PAGE,PASTE,pastePage),
+			new ContextMenuItem(CONTEXT_PAGE,CREATE_NOTIFICATION,notificationPage, WITH),
+			new ContextMenuItem(CONTEXT_PAGE,SEND_TASKER_COMMAND,sendTaskerCommandPage, WITH),
+		];
+		contexts[CONTEXT_SELECTION] = [
+			new ContextMenuItem(CONTEXT_SELECTION,OPEN,openSelection),
+			new ContextMenuItem(CONTEXT_SELECTION,PASTE,pasteSelection)/*.setFavorite()*/,
+			new ContextMenuItem(CONTEXT_SELECTION,CREATE_NOTIFICATION,notificationSelection, WITH),
+			new ContextMenuItem(CONTEXT_SELECTION,SEND_TASKER_COMMAND,sendTaskerCommandSelection, WITH),
+			new ContextMenuItem(CONTEXT_SELECTION,CALL,callNumberSelection),
+		];
+		contexts[CONTEXT_LINK] = [		    	
+			new ContextMenuItem(CONTEXT_LINK,OPEN,openLink)/*.setFavorite()*/,
+			new ContextMenuItem(CONTEXT_LINK,PASTE,pasteLink),
+			new ContextMenuItem(CONTEXT_LINK,CREATE_NOTIFICATION,notificationLink, WITH),
+			new ContextMenuItem(CONTEXT_LINK,DOWNLOAD,downloadLink),
+			new ContextMenuItem(CONTEXT_LINK,SEND_TASKER_COMMAND,sendTaskerCommandLink, WITH),
+			new ContextMenuItem(CONTEXT_LINK,CALL,callNumberLink),
+		];
+		contexts[CONTEXT_EDITABLE] = [];
+		contexts[CONTEXT_IMAGE] = [
+			new ContextMenuItem(CONTEXT_IMAGE,SET_AS_WALLPAPER,setWallpaperSourceUrl),
+			new ContextMenuItem(CONTEXT_IMAGE,SET_AS_LOCK_WALLPAPER,setLockWallpaperSourceUrl,null,null,device=>device.apiLevel>=24),
+			new ContextMenuItem(CONTEXT_IMAGE,PASTE,pasteSourceUrl),
+			new ContextMenuItem(CONTEXT_IMAGE,CREATE_NOTIFICATION,notificationImage, WITH),
+			new ContextMenuItem(CONTEXT_IMAGE,DOWNLOAD,downloadSourceUrl)/*.setFavorite()*/,
+			new ContextMenuItem(CONTEXT_IMAGE,SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
+		];
+		contexts[CONTEXT_VIDEO] = [
+			new ContextMenuItem(CONTEXT_VIDEO,PASTE,pasteSourceUrl),
+			new ContextMenuItem(CONTEXT_VIDEO,DOWNLOAD,downloadSourceUrl)/*.setFavorite()*/,
+			new ContextMenuItem(CONTEXT_VIDEO,SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
+		];
+		contexts[CONTEXT_AUDIO] = [
+			new ContextMenuItem(CONTEXT_AUDIO,PASTE,pasteSourceUrl),
+			new ContextMenuItem(CONTEXT_AUDIO,DOWNLOAD,downloadSourceUrl)/*.setFavorite()*/,
+			new ContextMenuItem(CONTEXT_AUDIO,SEND_TASKER_COMMAND,sendTaskerCommandSourceUrl, WITH),
+		];
+		me.contexts = contexts;
 		chrome.contextMenus.create({
 			"type":"checkbox",
 			"checked": !getShowChromeNotifications(),
@@ -296,9 +304,14 @@ var ContextMenu = function(){
 		var getContextMenuItemsFromCustomCommands = function(customCommandsForDevice, contextId){
 			var result = [];
 			for(var customCommand of customCommandsForDevice){
-        		var contextMenuItem = new ContextMenuItem(customCommand.label,sendAction).setFavorite();
+				var contextMenuItem = new ContextMenuItem(contextId,customCommand.label,sendAction);
+				if(customCommand.isFavoriteRightClick){
+					contextMenuItem.setFavorite();
+				}
+				if(!customCommand.promptText){
+					contextMenuItem.customTitle = customCommand.label;
+				}
         		contextMenuItem.action = customCommand;
-        		contextMenuItem.contextId = contextId;
         		result.push(contextMenuItem);
         	}
         	return result;
@@ -309,13 +322,14 @@ var ContextMenu = function(){
 		for(var contextId in contexts){
 			devices.where(device=>UtilsDevices.isNotHidden(device) && UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device=>{
 	        	var context = contexts[contextId];
-    			var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, false))
+				var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, false))
+				customCommandsForDevice = customCommandsForDevice.concat(deviceCommands.filter(getCustomDeviceCommandsFilter(device, true)))
     			var contextWithCustomCommands = Array.from(context);
     			if(customCommandsForDevice.length>0){
     				contextWithCustomCommands = contextWithCustomCommands.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice, contextId));	
     			}
 				contextWithCustomCommands.doForAll(contextMenuItem=>{
-	        		if(contextMenuItem.favorite){
+	        		if(contextMenuItem.isFavorite()){
 	        			var options = {
 			        		"contexts": [contextId],
 			        		"onclick": function(info, tab){
@@ -391,7 +405,8 @@ var ContextMenu = function(){
 			}
 	    });
 	}
-	var ContextMenuItem = function(title,handler, joiner, patterns, conditionFunc){
+	var ContextMenuItem = function(context,title,handler, joiner, patterns, conditionFunc){
+		this.context = context;
 		this.title = title;
 		this.handler = handler;
 		this.joiner = joiner;
@@ -400,8 +415,13 @@ var ContextMenu = function(){
 		}
 		this.patterns = patterns;
 		this.conditionFunc = conditionFunc;
+		this.isFavorite = () => {
+			return this.favorite || back.getOptionValue("checkbox", `favorite${this.context}${this.title}enable`);
+		}
 		this.setFavorite = () => {this.favorite = true;return this;}
 		this.getActionTitle = contextName => {
+			if(this.customTitle) return this.customTitle;
+
 			var joiner = " ";
 			if(this.joiner){
 				joiner = " " + this.joiner + " ";

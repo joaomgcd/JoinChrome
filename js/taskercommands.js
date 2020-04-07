@@ -5,6 +5,7 @@ var TaskerCommand = function(){
 	this.icon = null;
 	this.promptText = null;
 	this.deviceIds = [];
+	this.isFavoriteRightClick = false;
 }
 var TaskerCommands = function(){
 	var commands = localStorage.taskerCommands ? JSON.parse(localStorage.taskerCommands) : [];
@@ -89,10 +90,14 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 			<div class="taskerCommandDelete"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></div>
 		</div>
 		<div class="taskerCommandText" ><input required type="text" placeholder="Command"  /></div>
-		<div class="taskerCommandPrompt" ><input required type="text" placeholder="Prompt Text: if set will use command text above as a prefix and prompt for the suffix when ran"  /></div>
+		<div class="taskerCommandPrompt" ><input required type="text" placeholder="Prompt Text: if set will use command text above as a prefix and prompt for the suffix (or use right-clicked item) when ran"  /></div>
 		<div class="devicesToApplySelect"><div>Select Devices</div><div class="dropdownindicator">⏷</div></div>
 		<div class="devicesToApply hidden"></div>
-		<div class="showInContextMenu" hidden><input type="checkbox" />Show in context menu</div>
+		<div class="showInContextMenu" hidden><input type="checkbox" />Show in context menu</div>		
+		<label class="selection">Favourite Right-Click Command
+		<input type="checkbox" class="favoriterightclick" />
+		<div class="selection_indicator"></div>
+	</label>
 		`
 	var findCommand = event => {
 		var element = findCommandElement(event)
@@ -165,6 +170,13 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 			var deleteElement = divCommand.querySelector(".taskerCommandDelete");
 			var titleElement = divCommand.querySelector(".taskerCommandTitle");
 			var selectDevicesElement = divCommand.querySelector(".devicesToApplySelect");
+			var favoriteRightClickElement = divCommand.querySelector(".favoriterightclick");
+			
+			favoriteRightClickElement.onchange = e => {
+				findCommand(e).isFavoriteRightClick = e.target.checked;				
+				saveDelayed();
+			}
+			favoriteRightClickElement.checked = command.isFavoriteRightClick;
 
 			if(command.label) {nameElement.setAttribute("value",command.label);}
 			if(command.commandText) textElement.setAttribute("value",command.commandText);

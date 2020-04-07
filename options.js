@@ -255,6 +255,28 @@ var generateHideCommandsOptions = function(){
 		var selectionIndicator = UtilsDom.createElement(label,"div", deviceCommand.commandId + "selectionIndicator",{"class":"selection_indicator"});
 	}
 }
+var generateFavoriteRightClickCommandsOptions = function(){
+	var hideCommandsElement = document.querySelector("#favoriterightclickcommands");
+	
+	for(var option in back.contextMenu.contexts){
+		const id = `favorite${option}`;
+		const items = back.contextMenu.contexts[option];
+		if(items.length == 0) continue;
+
+		var label = UtilsDom.createElement(hideCommandsElement,"label", id + "label",{"class":"selection"});
+		var text = document.createTextNode(option.substring(0,1).toUpperCase() + option.substring(1));
+		label.appendChild(text);
+		for(const item of items){
+			const itemId = id + item.title;
+			var label = UtilsDom.createElement(hideCommandsElement,"label", itemId + "label",{"class":"selection"});
+			var text = document.createTextNode(item.title);
+			label.appendChild(text);
+			var checkbox = UtilsDom.createElement(label,"input", itemId + "enable",{"type":"checkbox","joaoappsoption":""});
+			checkbox.onchange = e => back.updateContextMenu();
+			var selectionIndicator = UtilsDom.createElement(label,"div", itemId + "selectionIndicator",{"class":"selection_indicator"});
+		}
+	}
+}
 var generateHideDevicesOptions = function(){
 	if(!UtilsObject.isArray(back.devices)) return;
 	var hideCommandsElement = document.querySelector("#hidedevices");
@@ -269,7 +291,8 @@ var generateHideDevicesOptions = function(){
 }
 document.addEventListener('DOMContentLoaded', function() {
  		generateHideCommandsOptions();
- 		generateHideDevicesOptions();
+		generateHideDevicesOptions();
+		generateFavoriteRightClickCommandsOptions();
 		var optionVoice = document.querySelector("#voiceenabled");
 		if(!back.getVoiceEnabled()){
 			back.onvoiceenabledsave(optionVoice,false);
