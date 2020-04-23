@@ -292,6 +292,16 @@ var ContextMenu = function(){
 				});
 			}
 		});
+		/*chrome.contextMenus.create({
+			"type":"normal",
+			"title":"Test Server",
+			"contexts":["browser_action"],
+			"onclick":async ()=>{
+				const result = await fetch("http://192.168.0.50:1821/");
+				const text = await result.text();
+				back.console.log(text);
+			}
+		});*/
 		if(!devices){
 			return;
 		}

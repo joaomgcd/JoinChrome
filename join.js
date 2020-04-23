@@ -1495,7 +1495,7 @@ var pushFile = function(deviceId, notify, tab, files){
 			var filesLength = fileInput.files.length;
 			var whatsUploading = filesLength == 1 ? fileInput.files[0].name : filesLength + " files";
 			showNotification("Join", "Uploading " + whatsUploading);
-	        var googleDriveManager = new GoogleDriveManager();
+	        /*var googleDriveManager = new GoogleDriveManager();
 	        var filesToUpload = fileInput.files;
 	        var device = devices.first(function(device){return device.deviceId == deviceId});
 	        var accountToShareTo = null;
@@ -1510,6 +1510,18 @@ var pushFile = function(deviceId, notify, tab, files){
 	        .then(function(uploadResults){
 	            var push = new GCMPush();
 	            push.files = uploadResults;
+	            push.send(deviceId,function(){
+	                console.log("pushed files");
+	                //showNotification("Join", "Sent " + whatsUploading);
+	            },function(error){
+	                showNotification("Join", "Couldn't send file: " + error);
+	            });
+	            setLastPush(deviceId, "pushFile");
+			})*/
+			return FileUploadProviderFactory.provide({"files":fileInput.files,"deviceId":deviceId})
+	        .then(function(files){
+	            var push = new GCMPush();
+	            push.files = files;
 	            push.send(deviceId,function(){
 	                console.log("pushed files");
 	                //showNotification("Join", "Sent " + whatsUploading);
@@ -1696,6 +1708,7 @@ var refreshDevices = function(callback){
 	  console.log(result);
 
 	  setDevices(result.records);
+	  new GCMLocalNetworkTestRequest().sendToCompatibleDevices();
 	  if(callback != null){
 		callback(result.records);
 	  }
@@ -2046,6 +2059,10 @@ var getPushesWhileAway = ()=>{
 };
 setTimeout(getPushesWhileAway,1000);
 
+if(devices){
+	devices.forEach(device=>UtilsDevices.setCanContactViaLocalNetwork(device,false));
+	new GCMLocalNetworkTestRequest().sendToCompatibleDevices();	
+}
 
 /*UtilsObject.wait(2000,function(timeOut){
    // clearTimeout(timeOut);

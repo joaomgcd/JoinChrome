@@ -176,6 +176,12 @@ var writeDevices = async function(){
 			}else{
 				imageInfoElement.classList.add("hidden");
 			}
+			var imageLocalNetworkElement = deviceElement.querySelector("#devicelocalnetworkicon");
+			if(UtilsDevices.canContactViaLocalNetwork(device)){
+				imageLocalNetworkElement.classList.remove("hidden");
+			}else{
+				imageLocalNetworkElement.classList.add("hidden");
+			}
 			imageElement.src = "icons/" + deviceIcon;	
 			devicesElement.appendChild(deviceElement);
 			deviceElements.push(deviceElement);

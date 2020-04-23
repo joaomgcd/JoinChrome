@@ -50,6 +50,37 @@ var UtilsDevices = {
 	"canSendSMS":function(device){
 		return device.deviceType == DEVICE_TYPE_ANDROID_PHONE && UtilsDevices.isNotDeviceShare(device);
 	},
+	"canContactViaLocalNetwork":function(device){
+		return UtilsDevices.getLocalNetworkServerAddress(device) ? true : false;
+	},
+	"getLocalNetworkServerAddress":function(device){
+		var deviceId = device;
+		if(typeof deviceId != "string"){
+			deviceId = device.deviceId
+		}
+		const key = `localNetwork${deviceId}`;
+		return localStorage[key];
+	},
+	"setCanContactViaLocalNetwork":function(device,value){
+		var deviceId = device;
+		if(typeof deviceId != "string"){
+			deviceId = device.deviceId
+		}else{
+			device = back.devices.first(device => device.deviceId == deviceId);
+		}
+		const key = `localNetwork${deviceId}`;
+		const currentValue = UtilsDevices.canContactViaLocalNetwork(deviceId);
+		if(currentValue != value){
+			back.console.log(`${device.deviceName}: ${value?"local":"remote"}`);
+		}
+		if(value){
+			localStorage[key] = value;
+		}else{
+			delete localStorage[key];
+		}
+		
+		back.refreshDevicesPopup();
+	},
 	"isHidden":function(device){
 		return back.getOptionValue("checkbox",device.deviceId + "disable");
 	},

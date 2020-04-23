@@ -5,6 +5,7 @@ var HANG_UP = "HANG_UP";
 var CALL_BACK = "CALL_BACK";
 var REPLY_ACTION = "REPLY_ACTION";
 var LOCAL_DISMISS = "LOCAL_DISMISS";
+var SAVE_IMAGE = "SAVE_IMAGE";
 var STORED_LAST_PUSH_DATE = "STORED_LAST_PUSH_DATE";
 var regexNumbers = /[0-9\.]{4,}/g;
 
@@ -43,7 +44,7 @@ var GCM = function(){
 	this.getCommunicationType = function() {
 		return "GCM";
 	}
-	this.send = function(deviceId, callback, callbackError) {
+	this.send = function(deviceId, callback, callbackError,viaAddress) {
 		var params = this.getParams();
 		params.deviceId = deviceId;
 		var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(back.devices,deviceId);
@@ -438,7 +439,7 @@ var GCMGenericPush = function(){
 	this.getCommunicationType = function() {
 		return "GCMGenericPush";
 	}
-	this.send = function(deviceIds) {
+	this.send = function(deviceIds,viaAddress) {
 		var params = this.getParams();
 		if(typeof deviceIds == "string"){
 			deviceIds = [deviceIds];
@@ -449,6 +450,22 @@ var GCMGenericPush = function(){
 		params.json = JSON.stringify(params);
 		this.encrypt(params);
 		params.getCommunicationType = this.getCommunicationType;
+		
+		if(viaAddress){			
+			var rawGcm = {
+				"json": params.json,
+				"type": params.type
+			}
+			const options = {
+				"method":"POST",
+				headers: {
+				'Content-Type': 'application/json'
+				},
+				"body": JSON.stringify(rawGcm)
+			}
+			return fetch(viaAddress,options)
+			.then(result=>result.json())
+		}
 		new DeviceIdsAndDirectDevices(deviceIds).send(function(deviceIds,callback, callbackError){
 			params.deviceIds = deviceIds;
 			doPostWithAuth(joinserver + "messaging/v1/sendGenericPush/",params,callback, callbackError);
@@ -631,6 +648,14 @@ var GCMNotification = function(notification, senderId){
 					notification.cancel(false);
 					return;
 				}
+				if(actionId == SAVE_IMAGE){
+					let file = notification.image;
+					if(file){
+						file = "https://drive.google.com/uc?export=download&id=" + file;
+						openTab(file);
+					}
+					return;
+				}
 				if(actionId == COPY_NUMBER){
 					var matches = notification.text.match(regexNumbers);
 					if(matches){
@@ -751,6 +776,9 @@ var GCMNotification = function(notification, senderId){
 			if(back.getAddDismissEverywhereButton()){
 				not.buttons.splice(0,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
 			}
+			/*if(not.image){
+				not.buttons.push({"text":"Save Image","icon":"/icons/save.png","actionId":SAVE_IMAGE});
+			}*/
 			if(not.buttons.length>2){
 				not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
 			}
@@ -1113,6 +1141,62 @@ var GCMDeleteNotification = function(){
 	}
 }
 GCMDeleteNotification.prototype = new GCMGenericPush();
+var GCMLocalNetworkRequest = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMLocalNetworkRequest";
+	}
+	this.execute = async () =>{
+		var serverAddress = me.serverAddress;
+		var senderId = me.senderId;
+		if(!serverAddress) return;
+
+		const token = await back.getAuthTokenPromise();
+		serverAddress += `gcm?token=${token}`;
+		const gcmTest = new GCMLocalNetworkTest();
+		gcmTest.senderId = localStorage.deviceId;
+		try{
+			const response = await gcmTest.send(null,serverAddress);
+			console.log(response);				
+			if(response.success){
+				UtilsDevices.setCanContactViaLocalNetwork(senderId,me.serverAddress);
+			}else{
+				UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
+			}
+		}catch{
+			UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
+		}
+	}
+}
+GCMLocalNetworkRequest.prototype = new GCMGenericPush();
+var GCMDeviceNotOnLocalNetwork = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMDeviceNotOnLocalNetwork";
+	}
+	this.execute = async () =>{		
+		UtilsDevices.setCanContactViaLocalNetwork(me.senderId,false);
+	}
+}
+GCMDeviceNotOnLocalNetwork.prototype = new GCMGenericPush();
+var GCMLocalNetworkTest = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMLocalNetworkTest";
+	}	
+}
+GCMLocalNetworkTest.prototype = new GCMGenericPush();
+var GCMLocalNetworkTestRequest = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMLocalNetworkTestRequest";
+	}
+	this.sendToCompatibleDevices = () => {
+		const androids = joindevices.groups.deviceGroups.getGroupDevices(back.devices,DEVICE_GROUP_ANDROID.id);
+		this.send(androids.map(android=>android.deviceId));
+	}	
+}
+GCMLocalNetworkTestRequest.prototype = new GCMGenericPush();
 
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){

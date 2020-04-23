@@ -110,6 +110,30 @@ body.popout {
 #deviceiconcontainer:hover .deviceinfo {
 	display: block;
 }
+.devicelocalnetwork{
+	position: absolute;
+    width: 20px;
+    height: 20px;
+    bottom: 0px;
+    left: 0px;
+    fill: var(--theme-text-color);
+	opacity: 1;
+}
+.devicelocalnetwork:hover{
+    fill: var(--theme-text-color);
+}
+.devicelocalnetworktext {
+	display: none;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	background-color: var(--theme-accent-color);
+	color: var(--theme-background-color);
+	border-radius: 100%;
+}
+#devicelocalnetworkcontainer:hover .devicelocalnetworktext {
+	display: block;
+}
 .deviceinfo{
 	display: none;
 	position: absolute;
