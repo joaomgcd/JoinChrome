@@ -101,7 +101,7 @@ var UtilsDevices = {
 		}
 		for(var version of versions){
 			if(version.version == device.apiLevel){
-				return version.name;
+				return `Android ${version.name}`;
 			}
 		}
 	},
@@ -209,6 +209,14 @@ UtilsDevices.PERMISSION_REQUEST_SCREEN = 0b1000000; //64
 UtilsDevices.PERMISSION_CREATE_NOTIFICATIONS = 0b10000000; //128
 UtilsDevices.PERMISSION_ALL = 0b1111111111111111111111111111111;
 var versions = [
+    {
+        "version": 30,
+        "name": "11"
+    },
+    {
+        "version": 29,
+        "name": "10"
+    },
     {
         "version": 28,
         "name": "P (9.0)"

@@ -131,6 +131,9 @@ body.popout {
 	color: var(--theme-background-color);
 	border-radius: 100%;
 }
+#devicelocalnetworkcontainer{
+	z-index: 100;
+}
 #devicelocalnetworkcontainer:hover .devicelocalnetworktext {
 	display: block;
 }
