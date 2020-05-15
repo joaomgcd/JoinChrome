@@ -69,6 +69,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 	this.deviceIds = deviceIds;
 	this.serverDevices = [];
 	this.directDevices = [];
+	this.localNetworkDevices = [];
 
 	this.convertGroupToDeviceIds = function(device){
 		var devicesResult = [];
@@ -98,7 +99,12 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		devicesForId.doForAll(function(deviceForId){
 			var devicesExpanded = me.convertGroupToDeviceIds(deviceForId);
 			devicesExpanded.doForAll(function(deviceForId){
-				if(deviceForId.regId2){
+				if(UtilsDevices.canContactViaLocalNetwork(deviceForId)){
+					me.localNetworkDevices.removeIf(function(device){
+						return device.deviceId == deviceForId.deviceId;
+					});
+					me.localNetworkDevices.push(deviceForId);
+				}else if(deviceForId.regId2){
 					me.directDevices.removeIf(function(device){
 						return device.deviceId == deviceForId.deviceId;
 					});
@@ -272,10 +278,39 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		}
 		var serverDevices = me.serverDevices;
 		var directDevices = me.directDevices;
+		var localNetworkDevices = me.localNetworkDevices;
 		var gcmString = JSON.stringify(gcm);
 		if(gcmString.length > 3500){
 			serverDevices = serverDevices.concat(directDevices);
 			directDevices = [];
+		}
+		if(localNetworkDevices.length > 0){
+			back.getAuthTokenPromise().then(token=>{
+				localNetworkDevices.forEach(device=>{				
+					const serverAddress = UtilsDevices.getLocalNetworkServerAddress(device);
+					const url = `${serverAddress}gcm?token=${token}`; 
+					const options = {
+						method: 'POST',
+						body: JSON.stringify({
+							"json": gcmString,
+							"type": gcm.getCommunicationType()
+						}),
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}				
+					fetch(url,options)
+					.then(result=>result.json())
+					.then(json=>{
+						me.callCallback(callback,json)
+					})
+					.catch(error=>{
+						UtilsDevices.setCanContactViaLocalNetwork(device,false);
+						new DeviceIdsAndDirectDevices([device.deviceId],allDevices,showNotificationFunc).send(sendThroughServer,gcm,gcmParams,callback,callbackError,options);
+						//me.callCallback(callbackError,error)
+					});
+				});
+			});
 		}
 		if(directDevices.length > 0){
 			if(!gcmParams){

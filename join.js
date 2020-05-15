@@ -1646,7 +1646,7 @@ var registerDevice = function(callback,callbackError){
         }   
     });
 }
-const handlePushMessage = message => {
+var handlePushMessage = message => {
 	console.log(message);
 	var multiIndexString = message.data.multi;
 	var type = message.data.type;

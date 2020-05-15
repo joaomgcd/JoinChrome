@@ -439,7 +439,7 @@ var GCMGenericPush = function(){
 	this.getCommunicationType = function() {
 		return "GCMGenericPush";
 	}
-	this.send = function(deviceIds,viaAddress) {
+	this.send = function(deviceIds,viaAddress,viaSocket) {
 		var params = this.getParams();
 		if(typeof deviceIds == "string"){
 			deviceIds = [deviceIds];
@@ -451,20 +451,25 @@ var GCMGenericPush = function(){
 		this.encrypt(params);
 		params.getCommunicationType = this.getCommunicationType;
 		
-		if(viaAddress){			
+		if(viaAddress || viaSocket){			
 			var rawGcm = {
 				"json": params.json,
 				"type": params.type
 			}
+			const stringToSend = JSON.stringify(rawGcm);
 			const options = {
 				"method":"POST",
 				headers: {
 				'Content-Type': 'application/json'
 				},
-				"body": JSON.stringify(rawGcm)
+				"body": stringToSend
 			}
-			return fetch(viaAddress,options)
-			.then(result=>result.json())
+			if(viaAddress){
+				return fetch(viaAddress,options)
+				.then(result=>result.json())
+			}else{
+				return viaSocket.send(stringToSend);
+			}
 		}
 		new DeviceIdsAndDirectDevices(deviceIds).send(function(deviceIds,callback, callbackError){
 			params.deviceIds = deviceIds;
@@ -934,11 +939,21 @@ var GCMNotificationClear = function(){
 		params.deviceIds = devices.select(function(device){return device.deviceId});
 		params.senderId = localStorage.deviceId;
 		params.notificationIds = notifications.select(function(notification){return notification.id});
-		doPostWithAuth(joinserver + "messaging/v1/clearNotification/",params, function(result){
+		var gcm = {"requestNotification":params,"getCommunicationType":this.getCommunicationType};
+
+		new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
+			params.deviceIds = deviceIdsServer;
+			doPostWithAuth(joinserver + "messaging/v1/clearNotification/",params,callback, callbackError);
+		},gcm,{}, function(result){
+			  console.log("Sent notification cancel for all", params.notificationIds);
+			},function(error){
+				console.log("Error", error);
+		});
+		/*doPostWithAuth(joinserver + "messaging/v1/clearNotification/",params, function(result){
 		  console.log("Sent notification cancel: " + params.notificationIds);
 		},function(error){
 			console.log("Error: " + error);
-		});
+		});*/
 
 	}
 }
@@ -1143,6 +1158,7 @@ var GCMDeleteNotification = function(){
 GCMDeleteNotification.prototype = new GCMGenericPush();
 var GCMLocalNetworkRequest = function(){
 	var me = this;
+	var socket = null;
 	this.getCommunicationType = function() {
 		return "GCMLocalNetworkRequest";
 	}
@@ -1160,15 +1176,48 @@ var GCMLocalNetworkRequest = function(){
 			console.log(response);				
 			if(response.success){
 				UtilsDevices.setCanContactViaLocalNetwork(senderId,me.serverAddress);
+				
+				var webSocketServerAddress = me.webSocketServerAddress;
+				if(!webSocketServerAddress) return;
+
+				if(socket && socket.readyState == socket.OPEN) return;
+				
+				socket = new WebSocket(webSocketServerAddress);
+				const socketDisconnected = () => {					
+					UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
+					me.execute();
+				}
+				socket.onopen = e =>{
+					console.log("Socket open",e);
+					const gcmSocketTest = new GCMWebSocketRequest();
+					gcmSocketTest.senderId = localStorage.deviceId;
+					gcmSocketTest.send(null,null,socket);
+				}
+				socket.onmessage = e =>{			
+					console.log("Socket message",e);
+					const gcmRaw = JSON.parse(e.data);
+					back.handlePushMessage({
+						"data":gcmRaw
+					});
+				}
+				socket.onclose = e => {
+					console.log("Socket closed",e);
+					//socketDisconnected();
+				}
+				socket.onerror = e => {
+					console.log("Socket error",e);
+				}
 			}else{
 				UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
 			}
 		}catch{
 			UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
 		}
+		
 	}
 }
 GCMLocalNetworkRequest.prototype = new GCMGenericPush();
+
 var GCMDeviceNotOnLocalNetwork = function(){
 	var me = this;
 	this.getCommunicationType = function() {
@@ -1179,6 +1228,7 @@ var GCMDeviceNotOnLocalNetwork = function(){
 	}
 }
 GCMDeviceNotOnLocalNetwork.prototype = new GCMGenericPush();
+
 var GCMLocalNetworkTest = function(){
 	var me = this;
 	this.getCommunicationType = function() {
@@ -1186,6 +1236,15 @@ var GCMLocalNetworkTest = function(){
 	}	
 }
 GCMLocalNetworkTest.prototype = new GCMGenericPush();
+
+var GCMWebSocketRequest = function(){
+	var me = this;
+	this.getCommunicationType = function() {
+		return "GCMWebSocketRequest";
+	}	
+}
+GCMWebSocketRequest.prototype = new GCMGenericPush();
+
 var GCMLocalNetworkTestRequest = function(){
 	var me = this;
 	this.getCommunicationType = function() {
