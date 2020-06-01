@@ -239,6 +239,10 @@ var setLocalAccessToken = function(token, expiresIn){
 }
 var getAuthTokenFromTab = function(callback,selectAccount){
 
+	if(getDontPromptUserLogin()){
+		callback(localStorage.accessToken);
+		return;
+	}
 	if(selectAccount){
 		removeAuthToken();
 	}
@@ -853,6 +857,9 @@ var getHideNotificationCount = function(){
 var getHideContextMenu = function(){
 	return getOptionValue("checkbox","hidecontextmenu");
 }
+var getDontPromptUserLogin = function(){
+	return getOptionValue("checkbox","dontpromptuserlogin");
+}
 var getShowInfoNotifications = function(){
 	return getOptionValue("checkbox","showinfonotifications");
 }
@@ -988,6 +995,7 @@ var defaultValues = {
 	"hidenotificationtext": false,
     "hidenotificationcount": false,
     "hidecontextmenu": false,
+    "dontpromptuserlogin": false,
 	"playnotificationsound": true,
     "showinfonotifications": true,
     "autoopenlinks": true,
