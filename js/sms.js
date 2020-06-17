@@ -448,6 +448,17 @@ var SmsApp = function(){
 	smsInputElement.addEventListener("keyup",function(e){
 		localStorage.smsDraft = smsInputElement.value;
 	});
+	smsInputElement.onpaste = async e => {
+		const items = e.clipboardData.items;
+		if(!items) return;
+
+		const currentValue = smsInputElement.value;
+		const pastedFiles = Array.from(items).map(item=>item.getAsFile()).filter(file=>file ? true : false);       
+		if(!pastedFiles || pastedFiles.length == 0) return;
+			 
+		await attachFile(pastedFiles);
+		smsInputElement.value = currentValue;
+	}
 	if(localStorage.smsDraft){
 		smsInputElement.value = localStorage.smsDraft;
 	}
