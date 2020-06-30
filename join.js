@@ -1703,6 +1703,9 @@ chrome.gcm.onMessage.addListener(payload=>{
 var executeGcm = function(type, json){
 	var gcmFunc = window[type];
 	if(!gcmFunc){
+		gcmFunc = eval(type);
+	}
+	if(!gcmFunc){
 		return;
 	}
 	var gcm = new gcmFunc();
@@ -2070,6 +2073,9 @@ setTimeout(getPushesWhileAway,1000);
 if(devices){
 	devices.forEach(device=>UtilsDevices.setCanContactViaLocalNetwork(device,false));
 	new GCMLocalNetworkTestRequest().sendToCompatibleDevices();	
+}
+var v2Stuff = {
+	EventBus: EventBus
 }
 
 /*UtilsObject.wait(2000,function(timeOut){

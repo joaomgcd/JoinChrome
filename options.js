@@ -168,7 +168,7 @@ var isMicAvailable = function(navigator){
 				return;
 			}
 			if(isTab){
-			    navigator.webkitGetUserMedia({
+			    navigator.getUserMedia({
 			        audio: true,
 			    }, function(stream) {
 			    	var audioTracks = stream.getAudioTracks();
@@ -177,7 +177,8 @@ var isMicAvailable = function(navigator){
 				        stream.stop();
 				    }
 			        resolve();
-			    }, function() {
+			    }, function(error) {
+					console.log("Can't use mic",error);
 			        reject("Mic not available");
 			    });
 			}else{

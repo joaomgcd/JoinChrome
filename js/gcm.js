@@ -1256,6 +1256,17 @@ var GCMLocalNetworkTestRequest = function(){
 	}	
 }
 GCMLocalNetworkTestRequest.prototype = new GCMGenericPush();
+class GCMV2 extends GCMGenericPush{
+	getCommunicationType() {
+		return this.constructor.name;
+	}
+	async execute(){	
+		if(!back.v2Stuff.EventBus.post) return;
+			
+		await back.v2Stuff.EventBus.post(this);
+	}
+}
+class GCMMediaInfo extends GCMV2{}
 
 chrome.notifications.onClicked.addListener(function(id){
 	if(id.indexOf("clipboardlasttext")==0){

@@ -25,6 +25,9 @@
 	<script type="text/javascript" src="js/emoji/jquery.textcomplete.min.js"></script>
 	<script type="text/javascript" src="js/emoji/emojione.min.js"></script>
 	<script type="text/javascript" src="js/emoji/emojionearea.min.js"></script>-->
+	
+	<script src="/js/base/dexie.js"></script>
+	<script type="module" src="/appv2.js"></script>
 </head>
 <body>
 	<div id="topbar">
@@ -40,8 +43,22 @@
                             <path fill="none" d="M0 0h24v24H0V0z" />
                             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" /></svg></p></div></div>
 			<div id="tab-sms" class="tab waves-effect waves-light"><div class="tabIcon"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                            <path fill="none" d="M0 0h24v24H0V0z" />
-                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm8 0h2v2h-2zm-4 0h2v2h-2z" /></svg></p></div></div>
+				<path fill="none" d="M0 0h24v24H0V0z" />
+				<path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm8 0h2v2h-2zm-4 0h2v2h-2z" /></svg></p></div></div>
+			<div id="tab-media" class="hidden tab waves-effect waves-light">
+				<div class="tabIcon">
+					<p>
+						<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M12 3V13.55C11.41 13.21 10.73 13 10 13C7.79 13 6 14.79 6 17S7.79 21 10 21 14 19.21 14 17V7H18V3H12Z"></path></svg>
+					</p>
+				</div>
+			</div>
+			<div id="tab-filebrowser" class="hidden tab waves-effect waves-light">
+				<div class="tabIcon">
+					<p>
+						<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M16 0H8C6.9 0 6 .9 6 2V18C6 19.1 6.9 20 8 20H20C21.1 20 22 19.1 22 18V6L16 0M20 18H8V2H15V7H20V18M4 4V22H20V24H4C2.9 24 2 23.1 2 22V4H4Z"></path></svg>
+					</p>
+				</div>
+			</div>
 		</div>
 		<div id="tools tab" class="tabselement">
 			<div id="refresh" class="tab waves-effect waves-light"><svg class="tabIcon" id="topBarRefresh" title="Refresh" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -105,6 +122,8 @@
 		</div>
 	</div>
 	<div id="devices"></div>
+	<div id="media"></div>
+	<div id="filebrowser"></div>
 		<div id="dropzonedevices" class="dropzone hidden"><div>Drop files here</div></div>
 		<input type="file" id="uploadfile" style="display:none;" multiple/>
 		<script type="text/javascript" src="materialize/js/jquery-2.1.1.min.js"></script>

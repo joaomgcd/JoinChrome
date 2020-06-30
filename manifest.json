@@ -2,7 +2,7 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.8.22",
+	"version": "1.8.23",
     "permissions": [
 		"identity",
 		"identity.email",
@@ -14,11 +14,13 @@
 		"clipboardRead",
 		"clipboardWrite",
 		"https://joinjoaomgcd.appspot.com/",
+		"http://localhost:8080/",
 		"https://accounts.google.com/o/oauth2/v2/auth/",
 		"contextMenus",
 		"geolocation",
 		"tts"
 	],
+	"content_security_policy": "script-src 'self' http://localhost:8080/ 'unsafe-eval'; object-src 'self'",
 	"icons": {
 		"16": "icons/small.png",
 		"48": "icons/medium.png",
