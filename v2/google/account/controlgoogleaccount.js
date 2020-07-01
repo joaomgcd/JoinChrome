@@ -3,10 +3,10 @@ import { AppContext } from "../../appcontext.js";
 
 export class ControlGoogleAccount extends Control{
     getHtmlFile(){
-        return "/v2/google/account/googleaccount.html";
+        return "./v2/google/account/googleaccount.html";
     }
     getStyleFile(){
-        return "/v2/google/account/googleaccount.css";
+        return "./v2/google/account/googleaccount.css";
     }
     
     async renderSpecific({root}){        

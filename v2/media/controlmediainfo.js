@@ -18,10 +18,10 @@ export class ControlMediaInfos extends Control{
         return this._mediaInfos;
     }
     getHtmlFile(){
-        return "/v2/media/mediainfos.html";
+        return "./v2/media/mediainfos.html";
     }    
     getStyleFile(){
-        return "/v2/media/mediainfos.css";
+        return "./v2/media/mediainfos.css";
     }
     findMediaInfoControls(mediaInfoOrInfos){
         mediaInfoOrInfos = mediaInfoOrInfos.asMediaInfos;
@@ -90,10 +90,10 @@ export class ControlMediaInfoDevice extends Control{
         return this._mediaInfos;
     }
     getHtmlFile(){
-        return "/v2/media/mediainfodevice.html";
+        return "./v2/media/mediainfodevice.html";
     }    
     getStyleFile(){
-        return "/v2/media/mediainfodevice.css";
+        return "./v2/media/mediainfodevice.css";
     }
     
     async updateMediaInfos(mediaInfos){
@@ -162,10 +162,10 @@ export class ControlMediaInfo extends Control{
         this.tokenGetter = tokenGetter;
     }
     getHtmlFile(){
-        return "/v2/media/mediainfo.html";
+        return "./v2/media/mediainfo.html";
     }
     getStyleFile(){
-        return "/v2/media/mediainfo.css";
+        return "./v2/media/mediainfo.css";
     }
 
     get token(){

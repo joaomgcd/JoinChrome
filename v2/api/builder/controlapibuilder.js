@@ -19,10 +19,10 @@ export class ControlApiBuilder extends Control{
         this.controlsApiFields = this.apiFields.map(apiField=>new ControlApiField(apiField));
     }
     getHtmlFile(){
-        return "/v2/api/builder/apibuilder.html";
+        return "./v2/api/builder/apibuilder.html";
     }
     getStyleFile(){
-        return "/v2/api/builder/apibuilder.css";
+        return "./v2/api/builder/apibuilder.css";
     }
     async renderSpecific({root}){
         this.deviceIdElement = await this.$("#deviceid");

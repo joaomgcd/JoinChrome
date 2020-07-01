@@ -15,10 +15,10 @@ export class ControlFAB extends Control{
         this.secondaryFabs = secondaryFabs;
     }
     getHtmlFile(){
-        return "/v2/fab/fab.html";
+        return "./v2/fab/fab.html";
     }
     getStyleFile(){
-        return "/v2/fab/fab.css";
+        return "./v2/fab/fab.css";
     }
     
     async renderSpecific({root}){       
@@ -61,10 +61,10 @@ export class ControlFABSecondary extends Control{
         this.fab = fab;
     }
     getHtmlFile(){
-        return "/v2/fab/fabsecondary.html";
+        return "./v2/fab/fabsecondary.html";
     }
     getStyleFile(){
-        return "/v2/fab/fabsecondary.css";
+        return "./v2/fab/fabsecondary.css";
     }
     
     async renderSpecific({root}){       

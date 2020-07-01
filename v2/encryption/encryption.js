@@ -151,8 +151,8 @@ class Encryption{
     }
     static getEncryptedPasswordInBase64(args = {password, salt, iterations}){
         return new Promise(resolve=>{
-            var worker = new Worker("/v2/encryption/workerkey.js");
-            // const worker = new Worker("/v2/worker.js", {type: 'module'});
+            var worker = new Worker("./v2/encryption/workerkey.js");
+            // const worker = new Worker("./v2/worker.js", {type: 'module'});
             worker.onmessage = async e => {
                 worker.terminate();
                 const keyString = e.data;

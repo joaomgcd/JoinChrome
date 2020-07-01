@@ -55,6 +55,14 @@ export class AppGCMHandler{
         const device = await app.getDevice(gcmPush.push.senderId) || "Unknown Device";
         notification.device = device;
         notification.gcmId = gcmPush.gcmId;
+        if(!Util.isInServiceWorker && !push.title){
+            const {SettingEventGhostNodeRedPort} = await import("../settings/setting.js");
+            const settingEventGhostNodeRedPort = new SettingEventGhostNodeRedPort();
+            const isSendingToApp = await settingEventGhostNodeRedPort.value;
+            if(isSendingToApp){
+                notification = null;
+            }
+        }
         return {push,notification};
     }
     static async handlePushClipboard(push){
@@ -98,12 +106,10 @@ export class AppGCMHandler{
         const say = push.say;
         if(!say) return;
 
-        const utterance = new SpeechSynthesisUtterance(say);
-        setOnClick(async ()=>{                
-            console.log(`Saying out loud`,say);
-            await UtilDOM.focusWindow();
-            await window.speechSynthesis.speak(utterance);
-        })
+        const utterance = new SpeechSynthesisUtterance(say);              
+        console.log(`Saying out loud`,say);
+        await UtilDOM.focusWindow();
+        await window.speechSynthesis.speak(utterance);
     }
     async onGCMPush(gcm){
         var {push,notification} = await AppGCMHandler.handleGCMPush(app,gcm);

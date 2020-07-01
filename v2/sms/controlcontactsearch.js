@@ -13,10 +13,10 @@ export class ControlContactSearch extends Control{
         this.contacts = contacts;
     }
     getHtmlFile(){
-        return "/v2/sms/contactsearch.html";
+        return "./v2/sms/contactsearch.html";
     }
     getStyleFile(){
-        return "/v2/sms/contactsearch.css";
+        return "./v2/sms/contactsearch.css";
     }
     async renderSpecific({root}){     
         this.contactListElement = await this.$(".contactsearchlist");
@@ -72,10 +72,10 @@ export class ControlContactInSearch extends Control{
         this.contact = contact;
     }
     getHtmlFile(){
-        return "/v2/sms/contactinsearch.html";
+        return "./v2/sms/contactinsearch.html";
     }
     getStyleFile(){
-        return "/v2/sms/contactinsearch.css";
+        return "./v2/sms/contactinsearch.css";
     }
     
     async renderSpecific({root}){  

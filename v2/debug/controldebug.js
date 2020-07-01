@@ -38,7 +38,7 @@ export class ControlDebug extends Control{
         return `<div id="debug" class="hidden"></div>`;
     }
     // getHtmlFile(){
-    //     return "/v2/debug/debug.html";
+    //     return "./v2/debug/debug.html";
     // }
     
     async renderSpecific({root}){

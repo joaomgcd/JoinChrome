@@ -9,10 +9,10 @@ export class ControlSettings extends Control{
         this.settings = settings;
     }
     getHtmlFile(){
-        return "/v2/settings/settings.html";
+        return "./v2/settings/settings.html";
     }
     getStyleFile(){
-        return "/v2/settings/settings.css";
+        return "./v2/settings/settings.css";
     }
    
     async renderSpecific({root}){
@@ -42,10 +42,10 @@ export class ControlSetting extends Control{
         this.setting = setting;
     }
     getHtmlFile(){
-        return "/v2/settings/setting.html";
+        return "./v2/settings/setting.html";
     }
     getStyleFile(){
-        return "/v2/settings/setting.css";
+        return "./v2/settings/setting.css";
     }
    
     async renderSpecific({root}){
@@ -69,7 +69,7 @@ export class ControlSetting extends Control{
         UtilDOM.showOrHide(this.settingSetNotSetElement,this.setting.isSecret);
         const value = await this.setting.value;
         UtilDOM.showOrHide(this.settingSetElement,value);
-        UtilDOM.showOrHide(this.settingNotSetElement,await !value);
+        UtilDOM.showOrHide(this.settingNotSetElement,!value);
         
 
         this.settingContentElement.innerHTML = "";
@@ -116,10 +116,10 @@ export class ControlSettingContentTextInput extends ControlSettingContent{
         super(setting)
     }
     getHtmlFile(){
-        return "/v2/settings/settingtextinput.html";
+        return "./v2/settings/settingtextinput.html";
     }
     getStyleFile(){
-        return "/v2/settings/settingtextinput.css";
+        return "./v2/settings/settingtextinput.css";
     }
    
     async renderSpecific({root}){
@@ -170,10 +170,10 @@ export class ControlSettingContentSingleOption extends ControlSettingContent{
         super(setting)
     }
     getHtmlFile(){
-        return "/v2/settings/settingsingleoption.html";
+        return "./v2/settings/settingsingleoption.html";
     }
     getStyleFile(){
-        return "/v2/settings/settingsingleoption.css";
+        return "./v2/settings/settingsingleoption.css";
     }
    
     async renderSpecific({root}){

@@ -8,10 +8,10 @@ export class ControlSMSConversation extends Control{
         super();
     }  
     getHtmlFile(){
-        return "/v2/sms/conversation/smsconversation.html";
+        return "./v2/sms/conversation/smsconversation.html";
     }    
     getStyleFile(){
-        return "/v2/sms/conversation/smsconversation.css";
+        return "./v2/sms/conversation/smsconversation.css";
     }
        
     async renderSpecific({root}){      
@@ -174,10 +174,10 @@ export class ControlSMSMessage extends Control{
         this.smsMessage = smsMessage;
     }
     getHtmlFile(){
-        return "/v2/sms/conversation/smsmessage.html";
+        return "./v2/sms/conversation/smsmessage.html";
     }
     getStyleFile(){
-        return "/v2/sms/conversation/smsmessage.css";
+        return "./v2/sms/conversation/smsmessage.css";
     }
        
     async renderSpecific({root}){ 

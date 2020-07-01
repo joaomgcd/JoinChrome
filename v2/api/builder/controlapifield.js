@@ -14,10 +14,10 @@ export class ControlApiField extends Control{
         this.apiField = apiField;
     }
     getHtmlFile(){
-        return "/v2/api/builder/apifield.html";
+        return "./v2/api/builder/apifield.html";
     }
     getStyleFile(){
-        return "/v2/api/builder/apifield.css";
+        return "./v2/api/builder/apifield.css";
     }
    
     async renderSpecific({root}){

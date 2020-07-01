@@ -12,10 +12,10 @@ export class ControlTop extends Control{
         return this.googleUser;
     }
     getHtmlFile(){
-        return "/v2/top/top.html";
+        return "./v2/top/top.html";
     }
     getStyleFile(){
-        return "/v2/top/top.css";
+        return "./v2/top/top.css";
     }
     async renderSpecific({root}){
         this.imageBackElement = await this.$("#imageback");

@@ -40,7 +40,7 @@ export class ControlDevices extends Control {
         return await this.devices.testLocalNetworkDevices();
     }
     // getHtmlFile(){
-    //     return "/v2/device/devices.html";
+    //     return "./v2/device/devices.html";
     // }
     getHtml(){
         return `<div>
@@ -50,7 +50,7 @@ export class ControlDevices extends Control {
                 </div>`;
     }
     getStyleFile(){
-        return "/v2/device/devices.css";
+        return "./v2/device/devices.css";
     }
     setSelectedDevice(deviceControl,wasClick){
         this.deviceControls.forEach(deviceControl=>deviceControl.setIsSelected(false));
@@ -112,7 +112,7 @@ export class ControlDevice extends Control{
         this.device = device;
     }
     // getHtmlFile(){
-    //     return "/v2/device/device.html";
+    //     return "./v2/device/device.html";
     // }
     getHtml(){
         return deviceHtml;

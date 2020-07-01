@@ -9,10 +9,10 @@ export class ControlSMSThreads extends Control{
         super();
     }  
     getHtmlFile(){
-        return "/v2/sms/thread/smsthreads.html";
+        return "./v2/sms/thread/smsthreads.html";
     }    
     getStyleFile(){
-        return "/v2/sms/thread/smsthreads.css";
+        return "./v2/sms/thread/smsthreads.css";
     }
        
     async renderSpecific({root}){   
@@ -74,10 +74,10 @@ export class ControlSMSThread extends Control{
         this.smsThread = smsThread;
     }
     getHtmlFile(){
-        return "/v2/sms/thread/smsthread.html";
+        return "./v2/sms/thread/smsthread.html";
     }
     getStyleFile(){
-        return "/v2/sms/thread/smsthread.css";
+        return "./v2/sms/thread/smsthread.css";
     }
        
     async renderSpecific({root}){      

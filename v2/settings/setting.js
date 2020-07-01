@@ -9,16 +9,39 @@ export class Settings extends Array{
         super();
     }
 }
-
+const getSettingsdDb = () => {
+    const db = new Dexie("join_settings");
+    db.version(1).stores({
+        settings: 'id,value'
+    });
+    return db.settings;
+}
 export class Setting{
     constructor(args = {id,label,subtext,extratext}){
         Object.assign(this,args)
     }
     get value(){
+        if(this.isDbSetting){
+            return (async ()=>{
+                const db = getSettingsdDb();
+                const item = await db.get(this.id);
+                if(!item) return null;
+
+                return item.value;
+            })();
+        }
         return AppContext.context.localStorage.get(this.id);
     }
     set value(val){
+        if(this.isDbSetting){
+            const db = getSettingsdDb();
+            db.put({id:this.id,value:val});
+            return;
+        }
         AppContext.context.localStorage.set(this.id,val);
+    }
+    get isDbSetting(){
+        return false;
     }
 }
 export class SettingTextInput extends Setting{
@@ -43,6 +66,36 @@ export class SettingEncryptionPassword extends SettingTextInput{
             placeholder:"Password",
             subtext:"If set, the password will encrypt your pushes before they are sent other devices. The same password must be set on receiving devices.",
             isSecret: true
+        })
+    }
+}
+export class SettingEventGhostNodeRedPort extends SettingTextInput{
+    static get id(){
+        return "SettingEventGhostNodeRedPort";
+    }
+    get isDbSetting(){
+        return true;
+    }
+    constructor(){
+        super({
+            id:SettingEventGhostNodeRedPort.id,
+            label:"EventGhost, Node-RED",
+            placeholder:"Port",
+            subtext:`If set, will redirect received Commands to the specified port (<a target="_blank" href="https://joaoapps.com/autoremote/eventghost/">AutoRemote plugin in EventGhost</a> or <a  target="_blank" href="https://joaoapps.com/join/node-red/">Join plugin in Node-RED</a>)`
+        })
+    }
+}
+export class SettingAutomationPortFullPush extends SettingTextInput{
+    static get id(){
+        return "SettingAutomationPortFullPush";
+    }
+    get isDbSetting(){
+        return true;
+    }
+    constructor(){
+        super({
+            id:SettingAutomationPortFullPush.id,
+            label:"Full Push"
         })
     }
 }

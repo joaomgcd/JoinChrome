@@ -83,6 +83,7 @@ export class UtilDOM{
         return this.addStyle(css);
     }
     static focusWindow(){
+        if(window.document.hasFocus()) return;
         return new Promise(resolve=>{
             const existingOnFocus = window.onfocus;
             window.onfocus = () => {

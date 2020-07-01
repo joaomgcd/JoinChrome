@@ -15,10 +15,10 @@ export class ControlCommands extends Control {
         EventBus.registerSticky(this);
     }
     getHtmlFile(){
-        return "/v2/command/commands.html";
+        return "./v2/command/commands.html";
     }
     getStyleFile(){
-        return "/v2/command/commands.css";
+        return "./v2/command/commands.css";
     }
     /*getSelectedDevice(){
         return AppContext.context.getSelectedDevice();
@@ -56,7 +56,7 @@ export class ControlCommand extends Control {
         this.command = command;
     }
     getHtmlFile(){
-        return "/v2/command/command.html";
+        return "./v2/command/command.html";
     }
     async renderSpecific({root}){
         this.commandButton = root;

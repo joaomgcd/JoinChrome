@@ -13,10 +13,10 @@ export class ControlMediaHeader extends Control{
         this.device = device;       
     }
     getHtmlFile(){
-        return "/v2/media/mediaheader.html";
+        return "./v2/media/mediaheader.html";
     }
     getStyleFile(){
-        return "/v2/media/mediaheader.css";
+        return "./v2/media/mediaheader.css";
     }
 
     async renderSpecific({root}){ 

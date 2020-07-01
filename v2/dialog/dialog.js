@@ -16,3 +16,17 @@ export class DialogInput extends Dialog{
         this.placeholder = placeholder;
     }
 }
+export class DialogProgress extends Dialog{
+    constructor({title,text}){
+        super()
+        this.title = title;
+        this.text = text;
+    }
+}
+export class DialogOk extends Dialog{
+    constructor({title,text}){
+        super()
+        this.title = title;
+        this.text = text;
+    }
+}

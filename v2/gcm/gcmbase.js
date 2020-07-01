@@ -82,6 +82,49 @@ class GCMBase{
 	async getImageUrl(image){
 		return `data:image/png;base64,${image}`; 
 	}
+	async getSettingValue(settingId){
+		const db = new Dexie("join_settings");
+		db.version(1).stores({
+			settings: 'id,value'
+		});
+
+		const setting = await db.settings.get(settingId);
+		if(!setting) return null;
+
+		return setting.value;
+	}
+	async sendToLocalAutomationPortIfNeeded(){
+		const hasClients = await Util.serviceWorkerHasClients;
+		if(hasClients) return;
+		
+		const localAutomationPort = await this.getSettingValue("SettingEventGhostNodeRedPort");
+		if(!localAutomationPort) return;
+		
+		const localAutomationFullPush = await this.getSettingValue("SettingAutomationPortFullPush");
+		if(localAutomationFullPush){
+			return await this.sendToLocalPort({port:localAutomationPort});
+		}
+		if(!this.push) return;
+		
+		return await GCMPushBase.sendTextToLocalPort({gcmPush:this,port:localAutomationPort});
+	}
+	async sendToLocalPort({port,endpoint}){
+		if(!endpoint){
+			endpoint = "push";
+		}
+		const server = "localhost";
+		const gcmString = JSON.stringify(await this.gcmRaw);
+		const options = {
+			method: 'POST',
+			body: gcmString,
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			mode:"no-cors"
+		}
+		await fetch(`http://${server}:${port}/${endpoint}`,options)
+		
+	}
 }
 class GCMNotificationBase{
 	static get notificationDismissAction(){
@@ -167,5 +210,16 @@ class GCMNewSmsReceivedBase{
 			"data": await gcm.gcmRaw
 		};
 		Object.assign(notification,options);
+	}
+}
+class GCMPushBase{	
+	static async sendTextToLocalPort({gcmPush, port}){
+		const server = "localhost";		
+
+		const options = {
+			mode:"no-cors"
+		}
+		await fetch(`http://${server}:${port}/?message=${encodeURIComponent(gcmPush.push.text)}`,options)
+	
 	}
 }

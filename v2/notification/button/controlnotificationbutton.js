@@ -12,10 +12,10 @@ export class ControlNotificationButton extends Control{
         return true;
     }
     getHtmlFile(){
-        return "/v2/notification/button/notificationbutton.html";
+        return "./v2/notification/button/notificationbutton.html";
     }
     getStyleFile(){
-        return "/v2/notification/button/notificationbutton.css";
+        return "./v2/notification/button/notificationbutton.css";
     }
     
     async renderSpecific({root}){ 

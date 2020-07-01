@@ -6,10 +6,10 @@ export class Toast extends Control{
         super();
     }
     getHtmlFile(){
-        return "/v2/toast/toast.html";
+        return "./v2/toast/toast.html";
     }
     async getStyleFile(){
-        return "/v2/toast/toast.css";
+        return "./v2/toast/toast.css";
     }
     
     async renderSpecific({root}){

@@ -6,6 +6,7 @@ class GCMBaseApp extends GCMBase{
 		return AppContext.context.getMyDeviceId();
 	}
 	async execute(){
+		this.sendToLocalAutomationPortIfNeeded();
 		await EventBus.post(this);
 	}
 	//open
@@ -110,6 +111,10 @@ export class GCMPush extends GCMBaseApp{
 		push.file = await e(push.file);
 		push.files = await e(push.files);
 		push.wallpaper = await e(push.wallpaper);
+	}
+	async sendTextToLocalPort({port}){
+		return await GCMPushBase.sendTextToLocalPort({gcmPush:this,port});
+	
 	}
 }
 class GCMNotification extends GCMBaseApp{}

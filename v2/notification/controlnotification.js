@@ -14,10 +14,10 @@ export class ControlNotification extends Control{
         return true;
     }
     getHtmlFile(){
-        return "/v2/notification/notification.html";
+        return "./v2/notification/notification.html";
     }
     getStyleFile(){
-        return "/v2/notification/notification.css";
+        return "./v2/notification/notification.css";
     }
     
     async renderSpecific({root}){        

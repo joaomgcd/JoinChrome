@@ -12,7 +12,7 @@ import { UtilDOM } from './utildom.js';
 
 //import { GoogleAccount } from './google/account/googleaccount.js';
 //import { ControlGoogleAccount } from './google/account/controlgoogleaccount.js';
-import '/v2/extensions.js';
+import './extensions.js';
 //import { DBDevices } from './device/dbdevice.js';
 import { AppGCMHandler } from './gcm/apphelpergcm.js'
 import { GCMNotificationAction } from './gcm/gcmapp.js';
@@ -40,12 +40,13 @@ export class App{
         return this._contentElement;
     }
     async load(){
+        Util.redirectToHttpsIfNeeded();
         this.applyTheme();
         if(!Util.areCookiesEnabled){
             alert("Cookies are disabled. Please enable them and refresh the page to continue.");
             return;
         }
-        UtilDOM.addScriptFile("/v2/encryption/encryption.js");
+        UtilDOM.addScriptFile("./v2/encryption/encryption.js");
         UtilDOM.setCssVhVariableAndListenToWindowChanges();
         self.getAuthTokenPromise = async () => await this.getAuthToken();
         EventBus.register(this);  
@@ -54,7 +55,7 @@ export class App{
             window.location = window.location.href.replace("http:","https:");
             return;
         }       
-        await UtilDOM.addStyleFromFile("/v2/global.css");
+        await UtilDOM.addStyleFromFile("./v2/global.css");
         // const rootRule = document.styleSheets[0].cssRules[0];
         // const rootStyle = rootRule.style;
         // const lightColor = UtilDOM.increaseBrightnessRule(rootStyle,"--theme-accent-color",50);

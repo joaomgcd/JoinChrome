@@ -1,4 +1,4 @@
-import { DialogSingleChoice,DialogInput } from "./dialog.js";
+import { DialogSingleChoice,DialogInput, DialogProgress,DialogOk } from "./dialog.js";
 import { Control } from "../control.js";
 import { UtilDOM } from "../utildom.js";
 import { EventBus } from "../eventbus.js";
@@ -8,7 +8,28 @@ export class ControlDialog extends Control {
         super();
         this.dialog = dialog;
     }
-    async show(position = {x,y}){
+    getDialogBackground(initIfNeeded){
+        const backgroundId = "mycontroldialogsuperdimmedbackground";
+        let background = document.body.querySelector(`#${backgroundId}`);
+        if(background || !initIfNeeded) return background;
+        
+        background = document.createElement("div");
+        background.id = backgroundId;
+        background.style.position = "absolute";
+        background.style["background-color"] = "rgba(0, 0, 0, 0.5)";
+        background.style["z-index"] = "999999999999999";
+        document.body.appendChild(background);
+
+        return background;
+    }
+    async show(position = {x,y,isCenter},dimBackground = true){
+        if(dimBackground){
+            const background = this.getDialogBackground(true);
+            const documentBounds = UtilDOM.getElementBounds(document.body);
+            background.style.width = `${documentBounds.right}px`;
+            background.style.height = `${documentBounds.bottom}px`;
+            UtilDOM.show(background);
+        }
         if(!this.rendered){
             this.rendered = await this.render();
             this.rendered.classList.add("dialog");
@@ -16,8 +37,17 @@ export class ControlDialog extends Control {
             this.rendered.style.top = `${position.y}px`;
             UtilDOM.makeInvisible(this.rendered);
             document.body.appendChild(this.rendered);
+            const dialogBounds = UtilDOM.getElementBounds(this.rendered);
+            if(position.isCenter){
+                const width = dialogBounds.right - dialogBounds.left;
+                const height = dialogBounds.bottom - dialogBounds.top;
+                const newLeft = position.x - (width/2);
+                const newTop = position.y - (height/2);
+                this.rendered.style.left = `${newLeft}px`;
+                this.rendered.style.top = `${newTop}px`;
+            }
             const bottomDocument = UtilDOM.getElementBounds(document.body).bottom;
-            const bottomRendered = UtilDOM.getElementBounds(this.rendered).bottom;
+            const bottomRendered = dialogBounds.bottom;
             if(bottomRendered > bottomDocument){
                 const finalPositionY = position.y - (bottomRendered - bottomDocument) - 8;
                 this.rendered.style.top = `${finalPositionY}px`;
@@ -26,12 +56,20 @@ export class ControlDialog extends Control {
         UtilDOM.show(this.rendered);
         this.onShown();
     }
+    async dispose(){
+        await super.dispose()        
+        UtilDOM.hide(this.getDialogBackground(false));
+    }
     //open
     onShown(){}
 }
 const showDialog = async ({args,dialogclass,controlclass}) => {
     args.dialog = new dialogclass(args);
     const control = new controlclass(args);
+    if(!args.position){
+        const bodyBounds = UtilDOM.getElementBounds(document.body);
+        args.position = {x:bodyBounds.right/2,y:bodyBounds.bottom/2,isCenter:true}
+    }
     control.show(args.position);
     return control;
 }
@@ -68,10 +106,10 @@ export class ControlDialogSingleChoice extends ControlDialog {
         this.choiceToLabelFunc = args.choiceToLabelFunc;
     }
     getHtmlFile(){
-        return "/v2/dialog/dialogsinglechoice.html";
+        return "./v2/dialog/dialogsinglechoice.html";
     }
     getStyleFile(){
-        return "/v2/dialog/dialogsinglechoice.css";
+        return "./v2/dialog/dialogsinglechoice.css";
     }
     async renderSpecific({root}){
         this.dialogElement = root;
@@ -110,10 +148,10 @@ export class ControlDialogInput extends ControlDialog {
         super(args);
     }
     getHtmlFile(){
-        return "/v2/dialog/dialoginput.html";
+        return "./v2/dialog/dialoginput.html";
     }
     getStyleFile(){
-        return "/v2/dialog/dialoginput.css";
+        return "./v2/dialog/dialoginput.css";
     }
     async renderSpecific({root}){
         this.dialogElement = root;
@@ -138,6 +176,105 @@ export class ControlDialogInput extends ControlDialog {
     onShown(){
         this.textElement.focus()
     }
+}
+
+export class ControlDialogDialogProgress extends ControlDialog {
+    static getDialogArgs(args){
+        return {args,dialogclass:DialogProgress,controlclass:ControlDialogDialogProgress};
+    }
+    static async show(args = {position,title,text}){
+        return showDialog(ControlDialogDialogProgress.getDialogArgs(args));        
+    }
+    constructor(args = {dialog}){
+        super(args);
+    }
+    getHtml(){
+        return `
+        <div class="dialogprogress">
+            <div class="dialogprogresstitle"></div>
+            <div class="dialogprogresstext"></div>
+        </div>
+        `
+    }
+    getStyle(){
+        return `
+        .dialogprogress{
+            padding: 8px;
+        }
+        .dialogprogresstitle{
+            font-weight: bold;
+        }
+        .dialogprogresstext{
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+        `
+    }
+    async renderSpecific({root}){
+        this.dialogElement = root;
+
+        this.titleElement = await this.$(".dialogprogresstitle");
+        this.textElement = await this.$(".dialogprogresstext");
+
+        this.titleElement.innerHTML = this.dialog.title;
+        this.textElement.innerHTML = this.dialog.text;
+    }
+}
+export class ControlDialogOk extends ControlDialog {
+    static getDialogArgs(args){
+        return {args,dialogclass:DialogOk,controlclass:ControlDialogOk,waitForClass:ButtonOk};
+    }
+    static async show(args = {position,title,text}){
+        return showDialog(ControlDialogOk.getDialogArgs(args));        
+    }
+    static async showAndWait(args){      
+        const result = (await showDialogAndWait(ControlDialogOk.getDialogArgs(args)));
+        if(!result) return;
+        
+        return result.text;
+    }
+    constructor(args = {dialog}){
+        super(args);
+    }
+    getHtml(){
+        return `
+        <div class="dialogok">
+            <div class="dialogoktitle"></div>
+            <div class="dialogoktext"></div>
+            <div class="dialogokbutton button">OK</div>
+        </div>
+        `
+    }
+    getStyle(){
+        return `
+        .dialogok{
+            padding: 8px;
+            min-width: 300px;
+            display: flex;
+            flex-direction:column;
+        }
+        .dialogoktitle{
+            font-weight: bold;
+        }
+        .dialogoktext{
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+        `
+    }
+    async renderSpecific({root}){
+        this.dialogElement = root;
+
+        this.titleElement = await this.$(".dialogoktitle");
+        this.textElement = await this.$(".dialogoktext");
+        this.buttonElement = await this.$(".dialogokbutton");
+
+        this.titleElement.innerHTML = this.dialog.title;
+        this.textElement.innerHTML = this.dialog.text;
+        this.buttonElement.onclick = async () => await EventBus.post(new ButtonOk());
+    }
+}
+export class ButtonOk{
 }
 export class InputSubmitted{
     constructor(text){

@@ -82,7 +82,7 @@ export class ControlMenu extends Control{
         return this.googleUser;
     }
     // getHtmlFile(){
-    //     return "/v2/menu/menu.html";
+    //     return "./v2/menu/menu.html";
     // }
     getHtml(){
         return htmlMenu;
@@ -223,10 +223,10 @@ export class ControlMenuEntry extends Control{
         this.menuEntry = menuEntry;
     }
     // getHtmlFile(){
-    //     return "/v2/menu/menuentry.html";
+    //     return "./v2/menu/menuentry.html";
     // }
     // getStyleFile(){
-    //     return "/v2/menu/menuentry.css";
+    //     return "./v2/menu/menuentry.css";
     // }
     getHtml(){
         return htmlMenuEntry;

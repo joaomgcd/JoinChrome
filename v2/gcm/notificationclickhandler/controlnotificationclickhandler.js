@@ -13,10 +13,10 @@ export class ControlNotificationClickHandler extends Control{
         EventBus.register(this);
     }
     getHtmlFile(){
-        return "/v2/gcm/notificationclickhandler/notificationclickhandler.html";
+        return "./v2/gcm/notificationclickhandler/notificationclickhandler.html";
     }
     getStyleFile(){
-        return "/v2/gcm/notificationclickhandler/notificationclickhandler.css";
+        return "./v2/gcm/notificationclickhandler/notificationclickhandler.css";
     }
     
     async onFAB(){

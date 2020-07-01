@@ -44,10 +44,10 @@ export class ControlPush extends Control{
     //     return htmlPush;
     // }
     getHtmlFile(){
-        return "/v2/pushhistory/push.html";
+        return "./v2/pushhistory/push.html";
     }
     getStyleFile(){
-        return "/v2/pushhistory/push.css";
+        return "./v2/pushhistory/push.css";
     }
     async renderSpecific({root}){
         this.pushElement = root;

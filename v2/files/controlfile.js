@@ -14,10 +14,10 @@ export class ControlFilePath extends Control{
         this.fileList = fileList;
     }
     getHtmlFile(){
-        return "/v2/files/filepath.html";
+        return "./v2/files/filepath.html";
     }
     getStyleFile(){
-        return "/v2/files/filepath.css";
+        return "./v2/files/filepath.css";
     }
     async renderSpecific({root}){
         this.content = root;
@@ -93,10 +93,10 @@ export class ControlFileList extends Control {
         this.device = device;
     }
     getHtmlFile(){
-        return "/v2/files/filelist.html";
+        return "./v2/files/filelist.html";
     }
     getStyleFile(){
-        return "/v2/files/filelist.css";
+        return "./v2/files/filelist.css";
     }
     set loading(value){
         UtilDOM.addOrRemoveClass(this.filesElement,value,"loading");
@@ -160,10 +160,10 @@ export class ControlFile extends Control {
         this.file = file;
     }
     getHtmlFile(){
-        return "/v2/files/file.html";
+        return "./v2/files/file.html";
     }
     getStyleFile(){
-        return "/v2/files/file.css";
+        return "./v2/files/file.css";
     }
     async renderSpecific({root}){
         this.fileElement = root;

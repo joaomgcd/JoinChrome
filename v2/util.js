@@ -123,8 +123,25 @@ class Util{
             return null;
         }
     }
+    static redirectToHttpsIfNeeded(){        
+        const currentUrl = window.location.href;
+        if(currentUrl.startsWith("https") || currentUrl.includes("localhost")) return;
+
+        const httpsUrl = currentUrl.replace("http:","https:");
+        window.location.href = httpsUrl;
+    }
     static get isInServiceWorker(){
         return navigator.serviceWorker ? false : true;
+    }
+    static get serviceWorkerHasClients(){
+        if(!Util.isInServiceWorker) return false;
+        
+        return (async () => {
+            const clients = await self.clients.matchAll({includeUncontrolled:true,type:"window"});
+            if(clients && clients.length > 0) return true;
+
+            return false;
+        })();
     }
     static async openWindow(url,options){
         if(!Util.isInServiceWorker){

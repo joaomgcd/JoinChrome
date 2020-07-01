@@ -12,6 +12,7 @@ class GCMBaseServiceWorker extends GCMBase{
 	async execute(){
 		console.log("Executing GCM from service worker",this);
 
+		this.sendToLocalAutomationPortIfNeeded();
 		const gcmJson = JSON.stringify(this);
 		const gcmId = new Date().getTime();
 		if(Util.isType(this,"GCMPush")){
@@ -115,7 +116,7 @@ class GCMBaseServiceWorker extends GCMBase{
 
 		const contact = fromDb.find(contact=>contact.number == number);
 		if(!contact) return;
-		
+
 		return JSON.parse(contact.json);
 	}
 	

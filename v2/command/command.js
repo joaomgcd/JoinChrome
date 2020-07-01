@@ -13,6 +13,7 @@ export class Commands extends Array{
 		}
         super();
         this.push(new CommandNoteToSelf());
+        this.push(new CommandSendCommand());
         if(Util.canReadClipboard){
             this.push(new CommandPaste());
         }
@@ -89,6 +90,21 @@ class CommandNoteToSelf extends CommandPush{
         if(!text) return;
 
         push.title = "Note To Self";
+        push.text = text;
+        return push;
+    }
+}
+class CommandSendCommand extends CommandPush{
+    getText(){
+		return "Command";
+	}
+	shouldEnable(device){
+		return true;
+    }
+    customizePush({device,push}){
+        var text = prompt("Command to send");
+        if(!text) return;
+
         push.text = text;
         return push;
     }
