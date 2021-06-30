@@ -1,9 +1,133 @@
 import { EventBus } from "../eventbus.js";
 import { AppHelperBase } from "../apphelperbase.js";
 import { ControlSettings } from "./controlsetting.js";
-import { SettingEncryptionPassword, SettingSingleOption, SettingTheme, SettingThemeAccentColor, SettingEventGhostNodeRedPort } from "./setting.js";
+import { SettingEncryptionPassword, SettingSingleOption, SettingTheme, SettingThemeAccentColor, SettingEventGhostNodeRedPort, SettingCompanionAppPortToConnect, SettingKeyboardShortcutLastCommand, SettingKeyboardShortcutShowWindow, SettingCustomActions, SettingKeyboardShortcutSkipSong, SettingKeyboardShortcutPreviousSong, SettingKeyboardShortcutPlayPause, SettingThemeBackgroundColor, SettingThemeBackgroundPanelColor, SettingThemeTextColor, SettingThemeTextColorOnAccent } from "./setting.js";
 import { UtilDOM } from "../utildom.js";
+import { ControlTabs, Tab } from "../tabs/controltabs.js";
+import { AppContext } from "../appcontext.js";
 
+const selectedTabKey = "selectedsettingstab";
+const handleConnectingToEventghostOrNodeRed = async (setting,value) => {
+    if(setting.id != SettingEventGhostNodeRedPort.id) return value;
+    if(!value) return value;
+
+    const {ControlDialogDialogProgress,ControlDialogOk} = (await import("../dialog/controldialog.js"))
+    const myDeviceId = app.myDeviceId;
+    if(!myDeviceId){
+        await ControlDialogOk.showAndWait({title:"Must Be Registered",text:"To be able to forward pushes to other automation apps your browser needs to be registered as a device."});
+        value = null;
+        return value;
+    }
+    value = parseInt(value);
+    const dialog = await ControlDialogDialogProgress.show({title:"Testing",text:"Checking if port is listening..."})
+    const {GCMPush} = await import("../gcm/gcmapp.js");
+    const gcmPush = new GCMPush();
+    gcmPush.senderId = app.myDeviceId;
+    gcmPush.push = {title:"Test",text:"Testing from Join website..."};
+    const {SettingAutomationPortFullPush} = (await import("../settings/setting.js"))
+    const settingAutomationPortFullPush = new SettingAutomationPortFullPush();
+    try{
+        //Try full push first
+        await gcmPush.sendToLocalPort({port:value});
+        await ControlDialogOk.showAndWait({title:"Success!",text:`Sending full pushes to ${value}`});
+        settingAutomationPortFullPush.value = true;
+    }catch(error){
+        try{
+            //If it doesn't work try only test push (eventgost only works with that for example)                    
+            await gcmPush.sendTextToLocalPort({port:value});
+            await ControlDialogOk.showAndWait({title:"Success!",text:`Sending text pushes to ${value}`});
+            settingAutomationPortFullPush.value = false;
+        }catch{
+            await ControlDialogOk.showAndWait({title:"Error!",text:`Couldn't connect. Make sure that the app is listening on port ${value} and that you don't have anything blocking access to localhost on your browser (like an adblocker for example).`});
+            console.log(error);
+            value = null;
+            settingAutomationPortFullPush.value = false;
+        }
+    }finally{                
+        await dialog.dispose();
+    }
+    return value;
+}
+const handleConnectingToDesktopApp = async (setting,value) => {    
+    if(setting.id != SettingCompanionAppPortToConnect.id) return value;
+    if(!value) return value;
+
+    const {ControlDialogDialogProgress,ControlDialogOk} = await import("../dialog/controldialog.js")
+
+    const notificationsAllowed = Notification.permission == "granted";
+    if(!notificationsAllowed){
+        await ControlDialogOk.showAndWait({title:"Must Allow Notifications", text:"To make the desktop app work correctly you need to enable notifications.<br/><br/>To allow your browser to receive pushes, notifications must be enabled for this website otherwise pushes won't be received and the desktop app won't work.<br/><br/>Please make sure that you're not blocking this website's notifications in your browser settings."});
+        value = null;
+        return value;
+    }
+    const myDeviceId = app.myDeviceId;
+    if(!myDeviceId){
+        await ControlDialogOk.showAndWait({title:"Must Be Registered",text:"To make the desktop app work correctly your browser needs to be registered as a Join device."});
+        value = null;
+        return value;
+    }
+
+    value = parseInt(value);
+    const dialog = await ControlDialogDialogProgress.show({title:"Testing",text:"Checking if companion app is available..."})
+    const {GCMPush} = await import("../gcm/gcmapp.js");
+    const gcmPush = new GCMPush();
+    gcmPush.companionBrowserId = app.myDeviceId;
+    gcmPush.senderId = app.myDeviceId;
+    gcmPush.push = {title:"Join Desktop",text:"Successfully connected!"};
+    try{
+        //Try full push first
+        await gcmPush.sendToLocalPort({port:value});
+        try{
+            await ControlDialogOk.showAndWait({title:"Success!",text:`The companion app is working! Will now open a new tab to authenticate your user on it...`});
+            const googleDriveScopes = encodeURIComponent("https://www.googleapis.com/auth/drive.appfolder https://www.googleapis.com/auth/drive.file")
+            Util.openWindow(`https://accounts.google.com/o/oauth2/v2/auth?client_id=596310809542-giumrib7hohfiftljqmj7eaio3kl21ek.apps.googleusercontent.com&redirect_uri=http://127.0.0.1:${value}&response_type=code&scope=email%20profile%20${googleDriveScopes}&code_challenge&login_hint=${await app.userEmail}`);
+            await UtilDOM.waitForWindowFocus();
+            UtilDOM.addStyle(`.companiondialogok{
+                max-width: 400px;
+            }
+            .companiondialogok>div{
+                padding:8px;
+            }
+            `)
+            await ControlDialogOk.showAndWait({timeout:60000,title:"Success!",text:`<div class="companiondialogok"><div>Companion app is now correctly configured!</div><div>You may now close this window.</div><div>If your Android devices' local IP addresses don't change and you manually set the ports in the <b>Android App &gt; Settings &gt; Local Network &gt; Advanced</b> you don't need to keep this browser open.</div><div>Otherwise you can close this browser window as long as you keep your browser open so that it can receive pushes.</div></div>`});
+        }catch{}
+    }catch(error){               
+        await ControlDialogOk.showAndWait({title:"Error!",text:`Couldn't connect. Make sure that the app is listening on the port you configure here.`});
+        console.log(error);
+        value = null;
+    }finally{                
+        await dialog.dispose();
+    }
+    return value;
+}
+const handleSavingKeyboardShortcut = async (setting,value) => {
+    const isLastCommand = setting.id == SettingKeyboardShortcutLastCommand.id;
+    const isShowWindow = setting.id == SettingKeyboardShortcutShowWindow.id;
+    const isSkipSong = setting.id == SettingKeyboardShortcutSkipSong.id;
+    const isPreviousSong = setting.id == SettingKeyboardShortcutPreviousSong.id;
+    const isPlayPause = setting.id == SettingKeyboardShortcutPlayPause.id;
+    if(!isLastCommand && !isShowWindow && !isSkipSong && !isPreviousSong && !isPlayPause) return value;
+
+    let shortcutAndCommand = null;
+    const command = await setting.command;
+    const remove = async () => await app.removeKeyboardShortcutByCommand(command);
+    if(!value) return await remove();
+
+    const {ControlKeyboardShortcut} = await import("../keyboard/keyboardshortcut.js");
+    const shortcut = await ControlKeyboardShortcut.setupNewShortcut();
+    if(!shortcut) return await remove();
+
+    await remove();
+    shortcutAndCommand = {
+        shortcut,
+        command
+    }
+    await app.addKeyboardShortcutAndCommand(shortcutAndCommand);
+    console.log("Saved keyboard shortcut setting",shortcutAndCommand);
+    value = shortcut.toString();
+    return value;
+
+}
 /**@type {App} */
 let app = null;
 export class AppHelperSettings extends AppHelperBase{
@@ -11,11 +135,50 @@ export class AppHelperSettings extends AppHelperBase{
      * 
      * @param {App} app 
      */
-    constructor(args = {app}){
-        super();
+    constructor(args = {app,connectoport}){
+        super(args.app);
         app = args.app;
+        this.connectoport = args.connectoport;
     }
-    
+    get settingsList(){
+        return (async()=>{
+            const devices = await app.devicesFromDb;
+            return new ControlTabs([
+                new Tab({title:"Theme",controlContent:new ControlSettings([
+                    new SettingTheme(),
+                    new SettingThemeAccentColor(),
+                    new SettingThemeBackgroundColor(),
+                    new SettingThemeBackgroundPanelColor(),
+                    new SettingThemeTextColor(),
+                    new SettingThemeTextColorOnAccent(),
+                ])}),
+                new Tab({title:"Actions",controlContent:new ControlSettings([
+                    new SettingCustomActions({devices,canRunCommandLineCommands:false}),
+                ])}),
+                new Tab({title:"Automation",controlContent:new ControlSettings([
+                    new SettingEventGhostNodeRedPort(),
+                ])}),
+                new Tab({title:"Shortcuts",controlContent:new ControlSettings([
+                    new SettingKeyboardShortcutLastCommand(),
+                    new SettingKeyboardShortcutSkipSong(),
+                    new SettingKeyboardShortcutPreviousSong(),
+                    new SettingKeyboardShortcutPlayPause(),
+                ])}),
+                new Tab({title:"General",controlContent:new ControlSettings([
+                    new SettingCompanionAppPortToConnect(),
+                    new SettingEncryptionPassword(),
+                ])}),
+            ])
+        })();
+        // return  new ControlSettings([
+        //     new SettingCompanionAppPortToConnect(),
+        //     new SettingEncryptionPassword(),
+        //     new SettingEventGhostNodeRedPort(),
+        //     new SettingTheme(),
+        //     new SettingThemeAccentColor(),
+        //     new SettingKeyboardShortcutLastCommand()
+        // ]);
+    }
     async load(){
         EventBus.register(this);     
         app.controlTop.appName = `Join Settings`;
@@ -23,13 +186,16 @@ export class AppHelperSettings extends AppHelperBase{
         app.controlTop.loading = false;      
         app.controlTop.shouldAlwaysShowImageRefresh = false;  
 
-        this.controlSettings = new ControlSettings([
-            new SettingEncryptionPassword(),
-            new SettingEventGhostNodeRedPort(),
-            new SettingTheme(),
-            new SettingThemeAccentColor()
-        ]);
+        this.controlSettings = await this.settingsList;
+        this.controlSettings.selectTab(AppContext.context.localStorage.get(selectedTabKey))
         await app.addElement(this.controlSettings);
+
+        if(this.connectoport){
+            const setting = new SettingCompanionAppPortToConnect();
+            const value = this.connectoport;
+            await this.handleSettingSaved(setting,value);
+        }
+
     }
     updateUrl(){
         Util.changeUrl("/?settings");
@@ -37,47 +203,47 @@ export class AppHelperSettings extends AppHelperBase{
     get isPanel(){
         return true;
     }
+    onTabSelected({tab}){
+        AppContext.context.localStorage.set(selectedTabKey,tab.title);
+    }
+    async handleSettingSaved(setting, value){
+        if(setting.id == SettingEncryptionPassword.id && value){
+            const email = await app.userEmail;
+            value = await Encryption.getEncryptedPasswordInBase64({password:value,salt:email,iterations:5000});
+        }
+        value = await handleConnectingToEventghostOrNodeRed(setting,value);
+        value = await handleConnectingToDesktopApp(setting,value);
+        value = await handleSavingKeyboardShortcut(setting,value);
+        setting.value = value;
+        await this.controlSettings.update(setting);
+    }
     async onSettingSaved(settingSaved){
         const setting = settingSaved.setting;
         let value = settingSaved.value;
         if(!setting) return;
 
-        if(setting.id == SettingEncryptionPassword.id && value){
-            const email = await app.userEmail;
-            value = await Encryption.getEncryptedPasswordInBase64({password:value,salt:email,iterations:5000});
-        }
-        if(setting.id == SettingEventGhostNodeRedPort.id && value){
-            value = parseInt(value);
-            const {ControlDialogDialogProgress,ControlDialogOk} = (await import("../dialog/controldialog.js"))
-            const dialog = await ControlDialogDialogProgress.show({title:"Testing",text:"Checking if port is listening..."})
-            const {GCMPush} = await import("../gcm/gcmapp.js");
-            const gcmPush = new GCMPush();
-            gcmPush.senderId = app.myDeviceId;
-            gcmPush.push = {title:"Test",text:"Testing from Join website..."};
-            const {SettingAutomationPortFullPush} = (await import("../settings/setting.js"))
-            const settingAutomationPortFullPush = new SettingAutomationPortFullPush();
-            try{
-                //Try full push first
-                await gcmPush.sendToLocalPort({port:value});
-                await ControlDialogOk.showAndWait({title:"Success!",text:`Sending full pushes to ${value}`});
-                settingAutomationPortFullPush.value = true;
-            }catch(error){
-                try{
-                    //If it doesn't work try only test push (eventgost only works with that for example)                    
-                    await gcmPush.sendTextToLocalPort({port:value});
-                    await ControlDialogOk.showAndWait({title:"Success!",text:`Sending text pushes to ${value}`});
-                    settingAutomationPortFullPush.value = false;
-                }catch{
-                    await ControlDialogOk.showAndWait({title:"Error!",text:`Couldn't connect. Make sure that the app is listening on port ${value}.`});
-                    console.log(error);
-                    value = null;
-                    settingAutomationPortFullPush.value = false;
-                }
-            }finally{                
-                await dialog.dispose();
-            }
-        }
-        setting.value = value;
-        await this.controlSettings.update(setting);
+        await this.handleSettingSaved(setting,value);
+    }
+    
+    async manageSelectedDevices(settingId, wasClick){
+        if(!wasClick) return;
+
+        const controlsetting = await this.controlSettings.getSetting(settingId);
+        if(!controlsetting) return;
+
+
+        const selectedDevices = controlsetting.content.getCurrentSelectedDeviceIds(settingId) || [];
+        await controlsetting.setting.updateSelectedDevices(settingId, selectedDevices);
+        await controlsetting.render();
+    }
+    async onSelectedDevice({controlDevice,wasClick}){
+        if(!controlDevice) return;
+
+        await this.manageSelectedDevices(controlDevice.controlDevices.id, wasClick);
+    }
+    async onUnselectedDevice({controlDevice,wasClick}){
+        if(!controlDevice) return;
+        
+        await this.manageSelectedDevices(controlDevice.controlDevices.id, wasClick);
     }
 }

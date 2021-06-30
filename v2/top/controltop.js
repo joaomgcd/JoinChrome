@@ -23,19 +23,27 @@ export class ControlTop extends Control{
         this.imageHomeElement = await this.$("#imagehome");
         this.imageMenuElement = await this.$("#imagemenu");
         this.messageElement = await this.$("#topmessage");
+        this.versionElement = await this.$("#topversion");
+        this.tabsElement = await this.$("#toptabs");
         this.appNameElement = await this.$("#appname");
         this.appNameArrowDownElement = await this.$("#appnamearrowdown");
         this.elementRightImage = await this.$("#userimage");
         this.elementLoading = await this.$("#refresh");
         this.registerBrowserElement = await this.$("#registerbrowser");
         this.imageRefreshElement = await this.$("#topBarRefresh");
+        this.closeAppElement = await this.$("#closeapp");
+        this.minimizeAppElement = await this.$("#minimizeapp");
 
+        this.imageHomeElement.src = "./images/join.png";
         const appNameClicked = async e => await EventBus.post(new AppNameClicked(e));
         this.appNameElement.onclick = appNameClicked;
         this.appNameArrowDownElement.onclick = appNameClicked;
         this.registerBrowserElement.onclick = () => EventBus.post(new RegisterBrowserRequest());
         this.imageBackElement.onclick = () => EventBus.post(new RequestGoBack());
         this.imageMenuElement.onclick = () => EventBus.post(new RequestOpenMenu());
+        this.elementRightImage.onclick = () => EventBus.post(new RightImageClicked());
+        this.closeAppElement.onclick = () => EventBus.post(new MinimizeAppClicked());
+        this.minimizeAppElement.onclick = () => EventBus.post(new MinimizeToTaskBarAppClicked());
         return root;
     }
     hideNavigation(){
@@ -44,6 +52,12 @@ export class ControlTop extends Control{
     }
     hideHomeImage(){
         UtilDOM.hide(this.imageHomeElement);
+    }
+    showCloseAppButton(){
+        UtilDOM.show(this.closeAppElement);
+    }
+    showMinimizeAppButton(){
+        UtilDOM.show(this.minimizeAppElement);
     }
     showHomeImage(){
         UtilDOM.show(this.imageHomeElement);
@@ -67,6 +81,9 @@ export class ControlTop extends Control{
     }
     set rightImage(value){
         UtilDOM.setImageSourceOrHide(this.elementRightImage,value);
+    }
+    set versionNumber(versionNumber){
+       this.versionElement.innerHTML = `v${versionNumber}`;
     }
     async hideMessage(){
         await this.setMessage(null);
@@ -128,3 +145,7 @@ class AppNameClicked{
         this.event = event;
     }
 }
+class RightImageClicked{}
+class CloseAppClicked{}
+class MinimizeAppClicked{}
+class MinimizeToTaskBarAppClicked{}

@@ -7,6 +7,19 @@ export class UtilDOM{
         }
         return element;
     }
+    static addAttribute(element,attribute,value){
+        element.setAttribute(attribute,value);
+    }
+    static removeAttribute(element,attribute){
+        element.removeAttribute(attribute);
+    }
+    static addOrRemoveAttribute(element, add, attribute, value){
+        if(add){
+            UtilDOM.addAttribute(element,attribute,value);
+        }else{
+            UtilDOM.removeAttribute(element,attribute);
+        }
+    }
     static addOrRemoveClass(element, add, clazz){
         if(!element) return;
 
@@ -42,6 +55,9 @@ export class UtilDOM{
         element = UtilDOM.getElementOrRoot(element);
         UtilDOM.showOrHide(element,element.classList.contains("hidden"));
     }
+    static isEnabled(element){
+        return !element.classList.contains("disabled");
+    }
     static enable(element){
         element.disabled = false;
         UtilDOM.addOrRemoveClass(element,false,"disabled");
@@ -49,6 +65,13 @@ export class UtilDOM{
     static disable(element){
         element.disabled = true;
         UtilDOM.addOrRemoveClass(element,true,"disabled");
+    }
+    static enableDisable(element,enable){
+        if(enable){
+            UtilDOM.enable(element)
+        }else{
+            UtilDOM.disable(element);
+        }
     }
     /**
      * returns {top,left,right,bottom}
@@ -71,6 +94,32 @@ export class UtilDOM{
         script.src = scriptFile;
         script.async = false;
         document.head.insertBefore(script,document.head.firstChild);
+    }
+    static createElement({type,id,content,parent,clazz,classes}){
+        const element = document.createElement(type);
+        if(id){
+            element.id = id;
+        }
+        if(content){
+            element.innerHTML = content;
+        }
+        if(parent){
+            parent.appendChild(element);
+        }
+        if(clazz){
+            element.classList.add(clazz);
+        }
+        if(classes && classes.length > 0){
+            if(Util.isString(classes)){
+                if(classes.includes(",")){
+                    classes = classes.split(",")
+                }else{
+                    classes = classes.split(" ")
+                }
+            }
+            classes.forEach(clazz=>element.classList.add(clazz));
+        }
+        return element;
     }
     static async addScriptFiles(...scriptFiles){
         for(const scriptFile of scriptFiles){
@@ -121,6 +170,14 @@ export class UtilDOM{
             UtilDOM.show(imageElement)
         }else{
             UtilDOM.hide(imageElement)
+        }
+    }
+    static setInnerHTMLOrHide(element,html){
+        if(html){
+            element.innerHTML = html;
+            UtilDOM.show(element)
+        }else{
+            UtilDOM.hide(element)
         }
     }
     static onEnterKey(element,callback){
@@ -196,6 +253,28 @@ export class UtilDOM{
 			fr.readAsDataURL(file);
 		});
     }
+    
+    static async getUsableImgOrSvgElementSrc({src,defaultImage,convertToData,token}){
+        if(!src) return `<img src="${defaultImage || ""}" />`;
+        if(src.startsWith("<img")) return src;
+        if(src.includes("<svg")){
+            if(!src.includes("fill=")) return src;
+            
+            const parser = new DOMParser();
+            const element = parser.parseFromString(src, "text/xml");
+            element.querySelector("[fill]").setAttribute("fill",null)
+            return element.querySelector("svg").outerHTML;
+        }
+
+        const imageElement = UtilDOM.createElement({type:"img"});
+        try{
+            if(!src.startsWith("data:image/") && convertToData){
+                src = await Util.getImageAsBase64(src,token);
+            }
+        }catch{}
+        imageElement.src = src;
+        return imageElement.outerHTML;
+    }
     static onclickandlongclick(element, onclick, onlongclick){
 		element.onmousedown = eDown=>{
 			var long = true;
@@ -248,5 +327,15 @@ export class UtilDOM{
     }
     static increaseBrightness(originalColor,percent){
         return Util.shadeBlendConvert(percent/100,originalColor);
+    }
+    static preventEventPropagation(event){
+        if(!event) return;
+
+        if (event.stopPropagation){
+            event.stopPropagation();
+        }
+        if (event.preventDefault){
+            event.preventDefault();
+        }
     }
 }

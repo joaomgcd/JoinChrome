@@ -50,6 +50,9 @@ const base64ArrayBufferInUtils = (arrayBuffer)=>{
 	return base64
 }
 class Util{
+    static arrayBufferToBase64(arrayBuffer){
+        return base64ArrayBufferInUtils(arrayBuffer);
+    }
     static sleep(time){
         return new Promise((resolve)=>setTimeout(resolve,time));
     }
@@ -67,7 +70,7 @@ class Util{
     static isSubTypeOf(value,name){
         if(!value) return;
         
-        if(!Util.isString(value)){
+        if(!Util.isString(name)){
             name = name.name;
         }
         var superType = Object.getPrototypeOf(Object.getPrototypeOf(value));
@@ -108,7 +111,7 @@ class Util{
         return Util.isType(value,"Function");
     }
     static isArray(value){
-        return Util.isType(value,"Array") || Util.isSubTypeOf("Array");
+        return Util.isType(value,"Array") || Util.isSubTypeOf(value, "Array");
     }
     static isFile(value){
         return Util.isType(value,"File");
@@ -122,6 +125,9 @@ class Util{
         }catch{
             return null;
         }
+    }
+    static getCurrentUrl(){
+        return self.location.href;
     }
     static redirectToHttpsIfNeeded(){        
         const currentUrl = window.location.href;
@@ -145,6 +151,10 @@ class Util{
     }
     static async openWindow(url,options){
         if(!Util.isInServiceWorker){
+            //If URL is http we can't download because we're https and Chrome doesn't allow it.            
+            if(url.startsWith("http:")){
+                url = url.replace("&download=1","").replace("?download=1","");
+            }
             if(options && options.popup){
                 const width = options.popup.width || 250;
                 const height = options.popup.height || 250;
@@ -168,14 +178,25 @@ class Util{
     }
     static async setClipboardText(value){
         return await navigator.clipboard.writeText(value)
+        console.log("Set clipboard text",value)
     }
-    static get clipboardText(){
+    static getClipboardText(){
         if(!this.canReadClipboard) return null;
 
         return navigator.clipboard.readText()
     }
+    static get clipboardText(){
+        return Util.getClipboardText();
+    }
     static get canReadClipboard(){
         return (navigator.clipboard && navigator.clipboard.readText) ? true : false
+    }
+    static async join(array, joiner, func){
+        const funced = [];
+        for(const item of array){
+            funced.push(await func(item));
+        }        
+        return funced.join(joiner);
     }
     static withTimeout(promise,timeMs){
         let timeout = new Promise((resolve, reject) => {
@@ -211,6 +232,9 @@ class Util{
             return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject));
         }
     }
+    static isBase64ImageUrl(url){
+        return url && url.startsWith("data:image/png;base64");
+    }
     static getBase64ImageUrl(base64Image){
         if(!base64Image) return base64Image;
         if(base64Image.startsWith("data:image/png;base64")){
@@ -221,17 +245,35 @@ class Util{
     static getBase64SvgUrl(svgXml){
         return `data:image/svg+xml,${svgXml}`;
     }
-    static getQueryParameterValue(key,url = window.location.search){
-        const urlParams = new URLSearchParams(window.location.search);
+    /**
+     * 
+     * @param {String} src Any src like http, base64, <svg> etc.
+     * @returns {String} A src suitable string or null if the input is not compatible
+     */
+    static async getUsableImgSrc({src,convertToData,token}){
+        if(!src) return null;
+
+        if(src.startsWith("data:image/")) return src;
+        if(src.includes("<svg")) return Util.getBase64SvgUrl(src);
+        if(convertToData){
+            src = await Util.getImageAsBase64(src,token);
+        }
+        return src;
+    }    
+    static getQueryParameterValue(key,url = (window ? window.location.search : null)){
+        const urlParams = new URLSearchParams(url);
         return urlParams.get(key);
     }
-    static getQueryObject(url = window.location.search){
-        const urlParams = new URLSearchParams(window.location.search);
+    static getQueryObject(url = (window ? window.location.search : null)){
+        const urlParams = new URLSearchParams(url);
         const result = {};
         for(const entry of urlParams.entries()){
             result[entry[0]] = entry[1];
         }
         return result;
+    }
+    static get isNotificationPopup(){
+        return Util.getQueryObject().notificationpopup ? true : false;
     }
     static async import(script,...classes){
         const imported = await import("./eventbus.js");
@@ -254,7 +296,7 @@ class Util{
                 return;
             }
             if(url.indexOf("http") < 0){
-                reject("url doesn't start with http");
+                resolve(Util.getBase64ImageUrl(url));
                 return;
             }
             console.log("Getting binary: " + url);
@@ -284,6 +326,17 @@ class Util{
     static changeUrl(newUrl){
         if(!window.history) return;
 
+        let localPath = window.document.location.href
+        if(localPath.startsWith("file://") && (newUrl.startsWith("?") || newUrl.startsWith("/?"))){
+            if(newUrl.startsWith("/?")){
+                newUrl = newUrl.substring(1);
+            }
+            const indexOfQuestion = localPath.indexOf("?");
+            if(indexOfQuestion>0){
+                localPath = localPath.substring(0,indexOfQuestion);
+            }
+            newUrl = `${localPath}${newUrl}`;
+        }
         window.history.pushState({}, null, newUrl);
     }
     static getCurrentUrlWithParameters(parameters){
@@ -383,4 +436,78 @@ class Util{
 	    if(h)return "rgb("+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
 	    else return "#"+(0x100000000+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)*0x1000000+r((t[0]-f[0])*p+f[0])*0x10000+r((t[1]-f[1])*p+f[1])*0x100+r((t[2]-f[2])*p+f[2])).toString(16).slice(f[3]>-1||t[3]>-1?1:3);
     }
+    static isColorLight(color){
+        const c = color.substring(1);    
+        const rgb = parseInt(c, 16);
+        const r = (rgb >> 16) & 0xff;
+        const g = (rgb >>  8) & 0xff;
+        const b = (rgb >>  0) & 0xff;
+
+        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        return luma > 200;
+    }
+    static removeIf(array,condition){
+        if(!array || array.length == 0) return;
+
+        for (let index = 0; index < array.length; index++) {
+            const item = array[index];
+            if(!condition(item)) continue;
+
+            array.splice(index,1);
+            index--;            
+        }
+        return array;
+        // const notInCondition = array.filter(item=>!condition(item));
+        // array.length = 0;
+        // notInCondition.forEach(item=>array.push(item));
+        // return array;
+    }
+    static get darkModeEnabled(){
+        const result = darkModeMediaQuery();
+        if(!result) return false;
+        return result.matches
+    }
+    /**
+     * 
+     * @param {Function} callback Will receive true if dark enabled, false if light
+     */
+    static watchDarkModeChanges(callback){        
+        darkModeMediaQuery().addListener((e) => {
+            const darkModeOn = e.matches;
+            callback(darkModeOn);
+        });
+    }
+    static get uuid(){
+        return new Date().getTime().toString();
+    }
+    static debounce(func, wait, immediate) {
+        var timeout;
+        return debouncedArgs => {
+            var later = () => {
+                timeout = null;
+                if (!immediate) func(debouncedArgs);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func(debouncedArgs);
+        };
+    }
+    static getNumbers(str,minNumber) {
+        if(!str) return null;
+
+        const regexString = `[0-9\.]{${minNumber},}`;
+        const regex = new RegExp(regexString,"g");
+        return str.match(regex);
+    }
+    static get2FactorAuthNumbers(str) {        
+        return Util.getNumbers(str,4);
+    }
+    static cloneObject(obj){
+        return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
+    }
 }
+const darkModeMediaQuery = () => window.matchMedia('(prefers-color-scheme: dark)');
+try{
+	exports.Util = Util;
+}catch{}

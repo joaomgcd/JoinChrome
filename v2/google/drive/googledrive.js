@@ -11,6 +11,10 @@ class GoogleDrive {
 			const token = await tokenGetter()
 			return UtilWeb.post({url,token,contentObject});
 		}
+		const doPutWithAuthPromise = async (url,contentObject) => {
+			const token = await tokenGetter()
+			return UtilWeb.put({url,token,contentObject});
+		}
 		const getUserInfoPromise = async () => {
 			return {};
 		}
@@ -514,3 +518,7 @@ class GoogleDrive {
 		return url.indexOf("drive.google") > 0 || url.indexOf("docs.google")>0 || url.indexOf("googleapis.com")>0 ;
 	}
 }
+
+try{
+	exports.GoogleDrive = GoogleDrive;
+}catch{}

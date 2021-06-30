@@ -1,28 +1,50 @@
 #top{
+    -webkit-app-region: drag;
     z-index: 10000;
     box-shadow: 0 1px 5px 0 rgba(60,64,67,.15), 0 4px 4px 0 rgba(60,64,67,.10), 0 -0.1px 3px 0 rgba(60,64,67,.08);
 	background-color: var(--theme-accent-color);
-	color: var(--theme-background-color);
+	color: var(--theme-text-color-on-accent);
+    position: relative;
+}
+#top svg{
+    fill: var(--theme-text-color-on-accent);
 }
 #header {
 	display: flex;
 	justify-content: flex-start;
 	font-size: medium;
 	align-items: center;
-	padding: 16px;
 }
 #appname, #appnamearrowdown {
 	font-size: larger;
 	color: white;
 	font-weight: bolder;
     margin-left: 8px;
-	text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+#appname{    
+    display: none;
 }
 #imagemenu{
     cursor: pointer;
+    display: none;
+}
+#toptabs{
+    display: flex;
+}
+#toptabs .selected {
+    box-shadow: var(--theme-text-color-on-accent) 0px -4px 0px inset;
+    opacity: 1;
+}
+#toptabs>*{
+    padding: 1em 1em;   
+}
+#toptabs>*:hover{
+    background-color: var(--theme-accent-color-light);   
 }
 #imagehome{
-    padding-left: 8px;
+    padding: 16px;
+    -webkit-app-region: drag !important;
 }
 #header img{
 	height: 24px;
@@ -32,14 +54,20 @@
 	align-items: center;
 	flex-grow: 1;
 }
-#headerright{    
+#headerleft>*{    
+    -webkit-app-region: no-drag;
+}
+#headerright{        
+    -webkit-app-region: no-drag;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 16px;
 }
 #userimage{
 	border-radius: 50%;
-	cursor: pointer;
+    cursor: pointer;
+    margin-left: 8px;
 }
 #imageback{
 	cursor: pointer;
@@ -85,8 +113,50 @@
 .rotating {
 	animation: rotating 0.5s linear infinite;
 }
-
+#closeapp, #minimizeapp{
+    cursor: pointer;    
+    right: 0px;
+    top: 0px;
+    position: absolute;
+    -webkit-app-region: no-drag;
+}
+#closeapp:hover, #minimizeapp:hover{
+    background-color: var(--theme-accent-color-light);
+}
+#minimizeapp{
+    right: 14px;
+}
+#topversion{    
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    font-size: 60%;
+}
 @keyframes rotating {
 	from {	transform: rotate(0deg);	}
 	to {	transform: rotate(360deg);	}
+}
+@media only screen and (max-width: 600px) {
+    #imagemenu{
+        display: block;
+    }
+    #toptabs{
+        display: none;
+    }
+    #appname{
+        display: block;
+    }
+    #header{        
+	    padding-left: 16px;
+	    padding-right: 16px;
+    }
+    #imagehome{        
+        padding-right: 0px;
+    }
+    #headerright{    
+        margin-right: 0px;
+    }
+    #userimage{
+        display: none;
+    }
 }

@@ -8,6 +8,13 @@ export class AppContext{
     }
 }
 const localStorageCache = {};
+const getServerStore = () => {
+    const Store = require(AppContext.context.serverStorePath);
+    return new Store({
+        configName: 'localStorage',
+        defaults: {}
+    });
+}
 class LocalStorage{
     
     set(key,value){
@@ -16,11 +23,30 @@ class LocalStorage{
             return;
         }
         localStorageCache[key] = value;
-        localStorage.setItem(key,value);
+        try{
+            localStorage.setItem(key,value);
+        }catch(error){
+            try{
+                console.log("Saving to local storage",key, value);
+                getServerStore().set(key,value);                
+            }catch{
+                console.error("Can't save to local storage",error);
+                throw error;
+            }
+        }
     }
     delete(key){        
         delete localStorageCache[key];
-		localStorage.removeItem(key);
+        try{
+            localStorage.removeItem(key);
+        }catch(error){
+            try{
+                getServerStore().remove(key);
+            }catch{
+                console.error("Can't delete from local storage",error);
+                throw error;
+            }
+        }
     }
     setObject(key,value){
         this.set(key,JSON.stringify(value));
@@ -28,11 +54,20 @@ class LocalStorage{
     get(key){
         if(localStorageCache.hasOwnProperty(key)) return localStorageCache[key];
 
-        const value = localStorage.getItem(key);
-        if(value == "null"){
-            value = null;
+        try{
+            const value = localStorage.getItem(key);
+            if(value == "null"){
+                value = null;
+            }
+            return value;
+        }catch(error){
+            try{
+                return getServerStore().get(key);
+            }catch{
+                console.error("Can't get from local storage",error);
+                throw error;
+            }
         }
-        return value;
     }
     getBoolean(key){
         const raw = this.get(key);
@@ -49,5 +84,7 @@ var _context = {
     "localStorage":new LocalStorage(),
     "isThisDevice":device => _context.getMyDeviceId() == device.deviceId,
     "getMyDeviceId":() => _context.localStorage.get("myDeviceId"),
-    "setMyDeviceId":deviceId => _context.localStorage.set("myDeviceId",deviceId)
+    "setMyDeviceId":deviceId => _context.localStorage.set("myDeviceId",deviceId),
+    "serverStorePath":"",
+    "allowUnsecureContent":false
 };

@@ -23,6 +23,19 @@ export class ControlDialog extends Control {
         return background;
     }
     async show(position = {x,y,isCenter},dimBackground = true){
+        
+        if(!position){
+            const bodyBounds = UtilDOM.getElementBounds(document.body);
+            position = {x:bodyBounds.right/2,y:bodyBounds.bottom/2,isCenter:true}
+        }
+        if(!position.x || !position.y){            
+            try{
+                const bounds = UtilDOM.getElementBounds(position);
+                position = {x:bounds.left,y:bounds.top,isCenter:false};
+            }catch{
+                position = {isCenter:true};
+            }
+        }
         if(dimBackground){
             const background = this.getDialogBackground(true);
             const documentBounds = UtilDOM.getElementBounds(document.body);
@@ -67,18 +80,22 @@ const showDialog = async ({args,dialogclass,controlclass}) => {
     args.dialog = new dialogclass(args);
     const control = new controlclass(args);
     if(!args.position){
-        const bodyBounds = UtilDOM.getElementBounds(document.body);
-        args.position = {x:bodyBounds.right/2,y:bodyBounds.bottom/2,isCenter:true}
+        args.position = null;
     }
     control.show(args.position);
     return control;
 }
 const showDialogAndWait = async (showArgs = {args,dialogclass,controlclass,waitForClass,timeout}) => {
     if(!showArgs.timeout){
-        showArgs.timeout = 15000;
+        if(showArgs.args && showArgs.args.timeout){
+            showArgs.timeout = showArgs.args.timeout;
+        }else{
+            showArgs.timeout = 15000;
+        }
     }
     const control = await showDialog(showArgs);
     try{
+        console.log(`Showing dialog for ${showArgs.timeout / 1000} seconds`, showArgs.dialogclass.name);
         const result = await EventBus.waitFor(showArgs.waitForClass,showArgs.timeout);
         return result
     }catch(error){
@@ -93,9 +110,13 @@ export class ControlDialogSingleChoice extends ControlDialog {
         return {args,dialogclass:DialogSingleChoice,controlclass:ControlDialogSingleChoice,waitForClass:SingleChoiceChosen};
     }
     static async show(args = {position,choices,choiceToLabelFunc}){
+        if(!args.choices || !args.choices.length || args.choices.length == 0) return;
+        
         return showDialog(ControlDialogSingleChoice.getDialogArgs(args));        
     }
-    static async showAndWait(args){       
+    static async showAndWait(args= {position,choices,choiceToLabelFunc}){       
+        if(!args.choices || !args.choices.length || args.choices.length == 0) return;
+
         const result = (await showDialogAndWait(ControlDialogSingleChoice.getDialogArgs(args)));
         if(!result) return;
         
@@ -104,6 +125,9 @@ export class ControlDialogSingleChoice extends ControlDialog {
     constructor(args = {dialog,choiceToLabelFunc}){
         super(args);
         this.choiceToLabelFunc = args.choiceToLabelFunc;
+        if(!this.choiceToLabelFunc){
+            this.choiceToLabelFunc = choice => choice ? choice.toString() : choice;
+        }
     }
     getHtmlFile(){
         return "./v2/dialog/dialogsinglechoice.html";
@@ -135,10 +159,10 @@ export class ControlDialogInput extends ControlDialog {
     static getDialogArgs(args){
         return {args,dialogclass:DialogInput,controlclass:ControlDialogInput,waitForClass:InputSubmitted};
     }
-    static async show(args = {position,choices,choiceToLabelFunc}){
+    static async show(args = {position,title,placeholder,initialText}){
         return showDialog(ControlDialogInput.getDialogArgs(args));        
     }
-    static async showAndWait(args){      
+    static async showAndWait(args = {position,title,placeholder,initialText}){      
         const result = (await showDialogAndWait(ControlDialogInput.getDialogArgs(args)));
         if(!result) return;
         
@@ -162,7 +186,12 @@ export class ControlDialogInput extends ControlDialog {
         this.okElement = await this.$(".dialogbuttonok");
         this.cancelElement = await this.$(".dialogbuttoncancel");
         
-        this.textElement.value = "";
+        const initialText = this.dialog.initialText;
+        
+        this.textElement.value = initialText ? initialText : "";
+        if(initialText){
+            this.textElement.select();
+        }
         this.titleElement.innerHTML = this.dialog.title;
         this.labelElement.innerHTML = this.dialog.placeholder;
         const submit = async () => {
@@ -222,16 +251,23 @@ export class ControlDialogDialogProgress extends ControlDialog {
 }
 export class ControlDialogOk extends ControlDialog {
     static getDialogArgs(args){
-        return {args,dialogclass:DialogOk,controlclass:ControlDialogOk,waitForClass:ButtonOk};
+        return {args,dialogclass:DialogOk,controlclass:ControlDialogOk,waitForClass:DialogButtonClicked};
     }
-    static async show(args = {position,title,text}){
+    static async show(args = {position,title,text,showCancel,buttons,buttonsDisplayFunc}){
         return showDialog(ControlDialogOk.getDialogArgs(args));        
     }
-    static async showAndWait(args){      
-        const result = (await showDialogAndWait(ControlDialogOk.getDialogArgs(args)));
+    static async showAndWait(args= {position,title,text,showCancel,buttons,buttonsDisplayFunc}){      
+        let result = (await showDialogAndWait(ControlDialogOk.getDialogArgs(args)));
         if(!result) return;
         
-        return result.text;
+        if(!Util.isString(result.button)){
+            result = result.button;
+        }
+        return result;
+    }
+    static async showAndWaitOkCancel(args= {position,title,text}){  
+        args.showCancel = true;    
+        return await showDialogAndWait(ControlDialogOk.getDialogArgs(args));
     }
     constructor(args = {dialog}){
         super(args);
@@ -241,7 +277,7 @@ export class ControlDialogOk extends ControlDialog {
         <div class="dialogok">
             <div class="dialogoktitle"></div>
             <div class="dialogoktext"></div>
-            <div class="dialogokbutton button">OK</div>
+            <div class="dialogbuttons"></div>
         </div>
         `
     }
@@ -259,6 +295,8 @@ export class ControlDialogOk extends ControlDialog {
         .dialogoktext{
             margin-top: 24px;
             margin-bottom: 8px;
+            max-height: 300px;
+            overflow-y: auto;
         }
         `
     }
@@ -267,14 +305,49 @@ export class ControlDialogOk extends ControlDialog {
 
         this.titleElement = await this.$(".dialogoktitle");
         this.textElement = await this.$(".dialogoktext");
-        this.buttonElement = await this.$(".dialogokbutton");
+        this.buttonsElement = await this.$(".dialogbuttons");
+        const hasCustomButtons = this.dialog.buttons && this.dialog.buttons.length > 0;
+        this.buttonsElement.innerHTML = "";
+        if(!hasCustomButtons){
+            this.buttonElement = await UtilDOM.createElement({type:"div",clazz:"button",content:"OK",parent:this.buttonsElement});
+            this.buttonCancelElement = await UtilDOM.createElement({type:"div",classes:"button hidden",content:"Cancel",parent:this.buttonsElement});
+            
+            this.buttonElement.onclick = async () => {
+                if(!UtilDOM.isEnabled(this.buttonElement)) return;
+
+                await EventBus.post(new DialogButtonClicked("ok"));
+            }
+            this.buttonCancelElement.onclick = async () => await EventBus.post(new DialogButtonClicked("cancel"));
+            UtilDOM.showOrHide(this.buttonCancelElement,this.dialog.showCancel);
+            this.enableDisableButton(true);
+        }else{            
+            let displayFunc = this.dialog.buttonsDisplayFunc;
+            if(!displayFunc){
+                displayFunc = item => item.toString();
+            }
+            this.dialog.buttons.forEach(async button=>{
+                const newButton = await UtilDOM.createElement({type:"div",clazz:"button",content:displayFunc(button),parent:this.buttonsElement});
+                newButton.onclick = async () => await EventBus.post(new DialogButtonClicked(button));
+            });
+        }
 
         this.titleElement.innerHTML = this.dialog.title;
         this.textElement.innerHTML = this.dialog.text;
-        this.buttonElement.onclick = async () => await EventBus.post(new ButtonOk());
+    }
+    enableDisableButton(enable){
+        UtilDOM.enableDisable(this.buttonElement,enable);
     }
 }
-export class ButtonOk{
+export class DialogButtonClicked{
+    constructor(button){
+        this.button = button;
+    }
+    get isOk(){
+        return this.button == "ok";
+    }
+    get isCancel(){
+        return this.button == "cancel";
+    }
 }
 export class InputSubmitted{
     constructor(text){

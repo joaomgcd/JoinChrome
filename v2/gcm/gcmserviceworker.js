@@ -1,17 +1,18 @@
-
 const USE_LOCAL_SERVER = false;
 const JOIN_SERVER_LOCAL = "http://localhost:8080";
 // const JOIN_SERVER = "https://joinjoaomgcd.appspot.com";
-const JOIN_SERVER = "https://testsjoaomgcd.appspot.com/";
+const JOIN_SERVER = self.joinServer;
 //TEM QUE SE USAR O SERVIDOR CERTO PÁ SE NÂO TÀ TUDO MARADO!!!
 const JOIN_BASE_URL = `${USE_LOCAL_SERVER ? JOIN_SERVER_LOCAL : JOIN_SERVER}/_ah/api/`;
-
-
 GCMBase.getGCMFromType = type => eval(`new ${type}()`);
 class GCMBaseServiceWorker extends GCMBase{
 	async execute(){
 		console.log("Executing GCM from service worker",this);
 
+		const sentToCompanionApp = await this.sendToCompanionAppIfNeeded();
+		if(sentToCompanionApp){
+			return [{title:"Join Push",text:"Sent to Companion App"}];
+		}
 		this.sendToLocalAutomationPortIfNeeded();
 		const gcmJson = JSON.stringify(this);
 		const gcmId = new Date().getTime();
@@ -100,12 +101,6 @@ class GCMBaseServiceWorker extends GCMBase{
 		if(!fromDb) return null;
 
 		return JSON.parse(fromDb.json);
-	}
-	async getSender(){
-		const senderId = this.senderId;
-		if(!senderId) return null;
-
-		return await this.getDevice(senderId);
 	}
 	async getContact(number){
 		if(!number) return null;
@@ -200,7 +195,7 @@ class GCMNotification extends GCMBaseServiceWorker{
 	async modifyNotification(notification,index){
 		const notificationfromGcm = this.notifications[index];
 		this.notificationId = notificationfromGcm.id;
-		const options = await GCMNotificationBase.getNotificationOptions(notificationfromGcm);
+		const options = await GCMNotificationBase.getNotificationOptions(notificationfromGcm,Util,GoogleDrive);
 		Object.assign(notification,options);
 	}
 	async handleNotificationClick(serviceWorker,action,data){
@@ -248,11 +243,33 @@ class GCMNotificationAction extends GCMGenericPush{
 		return this.requestNotification;
 	}
 }
-class GCMDeviceRegistered extends GCMBaseServiceWorker{}
-class GCMLocalNetworkRequest extends GCMBaseServiceWorker{}
+class GCMLocalNetworkRequest extends GCMBaseServiceWorker{
+	async modifyNotification(notification,index){
+		if(!this.senderId) return;
+
+		const device = await this.getSender();
+		if(!device) return;
+
+		notification.title = "Local Network";
+		notification.body = `${device.deviceName} asked to be tested on local network`;
+	}
+	
+}
 class GCMLocalNetworkTest extends GCMGenericPush{}
 class GCMWebSocketRequest extends GCMGenericPush{}
 class GCMLocalNetworkTestRequest extends GCMGenericPush{}
+class GCMRespondFile extends GCMBaseServiceWorker{}
+class GCMFolder extends GCMBaseServiceWorker{
+	async modifyNotification(notification,index){
+		if(!this.senderId) return;
+
+		const device = await this.getSender();
+		if(!device) return;
+
+		notification.title = "File Browser";
+		notification.body = `${device.deviceName} responded with its files`;
+	}
+}
 class GCMDeviceNotOnLocalNetwork extends GCMGenericPush{
 	async modifyNotification(notification,index){
 		if(!this.senderId) return;
@@ -262,6 +279,16 @@ class GCMDeviceNotOnLocalNetwork extends GCMGenericPush{
 
 		notification.title = "Local Network";
 		notification.body = `${device.deviceName} not on local network`;
+	}
+}
+class GCMDeviceRegistered extends GCMGenericPush{
+	async modifyNotification(notification,index){
+		notification.title = "Device Registered";
+		
+		const device = this.device;
+		if(!device) return;
+
+		notification.body = `${device.deviceName} registered itself on the server`;
 	}
 }
 class GCMNewSmsReceived extends GCMGenericPush{	
@@ -279,45 +306,22 @@ class GCMLocation extends GCMGenericPush{
 
 class GCMMediaInfo extends GCMGenericPush{
 	static get notificationActionBack(){
-		return {action: "back",title: '⏪'}
+		return GCMMediaInfoBase.notificationActionBack;
 	}
 	static get notificationActionPlay(){
-		return {action: "play",title: '▶️'}
+		return GCMMediaInfoBase.notificationActionPlay;
 	}
 	static get notificationActionPause(){
-		return {action: "pause",title: '⏸️'}
+		return GCMMediaInfoBase.notificationActionPause;
 	}
 	static get notificationActionSkip(){
-		return {action: "skip",title: '⏩'}
+		return GCMMediaInfoBase.notificationActionSkip;
 	}
 	async modifyNotification(notification,index){
-		const device = await this.getSender();
-		notification.id = this.packageName + this.senderId;
-		notification.title = `Media ${this.playing ? "playing" : "stopped"}${device ? " on " + device.deviceName : ""}`
-		notification.body = `${this.track} by ${this.artist}`
-		notification.icon =  this.art.startsWith("http") ? this.art : Util.getBase64ImageUrl(this.art);
-		notification.badge = Util.getBase64SvgUrl(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M12 3V13.55C11.41 13.21 10.73 13 10 13C7.79 13 6 14.79 6 17S7.79 21 10 21 14 19.21 14 17V7H18V3H12Z" /></svg>`);
-		notification.actions = [
-			// GCMMediaInfo.notificationActionBack,
-			this.playing ? GCMMediaInfo.notificationActionPause : GCMMediaInfo.notificationActionPlay,
-			GCMMediaInfo.notificationActionSkip
-		]
+		return await GCMMediaInfoBase.modifyNotification(this,notification,Util);		
 	}	
 	async handleNotificationClick(serviceWorker,action,data){
-		if(!action){
-			Util.openWindow("?media");
-			return;
-		}
-		const push = {deviceId:this.senderId};
-		if(action == GCMMediaInfo.notificationActionPlay.action){
-			push.play = true;
-		}else if(action == GCMMediaInfo.notificationActionPause.action){
-			push.pause = true;
-		}else if(action == GCMMediaInfo.notificationActionSkip.action){
-			push.next = true;
-		}
-		push.mediaAppPackage = this.packageName;
-		this.sendPush(push);
+		return await GCMMediaInfoBase.handleNotificationClick(this,action,Util.openWindow);
 	}
 }
 class GCMFile extends GCMGenericPush{
@@ -338,3 +342,6 @@ class GCMFile extends GCMGenericPush{
 		Util.openWindow(this.url);
 	}
 }
+try{
+	exports.GCMMediaInfo = GCMMediaInfo
+}catch{}

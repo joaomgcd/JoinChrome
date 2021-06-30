@@ -1,7 +1,7 @@
-import { Sender,SenderServer,SenderGCM,SenderIP,SenderIFTTT,SenderLocal,SendResults } from '../api/sender.js';
-import {GCMLocalNetworkTestRequest, GCMPush, GCMRequestFile, GCMRespondFile, GCMSmsSentResult, GCMLocalNetworkTest,GCMLocalNetworkRequest,GCMFolderRequest, GCMFolder} from '../gcm/gcmapp.js'
+import { Sender,SenderServer,SenderGCM,SenderIP,SenderIFTTT,SenderLocal,SendResults,SenderWebSocket,SenderMyself } from '../api/sender.js';
+import {GCMLocalNetworkTestRequest, GCMPush, GCMRequestFile, GCMRespondFile, GCMSmsSentResult, GCMLocalNetworkTest,GCMLocalNetworkRequest,GCMFolderRequest, GCMFolder, GCMWebSocketRequest} from '../gcm/gcmapp.js'
 import { AppContext } from '../appcontext.js'
-import '/v2/extensions.js';
+import '../extensions.js';
 import { EventBus } from "../eventbus.js";
 
 
@@ -42,16 +42,42 @@ export class Devices extends Array{
 			device => device.deviceName
 		)
 	}
+	transferSockets(toOtherDevices){
+		this.forEach(thisDevice=>{
+			if(!thisDevice.socket) return;
+
+			const otherDevice = toOtherDevices.find(otherDevice => otherDevice.deviceId == thisDevice.deviceId);
+			if(!otherDevice) return;
+
+			otherDevice.socket = thisDevice.socket;
+		});
+	}
 	getDevice(deviceId){
 		if(!deviceId) return null;
 
 		return this.find(device=>device.deviceId == deviceId);
 	}
 	async testLocalNetworkDevices(){
+
+		const devicesToCheckLastKnown = this.filter(device=>device.hasLocalNetworkCapabilities);
+		
+		const lastKnownChecks = devicesToCheckLastKnown.map(async device=>{
+			const success = await device.testLocalNetworkLastKnownAndGoogleDrive();
+			return {device,success};
+		})
+		const lastKnownResults = await Promise.all(lastKnownChecks);
+		console.log("Last Known Checks Results.", lastKnownResults);
+
+		const failedDevices =  new Devices(lastKnownResults.filter(result => !result.success).map(result=>result.device));
+		if(failedDevices.length == 0){
+			console.log("All local network tests are a success!!");
+			return;
+		}
+		console.log("Testing non successes and not tested",failedDevices);
+
 		const gcm = new GCMLocalNetworkTestRequest();
-		const devicesToTest = this.filter(device=>device.hasLocalNetworkCapabilities);
-		devicesToTest.forEach(async device=>await device.setToRemoteNetwork(false));
-		return await devicesToTest.send(gcm);
+		failedDevices.forEach(async device=>await device.setToRemoteNetwork(false));
+		return await failedDevices.send(gcm);
 	}
 	async sendPush(push){
 		if(!push.id){
@@ -78,25 +104,26 @@ export class Devices extends Array{
 		}
 		const isPush = (await options.gcmRaw).type == "GCMPush";
 		const results = await Promise.all(groupsBySender.map(async group=>{
-			const sender = options.forceServer ? new SenderServer() : new group.key();
-			options.devices = group.values;
+			const optionsForThisGroup = Util.cloneObject(options);
+			const sender = optionsForThisGroup.forceServer ? new SenderServer() : new group.key();
+			optionsForThisGroup.devices = group.values;
 			if(!isPush){
-				options.devices = options.devices.filter(device=>!device.onlySendPushes);
+				optionsForThisGroup.devices = optionsForThisGroup.devices.filter(device=>!device.onlySendPushes);
 			}else{
-				options.gcmPush = JSON.parse((await options.gcmRaw).json);
+				optionsForThisGroup.gcmPush = JSON.parse((await optionsForThisGroup.gcmRaw).json);
 			}
-			if(options.devices.length == 0) return Promise.resolve(Sender.newSuccessResult)
+			if(optionsForThisGroup.devices.length == 0) return Promise.resolve(Sender.newSuccessResult)
 
-			options.gcmParams = {};
+			optionsForThisGroup.gcmParams = {};
 			try{
-				return await sender.send(options);
+				return await sender.send(optionsForThisGroup);
 			}catch(error){
 				if(!Util.isType(sender,"SenderLocal")) throw error
 				
-				options.devices.forEach(async device=>{
+				optionsForThisGroup.devices.forEach(async device=>{
 					await device.setToRemoteNetwork(true)
 				});
-				return await this.send(options);
+				return await this.send(optionsForThisGroup);
 			}
 		}));
 		return SendResults.fromMany(results)
@@ -121,9 +148,9 @@ export class Devices extends Array{
 						const result = await device.uploadFileLocalNetwork({file,token});
 						return result.payload[0].path;
 					}catch(error){
-						failedDevices.push[device];
-						device.canContactViaLocalNetwork = false;
-						console.log(`Couldn't upload via local network for ${device}`);
+						failedDevices.push(device);
+						await device.setToRemoteNetwork(true);
+						console.log(`Couldn't upload via local network for `,device.deviceName);
 						return null;
 					}
 				}));
@@ -164,23 +191,27 @@ export class Device{
             method: 'POST',
             body: file,
             headers: {
-                "Content-Disposition": `filename="${file.name}"`
+                "Content-Disposition": `filename*=UTF-8''${encodeURIComponent(file.name)}`
               }
 		}
 		const serverAddress = this.localNetworkServerAddress;
         const url = `${serverAddress}files?token=${token}`; 
+        StatusReport.report(`Uploading ${file.name} via Local Network...`);
         console.log(`Uploading ${file.name} to ${serverAddress}...`);
         const result = await fetch(url,options);
+        StatusReport.clear();
         console.log(`Uploading ${file.name} to ${serverAddress} done!`);
         return result.json();
 	}
 	async uploadFilesGoogleDrive({files,token}){
 		const googleDrive = new GoogleDrive(()=>token);
+		StatusReport.report("Uploading files via Google Drive...");
 		const uploadedFiles = await googleDrive.uploadFiles({
 			folderName: GoogleDrive.getBaseFolderForMyDevice(),
 			accountToShareTo:this.userAccount,
 			notify: false
 		}, files);
+        StatusReport.clear();
 
 		return uploadedFiles.map(uploadedFile=>GoogleDrive.getDownloadUrlFromFileId(uploadedFile));
 	}
@@ -199,6 +230,8 @@ export class Device{
 		await this.asDevices.pushFiles(args);
 	}
 	get senderClass(){
+		if(this.isMyDevice) return SenderMyself;
+		if(this.socket) return SenderWebSocket;
 		if(this.canContactViaLocalNetwork) return SenderLocal;
 		if(this.isGCM) return SenderGCM;
 		if(this.isIP) return SenderIP;
@@ -376,7 +409,7 @@ export class Device{
 				await this.sendSMSConversationRequest(contact.address);
 				conversation = await loaderConversation.load({db, refresh, dbGoogleDriveArgs});
 			}catch{
-				alert(`Couldn't get conversation from ${this.deviceName}. Please check if it is online.`);
+				await alert(`Couldn't get conversation from ${this.deviceName}. Please check if it is online.`);
 				return new SMSConversation([],this.deviceId,contact);
 			}
 		}
@@ -490,6 +523,9 @@ export class Device{
 	async pressPause(packageName){
 		await this.sendPush({pause:true,mediaAppPackage:packageName});
 	}
+	async togglePlayPause(packageName){
+		await this.sendPush({playpause:true,mediaAppPackage:packageName});
+	}
 	async pressNext(packageName){
 		await this.sendPush({next:true,mediaAppPackage:packageName});
 	}
@@ -507,6 +543,8 @@ export class Device{
             smsMessage.mmsfile = await this.uploadFile({file:smsMessage.mmsfile,token})
             this.reportStatus(null);
 		}
+		const sentResult = EventBus.waitFor(GCMSmsSentResult,15000);
+		var gcm = null;
 		try{		
 			await this.sendPush({
 				senderId,
@@ -518,10 +556,15 @@ export class Device{
 				requestId:"SMS",
 				responseType: GCMPush.RESPONSE_TYPE_PUSH
 			});
-			const gcm = await EventBus.waitFor(GCMSmsSentResult,15000);
+			gcm = await sentResult;
 			return gcm;
 		}catch(e){
-			const gcm = new GCMSmsSentResult();
+			try{
+				gcm = await sentResult;
+			}catch(error){}
+			if(gcm != null) return gcm;
+			
+			gcm = new GCMSmsSentResult();
 			gcm.success = false;
 			if(!e){
 				e = "Timed out while waiting to send";
@@ -565,9 +608,6 @@ export class Device{
 			for(const prop in deviceRaw){
 				device[prop] = deviceRaw[prop];
 			}
-			if(device.isMyDevice){
-				device.deviceName = "This Browser";
-			}
 		}
 		return device;
 	}
@@ -575,10 +615,16 @@ export class Device{
 		return AppContext.context.isThisDevice(this);
 	}
 	get isGroup(){
-		return this.deviceId.indexOf("group") >= 0;
+		const deviceId = this.deviceId;
+		if(!deviceId) return false;
+
+		return deviceId.indexOf("group") >= 0;
 	}
 	get isShared(){
-		return this.deviceId.indexOf("share") >= 0;
+		const deviceId = this.deviceId;
+		if(!deviceId) return false;
+		
+		return deviceId.indexOf("share") >= 0;
 	}
 	canReceiveSms(){
 		return false;
@@ -613,6 +659,9 @@ export class Device{
 	canTakeScreenshot(){
 		return false;
 	}
+	canSyncClipboardTo(){
+		return !this.isMyDevice && !this.isShared;
+	}
 	canTakeScreenCapture(){
 		return this.canTakeScreenshot();
 	}
@@ -621,6 +670,12 @@ export class Device{
 	}
 	get canReceiveFiles(){
 		return !this.isShared;
+	}
+	get canSetWallpaper(){
+		return false;
+	}
+	get canGetWallpaper(){
+		return false;
 	}
 	getIcon(){
 		return null;
@@ -636,6 +691,8 @@ export class Device{
 	}
 	get canContactViaLocalNetwork(){ 
 		// return false;
+		if(this.socket) return true;
+		
 		return this.localNetworkServerAddress ? true : false;
 	}
 	set canContactViaLocalNetwork(value) {
@@ -647,37 +704,82 @@ export class Device{
 		if(value){
 			AppContext.context.localStorage.set(key,value);
 			this.tentativeLocalNetworkServerAddress = value;
+			EventBus.post(new ConnectViaLocalNetworkSuccess(this));
+			this.lastKnownLocalNetworkAddress = value;
 		}else{
 			AppContext.context.localStorage.delete(key);
+			EventBus.post(new ConnectViaLocalNetworkFailure(this));
 		}
+	}
+	get lastKnownLocalNetworkAddressKey(){ 
+		return `lastKnownlocalNetwork${this.deviceId}`;
+	}
+	set lastKnownLocalNetworkAddress(value){
+		AppContext.context.localStorage.set(this.lastKnownLocalNetworkAddressKey,value);
+	}
+	get lastKnownLocalNetworkAddress(){
+		return AppContext.context.localStorage.get(this.lastKnownLocalNetworkAddressKey);
+	}
+	get lastKnownSocketAddressKey(){ 
+		return `lastKnownSocket${this.deviceId}`;
+	}
+	set lastKnownSocketAddress(value){
+		AppContext.context.localStorage.set(this.lastKnownSocketAddressKey,value);
+	}
+	get lastKnownSocketAddress(){
+		return AppContext.context.localStorage.get(this.lastKnownSocketAddressKey);
 	}
 	async setToRemoteNetwork(requestUpdate){
 		this.canContactViaLocalNetwork = false;
-		this.tentativeLocalNetworkServerAddress = null;
+		if(!Util.getCurrentUrl().startsWith("http")){
+			this.tentativeLocalNetworkServerAddress = null;
+		}
+		this.socket = null;
 		if(!requestUpdate) return;
 
         await EventBus.post(new RequestUpdateDevice(this));
 	}
+	get tentativeLocalNetworkServerAddressKey(){ 
+		return `localNetworktentative${this.deviceId}`;
+	}
 	get tentativeLocalNetworkServerAddress(){
-		return this._tentativeLocalNetworkServerAddress;
+		return AppContext.context.localStorage.get(this.tentativeLocalNetworkServerAddressKey);
 	}
 	set tentativeLocalNetworkServerAddress(value){
-		this._tentativeLocalNetworkServerAddress = value;
+		AppContext.context.localStorage.set(this.tentativeLocalNetworkServerAddressKey,value);
 	}
 	get hasFixableIssue(){
-		return !this.canContactViaLocalNetwork && (this.tentativeLocalNetworkServerAddress ? true : false);
+		return !AppContext.context.allowUnsecureContent && !this.canContactViaLocalNetwork && (this.tentativeLocalNetworkServerAddress ? true : false);
 	}
 	async getViaLocalNetwork({path,token}){
 		if(!this.canContactLocalNetworkKey) throw `Can't contact ${this.deviceName} via local network`;
 
 		var url = `${this.localNetworkServerAddress}${path}`
-		return await UtilWeb.get({url,token});
+		const extraHeaders = {
+			"allowUnsecureContent":this.allowUnsecureContent,
+			"deviceId":AppContext.context.getMyDeviceId()
+		}
+		return await UtilWeb.get({url,token,extraHeaders});
 	}
-	setSocket(socket){
-		this.mySocket = socket;
+	set socket(socket){
+		this._socket = socket;
 	}
-	getSocket(){ 
-		return this.mySocket && this.mySocket.readyState == this.mySocket.OPEN ? this.mySocket : null;
+	get socket(){ 
+		return this._socket && this._socket.send && this._socket.readyState == this._socket.OPEN ? this._socket : null;
+	}
+	get canSendMessagesViaSocket(){
+		const socket = this.socket;
+		if(!socket) return;
+
+		return (async ()=>{
+			try{
+				const result = await socket.send({});
+				return true;
+			}catch(error){
+				console.log("Couldn't contact socket that was open",error);
+				return false;
+			}
+		})()
 	}
 	get api(){
 		return (async ()=>{
@@ -689,38 +791,213 @@ export class Device{
         return await ((await this.api).renameDevice({"deviceId":this.deviceId, "deviceName":newName}));
 	}
 	async delete(){
-        return await ((await this.api).unregisterDevice({"deviceId":this.deviceId}));
+		const result = await ((await this.api).unregisterDevice({"deviceId":this.deviceId}));
+		if(result.success){
+			EventBus.post(new DeviceDeleted(this));
+		}
+        return result;
 	}
-	
+	get allowUnsecureContent(){
+		return AppContext.context.allowUnsecureContent;
+	}
+	get token(){
+		return self.getAuthTokenPromise();
+	}
 	async testLocalNetwork(){
+		if(this.socket) return;
+
+		const viaLastKnown = await this.testLocalNetworkLastKnownAndGoogleDrive();
+		if(viaLastKnown) return true;
+
 		const gcm = new GCMLocalNetworkTestRequest();
-		return await this.send(gcm);
+		await this.send(gcm);
+		return false;
 	}
 
 	async requestLocalNetworkTestAndWaitForResponse(){
+		if(await this.canSendMessagesViaSocket) return true;
+
 		if(!this.hasLocalNetworkCapabilities) throw "Can't contact via local network";
 
-		await this.setToRemoteNetwork(true);
-		const gcm = new GCMLocalNetworkTestRequest();
-		this.send(gcm);
-		const response = await EventBus.waitFor(GCMLocalNetworkRequest, 10000);
-		return await this.testLocalNetwork();
+		let response = false;
+		try{
+
+			const resultPromise = EventBus.waitFor(ConnectViaLocalNetworkSuccess, 10000);
+
+			await this.setToRemoteNetwork(true);
+			const workedRightAway = await this.testLocalNetwork();
+			if(workedRightAway) return new ConnectViaLocalNetworkSuccess(this);
+			
+			try{
+				response = await resultPromise;
+				response = response.device.canContactViaLocalNetwork
+			}catch{
+				response = false;
+			}
+		}catch{
+			response = false;
+		}
+
+		console.log("Result test local network",response);
+		return response;
+	}
+	async testLocalNetworkLastKnownAndGoogleDrive(){
+		if(await this.canSendMessagesViaSocket) return true;
+
+		try{
+			const allowUnsecureContent = this.allowUnsecureContent;
+			const token = await this.token;
+			let serverAddress = this.lastKnownLocalNetworkAddress;
+			let webSocketServerAddress = this.lastKnownSocketAddress;
+			let addressesFile = null;
+			const setAddressesFromGoogleDrive = async () => {
+				if(!addressesFile){
+					try{
+						addressesFile = await new GoogleDrive(()=>token).downloadContent({fileName: "serveraddresses=:=" + this.deviceId});
+					}catch{
+						addressesFile = {};
+					}
+				}
+				let serverAddressGD = allowUnsecureContent ? addressesFile.serverAddress : addressesFile.secureServerAddress;
+				let webSocketServerAddressGD = addressesFile.webSocketServerAddress;
+				if(serverAddressGD != serverAddress || webSocketServerAddress != webSocketServerAddressGD){
+					serverAddress = serverAddressGD;
+					webSocketServerAddress = webSocketServerAddressGD;
+					return true;
+				}
+
+				return false;
+			}
+			if(!serverAddress || !webSocketServerAddress) {
+				await setAddressesFromGoogleDrive();
+			}
+			if(!serverAddress || !webSocketServerAddress) return false;
+
+			const testIfAvailable = async () => {
+				try{
+					return await Util.withTimeout(this.testIfLocalNetworkIsAvailable({serverAddress,webSocketServerAddress,allowUnsecureContent,token}),5000);
+				}catch{
+					return false;
+				}
+			}
+			let success = await testIfAvailable();
+			if(!success){					
+				const shouldTestAgain = await setAddressesFromGoogleDrive();
+				if(shouldTestAgain){
+					success = await testIfAvailable();
+				}
+			}
+			this.canContactViaLocalNetwork = serverAddress;
+			return success;
+				
+		}catch(error){
+			console.log("Unexpected error when testing local network",this.deviceName,error);
+		}
+	}
+
+	async testIfLocalNetworkIsAvailable({serverAddress,webSocketServerAddress,allowUnsecureContent,token}){
+
+		console.log(`Testing local network for ${this.deviceName} on ${serverAddress}...`);
+		
+        const gcmTest = new GCMLocalNetworkTest();
+        const sender = new SenderLocal();
+        // gcmTest.senderId = app.myDeviceId;
+		try{           
+            const options = {
+                devices: [this],
+                gcmRaw: await gcmTest.gcmRaw,
+                overrideAddress: serverAddress
+            }
+            await sender.send(options);
+            // const url = `${serverAddress}test`;
+            // const token = await app.getAuthToken();
+            // await UtilWeb.get({url,token});
+            this.canContactViaLocalNetwork = serverAddress;
+            this.tentativeLocalNetworkServerAddress = null;
+			// const result = await device.send(gcmTest);
+			// if(!result || !result.success) {
+			// 	device.canContactViaLocalNetwork = false;
+			// 	return
+            // }
+            if(!allowUnsecureContent) return true;      
+			if(await this.canSendMessagesViaSocket) return true;
+			
+			try{
+				const webSocketInfo = await this.getViaLocalNetwork({path:`websocket`,token});
+				if(webSocketInfo.payload && webSocketInfo.payload.address){
+					webSocketServerAddress = webSocketInfo.payload.address;
+				}
+			}catch(error){
+				console.log("Can't get socket info via http server",error)
+			}
+            if(!webSocketServerAddress) return true;
+			
+			try{
+				console.log("Allows unsecure connection. Trying websocket!");
+				
+				this.socket = await this.connectToSocket(webSocketServerAddress);
+				console.log("Socket connected!!!",this.deviceName,this.socket);
+				const socketDisconnected = async () => {	
+					await this.setToRemoteNetwork(true);
+					await this.testLocalNetworkLastKnownAndGoogleDrive();
+				}
+				this.socket.onmessage = e =>{			
+					const gcmRaw = JSON.parse(e.data);
+					console.log("Socket message",gcmRaw.type);
+					EventBus.post(new WebSocketGCM(gcmRaw));
+				}
+				this.socket.onclose = e => {
+					console.log("Socket closed",e,this);
+					socketDisconnected();
+				}
+				this.socket.onerror = e => {
+					console.log("Socket error",e,this);
+					socketDisconnected();
+				}
+				const gcmSocketTest = new GCMWebSocketRequest();
+				gcmSocketTest.senderId = AppContext.context.getMyDeviceId();
+				await this.send(gcmSocketTest);
+				this.lastKnownSocketAddress = webSocketServerAddress;
+			}catch{
+				//even if socket fails we can still contact via http so ignore
+			}
+			return true;
+			
+		}catch(error){
+			console.error("Error conneting to local network device",this,error)
+            this.tentativeLocalNetworkServerAddress = serverAddress;
+			this.canContactViaLocalNetwork = false;
+			return false;
+		}
+	}
+	async connectToSocket(webSocketServerAddress){
+		const socket = new WebSocket(webSocketServerAddress);
+		return new Promise((resolve,reject)=>{
+			socket.onopen = async e =>{
+				resolve(socket);
+			}
+			socket.onclose = e => {
+				reject(e);
+			}
+			socket.onerror = e => {
+				reject(e);
+			}
+		});
 	}
 }
 
-export class DeviceAndroidPhone extends Device{
+class WebSocketGCM{
+    constructor(gcmRaw){
+        this.gcmRaw = gcmRaw;
+    }
+}
+class DeviceAndroid extends Device{
 	canReceiveSms(){
 		return !this.isShared;
 	}
 	canOpenApps(){
 		return !this.isShared;
 	}
-	getIcon(){
-		return "../images/phone.png";
-	}
-	get hasLocalNetworkCapabilities(){
-		return !this.isShared;
-	}	
 	canTakeScreenshot(){
 		return !this.isShared;
 	}
@@ -733,33 +1010,49 @@ export class DeviceAndroidPhone extends Device{
 	canBrowseFiles(){
 		return !this.isShared;
 	}
+	get hasLocalNetworkCapabilities(){
+		return !this.isShared;
+	}
+	get canSetWallpaper(){
+		return !this.isShared;
+	}
+	get canGetWallpaper(){
+		return !this.isShared;
+	}
+}
+export class DeviceAndroidPhone extends DeviceAndroid{
+	getIcon(){
+		return "./images/phone.png";
+	}	
+}
+
+export class DeviceAndroidTablet extends DeviceAndroid{
+	getIcon(){
+		return "./images/tablet.png";
+	}
 }
 
 export class DeviceIPhone extends Device{
 	getIcon(){
-		return "../images/iphone.png";
- 	}
-}
-
-export class DeviceAndroidTablet extends Device{
-	canReceiveSms(){
-		return true;
-	}
-	canOpenApps(){
-		return true;
-	}
-	getIcon(){
-		return "../images/tablet.png";
+		return "./images/iphone.png";
+	 }
+	 
+	canSyncClipboardTo(){
+		return false;
 	}
 }
 export class DeviceIPad extends Device{
 	getIcon(){
-		return "../images/ipad.png";
+		return "./images/ipad.png";
+	}
+	 
+	canSyncClipboardTo(){
+		return false;
 	}
 }
 export class DeviceChrome extends Device{
 	getIcon(){
-		return "../images/chrome.png";
+		return "./images/chrome.png";
 	}
 	canBeFound(){
 		return false;
@@ -774,7 +1067,7 @@ export class DeviceChrome extends Device{
 
 export class DeviceWindows10 extends Device{
 	getIcon(){
-		return "../images/windows10.png";
+		return "./images/windows10.png";
 	}
 	canBeFound(){
 		return false;
@@ -785,11 +1078,15 @@ export class DeviceWindows10 extends Device{
 	canShowPushHistory(){
 		return !this.isShared;
 	}
+	 
+	canSyncClipboardTo(){
+		return false;
+	}
 }
 
 export class DeviceIFTTT extends Device{
 	getIcon(){
-		return "../images/ifttt.png";
+		return "./images/ifttt.png";
 	}
 	canBeFound(){
 		return false;
@@ -808,11 +1105,15 @@ export class DeviceIFTTT extends Device{
 	}
 	getTaskerCommandText(device){
 		return "Maker Event";
+	}	
+	 
+	canSyncClipboardTo(){
+		return false;
 	}
 }
 export class DeviceIP extends Device {
 	getIcon(){
-		return "../images/ip.png";
+		return "./images/ip.png";
 	}
 	canBeFound(){
 		return false;
@@ -831,12 +1132,16 @@ export class DeviceIP extends Device {
 	}
 	getTaskerCommandText(device){
 		return "Command";
+	}
+	 
+	canSyncClipboardTo(){
+		return false;
 	}
 }
 
 export class DeviceMqtt extends Device{
 	getIcon(){
-		return "../images/mqtt.png";
+		return "./images/mqtt.png";
 	}
 	canBeFound(){
 		return false;
@@ -856,22 +1161,54 @@ export class DeviceMqtt extends Device{
 	getTaskerCommandText(device){
 		return "Command";
 	}
+	 
+	canSyncClipboardTo(){
+		return false;
+	}
 }
 export class DeviceBrowser extends Device{
 	getIcon(){
-		return "../images/firefox.png";
+		return "./images/firefox.png";
 	}
 	canBeFound(){
+		return false;
+	}
+	 
+	canSyncClipboardTo(){
+		return false;
+	}
+	canShowPushHistory(){
 		return false;
 	}
 }
 
 class StatusReport{
+    static report(message){
+        EventBus.post(new StatusReport(message))
+    }
+    static clear(){
+        StatusReport.report(null);
+    }
 	constructor(message){
 		this.message = message;
 	}
 }
 class RequestUpdateDevice{
+	constructor(device){
+		this.device = device;
+	}
+}
+class ConnectViaLocalNetworkSuccess{
+	constructor(device){
+		this.device = device;
+	}
+}
+class ConnectViaLocalNetworkFailure{
+	constructor(device){
+		this.device = device;
+	}
+}
+class DeviceDeleted{
 	constructor(device){
 		this.device = device;
 	}

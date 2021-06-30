@@ -1,6 +1,5 @@
 
 import { EventBus } from './eventbus.js';
-import { ApiLoader } from './apiloader.js';
 import { ApiServer } from './api/apiserver.js';
 //import { ControlTop } from './top/controltop.js';
 //import { ControlDevices } from './device/controldevice.js';
@@ -14,15 +13,15 @@ import { UtilDOM } from './utildom.js';
 //import { ControlGoogleAccount } from './google/account/controlgoogleaccount.js';
 import './extensions.js';
 //import { DBDevices } from './device/dbdevice.js';
-import { AppGCMHandler } from './gcm/apphelpergcm.js'
-import { GCMNotificationAction } from './gcm/gcmapp.js';
 import { ControlMenu } from './menu/controlmenu.js';
 import { Menu,MenuEntry } from './menu/menu.js';
 import { ControlTop } from './top/controltop.js';
 import { ControlDebug } from './debug/controldebug.js';
-import { SettingTheme, SettingThemeAccentColor } from './settings/setting.js';
+import { SettingTheme, SettingThemeAccentColor, SettingCompanionAppPortToConnect, SettingThemeBackgroundColor, SettingThemeBackgroundPanelColor,SettingColor, SettingThemeTextColor, SettingThemeTextColorOnAccent } from './settings/setting.js';
 
 const CLIENT_ID  = "596310809542-c2bg952rtmf05el5kouqlcf0ajqnfpdl.apps.googleusercontent.com";
+const settingKeySignOutCompanion = "signOutCompanion";
+const settingKeySetupCompanion = "setupCompanion";
 let ControlDevices = null;
 let ControlCommands = null;
 let ControlGoogleAccount = null;
@@ -31,19 +30,77 @@ let DBDevices = null;
 const importDbDevices = async () => {    
     DBDevices = (await import('./device/dbdevice.js')).DBDevices
 }
+const setStoredDeviceOfType = ({localStorageKey,device}) => {    
+    AppContext.context.localStorage.set(localStorageKey,device.deviceId);
+}
+const getStoredDeviceOfType = async ({app,localStorageKey,neededCapabilityGetter}) => {
+    const deviceId = AppContext.context.localStorage.get(localStorageKey);
+    var device = await app.getDevice(deviceId);
+    if(!device){
+        const devices = await app.devicesFromDb;
+        device = devices.find(device=>neededCapabilityGetter(device));
+    }
+    return device;
+}
+const createHelperWithDeviceArgs = async ({app,deviceId,deviceGetter,deviceSetter,messageSufix})=>{
+    let device = await app.getDevice(deviceId);
+    if(!device){
+        device = await deviceGetter();
+    }else{
+        deviceSetter(device);
+    }
+    if(!device){
+        await alert(`You don't have a device that can ${messageSufix}.`);
+        await app.selectMenuEntry({menuEntry:app.menuEntryDevices});
+        return;
+    }
+    return {app,device};
+}
+let currentShortcuts = null;
+const handleKeyboardShortcutEvents = e =>{
+    const shortcutsAndCommands = currentShortcuts;
+    if(!shortcutsAndCommands) return;
+
+    const matching = shortcutsAndCommands.find(shortcutAndCommand => shortcutAndCommand.shortcut.matches(e));
+    if(!matching) return;
+
+    UtilDOM.preventEventPropagation(e);
+    EventBus.post(matching,"ShortcutPressed");
+}
+const lastSelectedDeviceKey = "lastSelectedDeviceIdKey";
 export class App{
     constructor(rootElement){
         this.rootElement = rootElement;
         this.rootElement.innerHTML = "";
     }
+    get lastSelectedDevice(){
+        return (async () => {
+            const { AppContext } = await import("./appcontext.js");
+            const lastDeviceId = AppContext.context.localStorage.get(lastSelectedDeviceKey);
+            const device = await this.getDevice(lastDeviceId);
+            return device;
+        })();
+    }
+    set lastSelectedDevice(device){
+        (async () => {
+            if(!device) return;
+
+            const { AppContext } = await import("./appcontext.js");
+            AppContext.context.localStorage.set(lastSelectedDeviceKey,device.deviceId);
+        })();
+    }
     get contentElement(){
         return this._contentElement;
     }
-    async load(){
+    redirectToHttpsIfNeeded(){
         Util.redirectToHttpsIfNeeded();
+    }
+    async loadEssentials(){
+        this.redirectToHttpsIfNeeded();
         this.applyTheme();
+        Util.watchDarkModeChanges(enabled=>this.applyTheme());
         if(!Util.areCookiesEnabled){
-            alert("Cookies are disabled. Please enable them and refresh the page to continue.");
+            await alert("Cookies are disabled. Please enable them and refresh the page to continue.");
             return;
         }
         UtilDOM.addScriptFile("./v2/encryption/encryption.js");
@@ -66,32 +123,50 @@ export class App{
             
 
 
+    }
+    async load(){
+        
+        await this.loadEssentials();
+        const queryObject = Util.getQueryObject();
         this.controlDebug = new ControlDebug();
         await this.addElement(this.controlDebug,this.rootElement); 
         
         this.controlTop = new ControlTop();
         await this.addElement(this.controlTop,this.rootElement);
         this.controlTop.loading = true;
+        if(this.showCloseButton()){            
+            this.controlTop.showCloseAppButton();
+            this.controlTop.showMinimizeAppButton();
+        }
 
         this._contentElement = document.createElement("div");
         this._contentElement.id = "basecontent";
         this.rootElement.appendChild(this._contentElement);
 
 
-        this.apiLoader = new ApiLoader(CLIENT_ID);        
-        this.apiLoader.addApi({"name":'oauth2',"version":'v2' });
-        await this.apiLoader.load(); 
+        const couldLoad = await this.loadApiLoader();
+        if(!couldLoad){ 
+            this.controlTop.loading = false;
+            return;
+        }
 
+        await this.loadShortcuts();
+        if(queryObject.connectoport){
+            await this.loadAppContext();
+            AppContext.context.localStorage.set(settingKeySetupCompanion,queryObject.connectoport);
+        }
         try{
-            if(!(await this.googleAccount).isSignedIn){
-                this.controlTop.hideNavigation();
-                
-                ControlGoogleAccount = (await import('./google/account/controlgoogleaccount.js')).ControlGoogleAccount
-                const controlGoogleAccount = new ControlGoogleAccount();
-                await this.addElement(controlGoogleAccount);
-                const element = controlGoogleAccount.signInButtonElement;
-                const onSuccess = this.loadWhenSignedIn;
-                (await this.googleAccount).attachSignInClickHandler({element,onSuccess})
+            const googleAccount = await this.googleAccount;
+            if(queryObject.signOutCompanion){
+                await this.loadAppContext();
+                AppContext.context.localStorage.set(settingKeySignOutCompanion,true);
+                Util.changeUrl("/");
+                await googleAccount.signOut();
+                return;
+            }
+            const isSignedIn = await googleAccount.isSignedIn;
+            if(!isSignedIn){
+                await this.loadWhenNotSignedIn();
                 return;
             }
 
@@ -103,16 +178,123 @@ export class App{
             
         }
     }
+    get configuredShortcutsAndCommands(){
+        return (async ()=>{            
+            const {DBKeyboardShortcut} = await import("./keyboard/keyboardshortcut.js");
+            const dbShortcuts = new DBKeyboardShortcut(this.db);
+            let shortcutsAndCommands = await dbShortcuts.getAll();
+            if(!shortcutsAndCommands){
+                shortcutsAndCommands = []
+            }
+            return shortcutsAndCommands;
+        })();
+    }
+    async addKeyboardShortcutAndCommand(shortcutAndCommand){
+        if(!shortcutAndCommand) return;
+
+        const {DBKeyboardShortcut} = await import("./keyboard/keyboardshortcut.js");
+        const dbShortcut = new DBKeyboardShortcut(this.db);
+        await dbShortcut.updateSingle(shortcutAndCommand);
+        await this.loadShortcuts()
+    }
+    async removeKeyboardShortcut(shortcut){
+        if(!shortcut) return;
+
+        const {DBKeyboardShortcut} = await import("./keyboard/keyboardshortcut.js");
+        const dbShortcut = new DBKeyboardShortcut(this.db);
+        await dbShortcut.removeSingle(shortcut);
+        await this.loadShortcuts()
+    }
+    async removeKeyboardShortcutByCommand(command){
+        if(!command) return;
+
+        const {DBKeyboardShortcut} = await import("./keyboard/keyboardshortcut.js");
+        const dbShortcut = new DBKeyboardShortcut(this.db);
+        await dbShortcut.removeSingleByCommand(command);
+        await this.loadShortcuts()
+    }
+    async getKeyboardShortcutCommand(shortcut){
+        const {DBKeyboardShortcut} = await import("./keyboard/keyboardshortcut.js");
+        const dbShortcut = new DBKeyboardShortcut(this.db);
+        return await dbShortcut.getCommand(shortcut);
+    }
+    get areShortcutsGlobal(){
+        return false;
+    }
+    async loadShortcuts(){ 
+        const shortcutsAndCommands = await this.configuredShortcutsAndCommands;
+        if(shortcutsAndCommands.length == 0) return;
+
+        currentShortcuts = shortcutsAndCommands;
+
+        window.addEventListener("keydown",handleKeyboardShortcutEvents);
+    }
+
+    async onShortcutPressed(shortcutPressed){        
+        let shortcut = shortcutPressed.shortcut;
+        const device = await this.lastSelectedDevice;
+        if(!device){
+            alert("Please select a device before running a shortcut");
+            return;
+        }
+
+        console.log("Running command from shortcut!",shortcut,device);
+
+        const {KeyboardShortcut,DBKeyboardShortcut} = await import("./keyboard/keyboardshortcut.js");
+        shortcut = new KeyboardShortcut(shortcut);
+        const db = new DBKeyboardShortcut(this.db);
+        const commandInstance = await db.getCommand(shortcut);
+        const devices = await this.devicesFromDb;
+        await commandInstance.execute(device,devices);
+    }
+    showCloseButton(){
+        return false;
+    }
+    async loadWhenNotSignedIn(){   
+        this.controlTop.shouldAlwaysShowImageRefresh = false;
+        this.controlTop.loading = false;
+        this.controlTop.hideNavigation();
+        ControlGoogleAccount = (await import('./google/account/controlgoogleaccount.js')).ControlGoogleAccount
+        const controlGoogleAccount = new ControlGoogleAccount();
+        await this.addElement(controlGoogleAccount);
+        const element = controlGoogleAccount.signInButtonElement;
+        const onSuccess = this.loadWhenSignedIn;
+        (await this.googleAccount).attachSignInClickHandler({element,onSuccess})      
+        this.controlTop.loading = false;
+    }
+    async loadApiLoader(){
+        const {ApiLoader} = await import('./apiloader.js');
+        this.apiLoader = new ApiLoader(CLIENT_ID);        
+        this.apiLoader.addApi({"name":'oauth2',"version":'v2' });
+        try{
+            await this.apiLoader.load();
+            return true;
+        }catch(error){
+            const {ControlDialogOk} = await import("./dialog/controldialog.js");
+            await ControlDialogOk.showAndWait({title:"Third Part Cookies Error",text:`You need to enable third-party cookies on your browser to be able to sign-in with Google.<br/><br/>Please enable them and then refresh the page to try again.<br/><br/>Error details: ${JSON.stringify(error)}`});
+            return false;
+        }
+    }
+    get allowUnsecureContent(){
+        return false;
+    }
+    async loadAppContext(){
+        AppContext = (await import('./appcontext.js')).AppContext
+    }
+    async onRightImageClicked(){
+        await this.switchAccounts();
+    }
     async loadWhenSignedIn(){                
 
-        AppContext = (await import('./appcontext.js')).AppContext
+        await this.loadAppContext();
+        this.controlTop.rightImage = await this.userImage;
         this.menuEntryDevices = new MenuEntry({
             id:"devices",
             label:"Devices",
             js:'./device/apphelperdevices.js',
             clazz:"AppHelperDevices",
             load: async ()=>{
-                return {app:this};
+                return {app:this,allowUnsecureContent:this.allowUnsecureContent};
             },
             icon:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"></path><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"></path></svg>`
         });
@@ -122,17 +304,7 @@ export class App{
             js:'./sms/apphelpersms.js',
             clazz:"AppHelperSMS",
             load: async (deviceId=null)=>{
-                var device = await this.getDevice(deviceId);
-                if(!device){
-                    device = await this.smsDevice;
-                }else{
-                    this.smsDevice = device;
-                }
-                if(!device){
-                    alert("You don't have a device that can send SMS messages.");
-                    return;
-                }
-                return {app:this,device};
+                return await createHelperWithDeviceArgs({app:this,deviceId,deviceGetter:async ()=>await this.smsDevice,deviceSetter:device=>{this.smsDevice = device},messageSufix:"send SMS messages"});
             },
             icon:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"></path><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm8 0h2v2h-2zm-4 0h2v2h-2z"></path></svg>`
         });
@@ -141,8 +313,8 @@ export class App{
             label:"Notifications",
             js:'./notification/apphelpernotifications.js',
             clazz:"AppHelperNotifications", 
-            load: async ()=>{
-                return {app:this};
+            load: async (deviceId=null)=>{
+                return await createHelperWithDeviceArgs({app:this,deviceId,deviceGetter:async ()=>await this.notificationsDevice,deviceSetter:device=>{this.notificationsDevice = device},messageSufix:"sync notifications"});
             },
             icon:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"></path><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"></path></svg>`
         })
@@ -162,13 +334,7 @@ export class App{
             js:'./files/apphelperfiles.js',
             clazz:"AppHelperFiles", 
             load: async (deviceId=null)=>{
-                var device = await this.getDevice(deviceId);
-                if(!device){
-                    device = await this.notificationsDevice;
-                }else{
-                    this.notificationsDevice = device;
-                }
-                return {app:this,device};
+                return await createHelperWithDeviceArgs({app:this,deviceId,deviceGetter:async ()=>await this.filesDevice,deviceSetter:device=>{this.filesDevice = device},messageSufix:"view files on"});
             },
             icon:`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M16 0H8C6.9 0 6 .9 6 2V18C6 19.1 6.9 20 8 20H20C21.1 20 22 19.1 22 18V6L16 0M20 18H8V2H15V7H20V18M4 4V22H20V24H4C2.9 24 2 23.1 2 22V4H4Z"/></svg>`
         })
@@ -178,21 +344,15 @@ export class App{
             js:'./pushhistory/apphelperpushhistory.js',
             clazz:"AppHelperPushHistory", 
             load: async (deviceId=null)=>{
-                var device = await this.getDevice(deviceId);
-                if(!device){
-                    device = await this.pushHistoryDevice;
-                }else{
-                    this.pushHistoryDevice = device;
-                }
-                return {app:this,device};
+                return await createHelperWithDeviceArgs({app:this,deviceId,deviceGetter:async ()=>await this.pushHistoryDevice,deviceSetter:device=>{this.pushHistoryDevice = device},messageSufix:"view push history of"});
             },
             icon:`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24"><path d="M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3" /></svg>`
         })
         this.menuEntrySettings = new MenuEntry({
             id:"settings",
             label:"Settings",
-            js:'./settings/apphelpersettings.js',
-            clazz:"AppHelperSettings", 
+            js:this.helperSettingsFile,
+            clazz:this.helperSettingsClassName, 
             load: async (d)=>{
                 return {app:this};
             },
@@ -216,16 +376,55 @@ export class App{
         if(!args){
             args = {menuEntry:this.menuEntryDevices};
         }
-
         await this.selectMenuEntry(args);
-
-        this.gcmHandler = new AppGCMHandler(this);
-
+        await this.controlMenu.renderTabsTo(this.controlTop.tabsElement);
 
         await this.loadJoinApis(); 
         //await this.loadDevicesFromServer();
+        await this.gcmHandler; 
         await this.loadFcmClient();
-        await this.registerBrowser({force:false});        
+        await this.registerBrowser({force:false});    
+
+        const portFromConnectionRequest = AppContext.context.localStorage.get(settingKeySetupCompanion);
+        if(AppContext.context.localStorage.get(settingKeySignOutCompanion) || portFromConnectionRequest){
+            AppContext.context.localStorage.delete(settingKeySignOutCompanion);
+            AppContext.context.localStorage.delete(settingKeySetupCompanion);
+            let port = portFromConnectionRequest;
+            if(!port){
+                const setting = new SettingCompanionAppPortToConnect();
+                port = await setting.value;
+            }
+            if(port){
+                const args = await this.menuEntrySettings.load();
+                args.connectoport = port;
+                await this.selectMenuEntry({menuEntry:this.menuEntrySettings,args});
+                return;
+            }
+        } 
+  
+    }
+    get hideBookmarklets(){
+        return false;
+    }
+    get gcmHandler(){
+        if(this._gcmHandler) return this._gcmHandler;
+
+        return (async()=>{
+            this._gcmHandler = await this.newGcmHandlerInstance;
+            return this._gcmHandler;
+        })();
+    }
+    get newGcmHandlerInstance(){
+        return (async()=>{
+            const {AppGCMHandler} = await import('./gcm/apphelpergcm.js');
+            return new AppGCMHandler(this);
+        })();
+    }
+    get helperSettingsFile(){
+        return './settings/apphelpersettings.js';
+    }
+    get helperSettingsClassName(){
+        return 'AppHelperSettings';
     }
     async chooseHelperFromQueryParameters(menu){
         for(const menuEntry of menu){            
@@ -251,8 +450,15 @@ export class App{
         const load = menuEntry.load;
         if(!load) return;
 
-        await this.selectMenuEntry({menuEntry});
+        const args = menuEntry.args;
+        this.selectMenuEntry({menuEntry,args});
         
+    }
+    async onCommandCustomExecuted({commandCustom,device}){
+        const {SettingCustomActions} = await import("./settings/setting.js")
+        const customActions = await (new SettingCustomActions().value);
+        const customAction = customActions.getCustomAction(commandCustom.id);
+        await customAction.execute(device);
     }
     async selectMenuEntry({menuEntry,args = null}){
         if(!args){
@@ -272,60 +478,28 @@ export class App{
         await this.helper.load();
     }  
     set smsDevice(device){
-        AppContext.context.localStorage.set("smsDevice",device.deviceId);
+        setStoredDeviceOfType({localStorageKey:"smsDevice",device});
     }
     get smsDevice(){
-        return (async ()=>{
-            const deviceId = AppContext.context.localStorage.get("smsDevice");
-            var device = await this.getDevice(deviceId);
-            if(!device){
-                const devices = await this.devicesFromDb;
-                device = devices.find(device=>device.canReceiveSms());
-            }
-            return device;
-        })();
+        return getStoredDeviceOfType({app:this,localStorageKey:"smsDevice",neededCapabilityGetter:device=>device.canReceiveSms()});
     }
     set filesDevice(device){
-        AppContext.context.localStorage.set("filesDevice",device.deviceId);
+        setStoredDeviceOfType({localStorageKey:"filesDevice",device});
     }
     get filesDevice(){
-        return (async ()=>{
-            const deviceId = AppContext.context.localStorage.get("filesDevice");
-            var device = await this.getDevice(deviceId);
-            if(!device){
-                const devices = await this.devicesFromDb;
-                device = devices.find(device=>device.canBrowseFiles());
-            }
-            return device;
-        })();
+        return getStoredDeviceOfType({app:this,localStorageKey:"filesDevice",neededCapabilityGetter:device=>device.canBrowseFiles()});
     }
     set notificationsDevice(device){
-        AppContext.context.localStorage.set("notificationsDevice",device.deviceId);
+        setStoredDeviceOfType({localStorageKey:"notificationsDevice",device});
     }
     get notificationsDevice(){
-        return (async ()=>{
-            const deviceId = AppContext.context.localStorage.get("notificationsDevice");
-            var device = await this.getDevice(deviceId);
-            if(!device){
-                const devices = await this.devicesFromDb;
-                device = devices.find(device=>device.canSendNotifications());
-            }
-            return device;
-        })();
+        return getStoredDeviceOfType({app:this,localStorageKey:"notificationsDevice",neededCapabilityGetter:device=>device.canSendNotifications()});
     }
     set pushHistoryDevice(device){
-        AppContext.context.localStorage.set("pushHistoryDevice",device.deviceId);
+        setStoredDeviceOfType({localStorageKey:"pushHistoryDevice",device});
     }
     get pushHistoryDevice(){
-        return (async ()=>{
-            const deviceId = AppContext.context.localStorage.get("pushHistoryDevice");
-            var device = await this.getDevice(deviceId);
-            if(!device){
-                const devices = await this.devicesFromDb;
-                device = devices.find(device=>device.hasPushHistory());
-            }
-            return device;
-        })();
+        return getStoredDeviceOfType({app:this,localStorageKey:"pushHistoryDevice",neededCapabilityGetter:device=>device.canShowPushHistory()});
     }
     store(key,value){
         AppContext.context.localStorage.set(key,value);
@@ -369,15 +543,15 @@ export class App{
        
     }
     async loadJoinApis(){ 
-        if(gapi.client.registration) return;
+        // if(gapi.client.registration) return;
 
-        const apisToLoad = [
-            {"name":'messaging',"version":'v1',"setRoot":true},
-            {"name":'registration',"version":'v1',"setRoot":true},
-            {"name":'authorization',"version":'v1',"setRoot":true},
-            {"name":'drive',"version":'v3'}
-        ];
-        await this.apiLoader.loadApis(apisToLoad);
+        // const apisToLoad = [
+        //     /*{"name":'messaging',"version":'v1',"setRoot":true},
+        //     {"name":'registration',"version":'v1',"setRoot":true},
+        //     {"name":'authorization',"version":'v1',"setRoot":true},*/
+        //     {"name":'drive',"version":'v3'}
+        // ];
+        // await this.apiLoader.loadApis(apisToLoad);
     }
     
     async loadFcmClient(){
@@ -385,7 +559,7 @@ export class App{
 
         return new Promise(resolve=>{
             this.fcmClient = new FCMClientImplementation();
-            
+            this.fcmClient.setEventBusCallback(async ({data,clazz})=> await EventBus.post(data,clazz));
             this.fcmClient.initPage(
                 async token => {
                     console.log("Got token!",token);
@@ -418,6 +592,12 @@ export class App{
     set alreadyAskedRegistration(value){
         AppContext.context.localStorage.set("alreadyAskedRegistration",value);
     }
+    get alreadyWarnedNoPushes(){
+        return AppContext.context.localStorage.getBoolean("alreadyWarnedNoPushes");
+    }
+    set alreadyWarnedNoPushes(value){
+        AppContext.context.localStorage.set("alreadyWarnedNoPushes",value);
+    }
     get myDeviceName(){
         return AppContext.context.localStorage.get("myDeviceName");
     }
@@ -427,11 +607,18 @@ export class App{
     get myDeviceId(){
         return AppContext.context.getMyDeviceId();
     }
+    get myDevice(){
+        return this.getDevice(this.myDeviceId);
+    }
     set myDeviceId(value){
         AppContext.context.setMyDeviceId(value);
     }
     get isBrowserRegistered(){
         return (this.myDeviceId && this.myDeviceName) ? true : false;
+    }
+    resetBrowserRegistration(){
+        this.myDeviceId = null;
+        this.myDeviceName = null;
     }
     async registerBrowser({force}){  
         var token = null;
@@ -445,11 +632,11 @@ export class App{
                 return;
             }  
             if(!this.myDeviceName){
-                const confirmed	= confirm("Do you want to register this browser as a Join device so you can interact with it remotely?\n\nPlease note that this is a beta feature and may not fully work yet.")
+                const confirmed	= confirm("Do you want to register this browser as a Join device so you can interact with it remotely?")
                 this.alreadyAskedRegistration = true;
                 if(!confirmed) return;
                 
-                this.myDeviceName = prompt("Please enter a name for this web browser so that it can receive Join pushes.")
+                this.myDeviceName = await prompt("Please enter a name for this web browser so that it can receive Join pushes.")
                 if(!this.myDeviceName) return;
             }
             
@@ -462,11 +649,22 @@ export class App{
             const shouldShowRegistrationButton = !this.isBrowserRegistered && (token ? true : false);
             this.controlTop.showOrHideRegistrationButton(shouldShowRegistrationButton);            
             await EventBus.post(new RequestLoadDevicesFromServer());
+            if(!token){
+                if(!this.alreadyWarnedNoPushes){
+                    this.alreadyWarnedNoPushes = confirm("This browser is not able to receive pushes from other devices.\n\nYou can send stuff TO other devices, but not receive stuff FROM other devices.\n\nSome stuff can be received if you're on the same local network as the other device.");
+                }
+            }
         }                              
     }
     async getDevice(deviceId){
         const devices = await this.devicesFromDb;
         return devices.getDevice(deviceId);
+    }
+    async getDevices(deviceIds){
+        const {Devices} = await import("./device/device.js");
+        if(!deviceIds || !deviceIds.length) return new Devices([]);
+        const array = await Promise.all(deviceIds.map(async deviceId => await this.getDevice(deviceId)));
+        return new Devices(array);
     }
     
     get db(){ 
@@ -481,7 +679,6 @@ export class App{
             return this._dbDevices;
         })();
     }
-    /** @type {DBGCM} */
     get dbGCM(){
         if(this._dbGCM) return this._dbGCM;
         return (async ()=>{
@@ -490,13 +687,60 @@ export class App{
             return this._dbGCM;
         })();
     }
+    get dbNotifications(){
+        if(this._dbNotifications) return this._dbNotifications;
+        return (async ()=>{
+            const {DBNotifications} = await import('./notification/dbnotifications.js');
+            this._dbNotifications = new DBNotifications(this.db);
+            return this._dbNotifications;
+        })();
+    }
     
     get devicesFromDb(){
         return (async ()=>{
             const dbDevices = await this.dbDevices;
-    
-           return await dbDevices.getAll();
+            const fromDb = await dbDevices.getAll();
+            if(this._devices){
+                this._devices.transferSockets(fromDb)
+            }
+            this._devices = fromDb;
+            return fromDb
         })();
+    }
+    
+    async onRequestStoredNotifications(request){
+        const dbNotifications = await this.dbNotifications;
+        const options = await dbNotifications.getAll();
+        EventBus.post({options},"StoredNotifications");
+    }
+    async onRequestNotificationAction({notificationButton,notification}){
+
+        let device = notification.device;
+        if(!device){            
+            const {NotificationInfo} = await import("./notification/notificationinfo.js");
+            notification = new NotificationInfo(notification);            
+            device = await notification.getDeviceFromInfo(async deviceId => await this.getDevice(deviceId));
+        }
+        if(device){
+            await this.doNotificationAction({device,notificationButton,notification});
+        }
+
+        if(GCMNotificationBase.notificationDismissAction.action != notificationButton.action) return;
+        const dbNotifications = await this.dbNotifications;
+        await dbNotifications.remove(notification.id || notification.tag);
+    }
+    async onNotificationsCleared(){
+        const dbNotifications = await this.dbNotifications;
+        await dbNotifications.clear();
+    }
+    async setDevices(devices){        
+        const dbDevices = (await this.dbDevices);
+        await dbDevices.update(devices);
+        this._devices = devices;
+    }
+    async updateDevice(device){
+        const dbDevices = (await this.dbDevices);
+        await dbDevices.updateSingle(device);
     }
     get toast(){
         if(this._toast) return this._toast;
@@ -509,44 +753,70 @@ export class App{
         })()
     }
     async showToast(args){
-        const toast = (await this.toast);
-        await toast.show(args);
+        try{
+            const toast = (await this.toast);
+            await toast.show(args);
+        }catch(error){
+            console.log(error);
+        }
     }
     /** EventBus Methods */
     async onShowToast(args){
         await this.showToast(args);
     }
-    async onSignOutRequest(){         
+    async switchAccounts(){
         var chooseotheraccount = confirm("Want to switch accounts?");
         if(!chooseotheraccount) return;
 
         await (await this.googleAccount).signOut();
     }
+    async onSignOutRequest(){        
+        await this.switchAccounts(); 
+    }
     async onRegisterBrowserRequest(){
         await this.registerBrowser({force:true});
     }
-    async onAppNameClicked(appNameClicked){
-        const event = appNameClicked.event;
-        const x = event.clientX;
-        const y = event.clientY;
-        const choices = (await this.devicesFromDb).filter(device=>device.canBrowseFiles());
-        const choiceToLabelFunc = device => device.deviceName;
+    async onDeviceDeleted({device}){
+        if(!device) return;
+        if(this.myDeviceId != device.deviceId) return;
+
+
+        console.log("Device my device. Reseting isBrowserRegistered");
+        this.resetBrowserRegistration();
+
+    }
+    async showDeviceChoice({filter,x,y,customDeviceNameFunc}){
+        const choices = (await this.devicesFromDb).filter(filter);
+        const choiceToLabelFunc = device => customDeviceNameFunc ? customDeviceNameFunc(device) : device.deviceName;
         const ControlDialogSingleChoice = (await import("./dialog/controldialog.js")).ControlDialogSingleChoice
         const device = await ControlDialogSingleChoice.showAndWait({position:{x,y},choices,choiceToLabelFunc});
         if(!device) return;
         
         EventBus.post(new AppDeviceSelected(device));
     }
+    async showDeviceChoiceOnAppNameClicked(appNameClicked,filter,customDeviceNameFunc){ 
+        const event = appNameClicked.event;
+        const x = event.clientX;
+        const y = event.clientY;
+        await this.showDeviceChoice({filter,x,y,customDeviceNameFunc});
+    }
     async getAuthToken(){
         const account = await this.googleAccount;
-        const currentUser = account.getCurrentUser()
+        const currentUser = await account.getCurrentUser()
         return currentUser.token;
     }
     get userEmail(){
         return (async ()=>{
             const account = await this.googleAccount;
-            const currentUser = account.getCurrentUser()
+            const currentUser = await account.getCurrentUser()
             return currentUser.email;
+        })();
+    }
+    get userImage(){
+        return (async ()=>{
+            const account = await this.googleAccount;
+            const currentUser = await account.getCurrentUser()
+            return currentUser.imageUrl;
         })();
     }
     async showNotification(options,gcm){
@@ -554,12 +824,25 @@ export class App{
         await fcmClient.showNotification(options,gcm);
     }
 
+    async onRequestReplyMessage({text,notification}){
+        let device = notification.device;
+        if(!device){
+            device = await this.getDevice(notification.senderId);
+        }
+        if(!device){
+            const {NotificationInfo} = await import("./notification/notificationinfo.js");
+            notification = new NotificationInfo(notification);
+            device = notification.device;
+        }
+        await this.replyToMessage({device,text,notification});
+    }
     async replyToMessage({device,text,notification}){
         if(!device){
             await this.showToast({text:"No device to reply to.",isError:true});
             return;
         } 
 
+        device = await this.getDevice(device.deviceId);
         this.showToast({text:"Sending reply..."});
         await this.googleAccount;
 
@@ -568,11 +851,26 @@ export class App{
         await this.showToast({text:"Reply sent!"});
     }
     
+    async onRequestSendGCM({gcmRaw,deviceId}){
+        const device = await this.getDevice(deviceId);
+        if(!device) return;
+
+        const gcm = await GCMBase.getGCMFromJson(gcmRaw.type,gcmRaw.json);
+        await device.send(gcm);
+    }
     async doNotificationAction({device,notificationButton,notification}){
         if(!device){
             await this.showToast({text:"No device for action.",isError:true});
             return;
         } 
+
+        const {NotificationInfo} = await import("./notification/notificationinfo.js");
+        notification = new NotificationInfo(notification);
+        const gcm = await notification.gcmFromInfo
+        if(gcm && gcm.handleNotificationClick){
+            await gcm.handleNotificationClick(notificationButton.action);
+            return;
+        }
 
         const gcmForAction = await GCMNotificationBase.getNotificationActionGcm({action:notificationButton.actionId,notification,deviceId:device.deviceId})
        
@@ -586,30 +884,62 @@ export class App{
         const dbDevices = await this.dbDevices;
         await dbDevices.updateSingle(request.device);
     }
+    async onGCMLocalNetworkRequest(gcm){
+        if(!this.isBrowserRegistered) return;
+
+		var serverAddress = this.allowUnsecureContent ? gcm.serverAddress : gcm.secureServerAddress;
+		var senderId = gcm.senderId;
+		if(!serverAddress) return;
+
+        
+		const device = await this.getDevice(senderId)
+        if(!device) return;
+        
+        try{
+            const webSocketServerAddress = gcm.webSocketServerAddress;
+            const allowUnsecureContent = this.allowUnsecureContent;
+            const isLocalNetworkAvailable = await device.testIfLocalNetworkIsAvailable({serverAddress,webSocketServerAddress,allowUnsecureContent,token:await this.getAuthToken()});
+            console.log("Local Network avaialble?",isLocalNetworkAvailable,device);    
+        }catch(error){
+            console.log("Error testing local network",error);    
+        }
+        await this.updateDevice(device);
+        await EventBus.post(new RequestRefreshDevices());
+    }
     
     async onSettingSaved(settingSaved){
         const setting = settingSaved.setting;
         const isTheme = setting.id == SettingTheme.id
         const isAccent = setting.id == SettingThemeAccentColor.id
-        if(!isTheme && !isAccent) return;
+        if(!SettingColor.isThemeSetting(setting.id)) return;
 
         const theme = isTheme ? SettingTheme.getThemeOption(settingSaved.value) : null;
         const accent = isAccent ? settingSaved.value : null;
+        setting.value = settingSaved.value;
         this.applyTheme(theme,accent);
     }
     applyTheme(theme,accent){
         if(!theme){
             theme = new SettingTheme().theme;
         }
-        if(theme){
-            UtilDOM.setCssVariable("theme-background-color",theme.backgroundColor)
-            UtilDOM.setCssVariable("theme-background-color-panel",theme.backgroundColorPanel)
-            UtilDOM.setCssVariable("theme-background-color-hover",theme.backgroundHover)
-            UtilDOM.setCssVariable("theme-text-color",theme.textColor)
-            UtilDOM.setCssVariable("theme-accent-color-lowlight",theme.accentColorLowlight)                
-        }
         if(!accent){
             accent = new SettingThemeAccentColor().value;
+        }
+        if(theme){
+            if(accent){
+                const setting = new SettingThemeTextColorOnAccent();
+                let storedTextColorOnAccess = setting.storedValue;
+                let textColorOnAccent = setting.value;
+                if(!storedTextColorOnAccess && Util.isColorLight(accent)){
+                    textColorOnAccent = "black";
+                }                   
+                UtilDOM.setCssVariable("theme-text-color-on-accent",textColorOnAccent)
+            }
+            UtilDOM.setCssVariable("theme-background-color",new SettingThemeBackgroundColor().value)
+            UtilDOM.setCssVariable("theme-background-color-panel",new SettingThemeBackgroundPanelColor().value)
+            UtilDOM.setCssVariable("theme-background-color-hover",theme.backgroundHover)
+            UtilDOM.setCssVariable("theme-text-color",new SettingThemeTextColor().value)
+            UtilDOM.setCssVariable("theme-accent-color-lowlight",theme.accentColorLowlight)                
         }
         if(accent){
             UtilDOM.setCssVariable("theme-accent-color",accent)
@@ -637,9 +967,10 @@ export class App{
     }
 }
 
-class RequestLoadDevicesFromServer{}
+export class RequestLoadDevicesFromServer{}
 class AppDeviceSelected{
     constructor(device){
         this.device = device;
     }
 }
+class RequestRefreshDevices{}

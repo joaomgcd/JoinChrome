@@ -1,4 +1,3 @@
-import * as gapijs from 'https://apis.google.com/js/client.js';
 import { EventBus } from "../../eventbus.js";
 
 export class GoogleAccount {

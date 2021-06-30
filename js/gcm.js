@@ -205,10 +205,18 @@ var GCMPush = function(){
 				return;
 			}
 		}
-		console.log("Received push!!");
 		if(!this.push.date){
 			this.push.date = new Date().getTime();
 		}
+		const numberOfSecondsOldToIgnore = parseInt(getNotificationIgnoreOldPushes());
+		if(numberOfSecondsOldToIgnore){
+			const numberOfMillisToIgnore = numberOfSecondsOldToIgnore * 1000;
+			if(this.push.date && this.push.date < Date.now() - numberOfMillisToIgnore){
+				console.log("Ignoring old push",this.push);
+				return;
+			}
+		}
+		console.log("Received push!!");
 		setLastReceivedDate(this.push.date);
 		if(this.push.text){
 			lastTextPushed = this.push.text;

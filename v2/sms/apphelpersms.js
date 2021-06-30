@@ -27,7 +27,7 @@ export class AppHelperSMS extends AppHelperBase{
      * @param {App} app 
      */
     constructor(args = {app,device,address}){
-        super();
+        super(args.app);
         app = args.app;
         this.device = args.device;
         this.deviceId = this.device.deviceId;
@@ -59,8 +59,13 @@ export class AppHelperSMS extends AppHelperBase{
         await app.addElement(this.controlSmsConversation);
         UtilDOM.hide(this.controlSmsConversation);
 
-        await app.loadFcmClient();
-        this.contacts = await this.device.loadContacts(await this.getDbGoogleDriveBaseArgs());
+        await app.loadFcmClient();   
+        try{
+            this.contacts = await this.device.loadContacts(await this.getDbGoogleDriveBaseArgs());
+        }catch(error){
+            console.log("Couldn't load contacts", error);
+            this.contacts = new Contacts();
+        }
         await this.setMode({address:this.address,byBrowser:false});
     }
     async setModeDependingOnUrl(byBrowser){
@@ -143,7 +148,9 @@ export class AppHelperSMS extends AppHelperBase{
         }
 
         const args = await this.getDbGoogleDriveBaseArgs({address});
-        await this.controlSmsConversation.setSmsConversation(await this.device.loadSmsConversation(args));       
+        const smsConversation = await this.device.loadSmsConversation(args);
+        // console.log("Loading SMS conversation",smsConversation);
+        await this.controlSmsConversation.setSmsConversation(smsConversation);       
 
         await this.reloadConversationFromNetwork(address);
     }
@@ -183,10 +190,14 @@ export class AppHelperSMS extends AppHelperBase{
         this.device = device;
         this.deviceId = this.device.deviceId;
         this.address = null;
+        app.smsDevice = device;
         await this.setMode({byBrowser:false});
     }
     async onRequestGoBack(request){
         this.setMode({});
+    }
+    async onAppNameClicked(appNameClicked){
+        await app.showDeviceChoiceOnAppNameClicked(appNameClicked,device => device.canReceiveSms())
     }
     async onRequestOpenSmsThreads(request){
         this.setMode({});
@@ -273,6 +284,10 @@ export class AppHelperSMS extends AppHelperBase{
     async onRequestSendSMS(request){
         console.log("Sending SMS!",request);
         const senderId = await this.senderId;
+        if(!request.contact){            
+            app.showToast({text:"Error: no contact to send message to.",isError:true,time:3000});
+            return;
+        }
         const address = request.contact.address;
         const text = request.text;
         let attachment = request.attachment;

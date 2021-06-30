@@ -1,16 +1,49 @@
 import { AppContext } from "../appcontext.js";
 import { EventBus } from "../eventbus.js";
-GCMBase.getGCMFromType = type => eval(`new ${type}()`);
-class GCMBaseApp extends GCMBase{
+let GCMBaseFinal = null;
+try{
+	GCMBaseFinal = GCMBase
+}catch(error){
+	try{
+		const {GCMBase, GCMNotificationBase} = require("./gcmbase.js")
+		GCMBaseFinal = GCMBase
+	}catch{
+		console.log(error);
+		throw error;
+	}
+}
+GCMBaseFinal.getGCMFromType = type => eval(`new ${type}()`);
+class GCMBaseApp extends GCMBaseFinal{
 	get myDeviceId(){
 		return AppContext.context.getMyDeviceId();
 	}
 	async execute(){
+		const sentToCompanionApp = await this.sendToCompanionAppIfNeeded();
+		if(sentToCompanionApp){
+			console.log("Sent to companion app. Not performing action here.")
+			return;
+		}
 		this.sendToLocalAutomationPortIfNeeded();
 		await EventBus.post(this);
 	}
 	//open
 	async encrypt(){}
+	async getDevice(deviceId){
+		const {DBDevices} = await import("../device/dbdevice.js");
+		const db = new DBDevices(DB.get());
+		const device = await db.getById(deviceId);
+		return device;
+	}
+	
+	async send(deviceId){
+        const gcmRaw = await this.gcmRaw;
+		await EventBus.post(new RequestSendGCM(gcmRaw,deviceId))
+    }
+	async sendPush(push){
+		const gcmPush = new GCMPush();
+		gcmPush.push = push;
+		await gcmPush.send(push.deviceId);
+	}
 }
 class GCMGenericPush extends GCMBaseApp{
 	get json(){
@@ -57,6 +90,8 @@ export class GCMPush extends GCMBaseApp{
             setText(`Click to copy: ${clipboard}`);
         }
         const handleUrl = async push => {
+			if(push.title) return;
+			
             const url = push.url;
             if(!url) return;
 
@@ -95,10 +130,28 @@ export class GCMPush extends GCMBaseApp{
 		const notification = {
 			"appName":"Join",
 			"title":title,
-            "text":text
-		};
+			"text":text,
+			"requireInteraction":true,
+			data:this,
+            actions:[]
+        };
+        if(push.url){
+            notification.actions.push(GCMPushBase.notificationActionCopyUrl);
+        }
+        const numbers = Util.get2FactorAuthNumbers(text);
+        if(numbers){
+			notification.actions.unshift(GCMNotificationBase.notificationCopyNumberAction)
+		}
 		Object.assign(notification, push);
 		return notification;
+	}
+	
+	getValueToCheckIfWasEncrypted(props){
+
+		const push = props ? props.push : this.push;
+		if(!push) return null;
+
+		return push.text;
 	}
 	async encrypt(){
 		const push = this.push;
@@ -116,13 +169,34 @@ export class GCMPush extends GCMBaseApp{
 		return await GCMPushBase.sendTextToLocalPort({gcmPush:this,port});
 	
 	}
+	async handleNotificationClick(notificationAction){
+		const push = this.push;
+		if(!push) return;
+
+		if(!notificationAction){
+			if(push.url){
+				await Util.openWindow(push.url);
+			}
+			if(push.files){
+				for(const file of push.files){
+					await Util.openWindow(file)
+				}
+			}
+			return;
+		}
+		if(notificationAction == GCMPushBase.notificationActionCopyUrl.action){
+			Util.setClipboardText(push.url);
+		}
+		await GCMNotificationBase.handleNotificationNumbers(notificationAction, push.text || push.clipboard || push.url);
+	}
+	
 }
 class GCMNotification extends GCMBaseApp{}
 export class GCMNotificationClear extends GCMGenericPush{}
 class GCMDeviceRegistered extends GCMBaseApp{}
 export class GCMLocalNetworkRequest extends GCMBaseApp{}
 export class GCMLocalNetworkTest extends GCMGenericPush{}
-class GCMWebSocketRequest extends GCMGenericPush{}
+export class GCMWebSocketRequest extends GCMGenericPush{}
 export class GCMLocalNetworkTestRequest extends GCMGenericPush{}
 export class GCMNotificationAction extends GCMGenericPush{}
 export class GCMRequestFile extends GCMGenericPush{
@@ -147,6 +221,7 @@ export class GCMRequestFile extends GCMGenericPush{
 }
 export class GCMRespondFile extends GCMGenericPush{
 	async execute(){
+		this.sendToCompanionAppIfNeeded();
 		EventBus.post(this);
 
 		const response = this.responseFile;
@@ -173,11 +248,27 @@ export class GCMRespondFile extends GCMGenericPush{
 		await Util.openWindow(downloadUrl);*/
 	}
 }
-export class GCMNewSmsReceived extends GCMGenericPush{}
+export class GCMNewSmsReceived extends GCMGenericPush{
+	async handleNotificationClick(notificationAction){
+		return await GCMNotificationBase.handleNotificationNumbers(notificationAction,this.text);
+	}
+}
 export class GCMSmsSentResult extends GCMGenericPush{}
-export class GCMMediaInfo extends GCMGenericPush{}
+export class GCMMediaInfo extends GCMGenericPush{	
+	async handleNotificationClick(action){
+		return await GCMMediaInfoBase.handleNotificationClick(this,action,Util.openWindow);
+	}
+}
 export class GCMDeviceNotOnLocalNetwork extends GCMGenericPush{}
 export class GCMStatus extends GCMGenericPush{}
 export class GCMFolderRequest extends GCMGenericPush{}
 export class GCMFolder extends GCMGenericPush{}
 export class GCMFile extends GCMGenericPush{}
+export class GCMAutoClipboard extends GCMGenericPush{}
+
+class RequestSendGCM{
+    constructor(gcmRaw,deviceId){
+        this.gcmRaw = gcmRaw;
+        this.deviceId = deviceId;
+    }
+}

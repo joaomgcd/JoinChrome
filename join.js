@@ -812,6 +812,9 @@ var getFavoriteCommandDevice = function(){
 var getNotificationSeconds = function(){
     return getOptionValue("text","notificationseconds");
 }
+var getNotificationIgnoreOldPushes = function(){
+    return getOptionValue("text","notificationignoreoldpushes");
+}
 var getNotificationRequireInteraction = function(){
     return getOptionValue("checkbox","notificationrequireinteraction");
 }

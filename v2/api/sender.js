@@ -1,4 +1,4 @@
-import '/v2/extensions.js';
+import '../extensions.js';
 export class Sender {
 	static get newMessageId(){
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -104,7 +104,7 @@ export class SenderIP extends Sender {
 					const result = await fetch(url,postOptions);
 					const textResult = await result.text();
 					return Sender.newSuccessResult;
-				}catch{
+				}catch(error){
 					if(options.secondTry) return {"success":false,"error": typeof error == "string" ? error : error.message};
 					options.secondTry = true;
 					return await doForOneDevice(options);
@@ -145,6 +145,28 @@ export class SenderLocal extends Sender {
 			const url = `${address}gcm?token=${token}`;
 			const result = await fetch(url,postOptions)
 			const jsonResult =  await result.json();
+			return Sender.newSuccessResult;
+		});
+		const allResults = await Promise.all(allPromises);
+		return new SendResults(allResults);
+	}
+}
+export class SenderMyself extends Sender {
+	async send(options){
+		const gcmRaw = await options.gcmRaw;
+		await GCMBase.executeGcmFromJson(gcmRaw.type,gcmRaw.json);
+		return new SendResults([Sender.newSuccessResult]);
+	}
+}
+export class SenderWebSocket extends Sender {
+	async send(options){
+		const body = JSON.stringify(await options.gcmRaw);
+		const allPromises = options.devices.map(async device => {
+			const socket = device.socket;
+			if(!socket){				
+				return Promise.reject("Device does not have an active socket");
+			}
+			await socket.send(body);
 			return Sender.newSuccessResult;
 		});
 		const allResults = await Promise.all(allPromises);

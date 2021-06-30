@@ -17,11 +17,11 @@ export class AppHelperFiles extends AppHelperBase{
  * @param {App} _app 
  */
     constructor(args = {app,device}){
-        super();
+        super(args.app);
         app = args.app;
         this.device = args.device;
         this.subFolder = args.path;
-        this.deviceId = args.files;
+        this.deviceId = args.deviceId;
     }
     async load(){
         EventBus.register(this);
@@ -45,9 +45,12 @@ export class AppHelperFiles extends AppHelperBase{
         UtilDOM.hide(this.controlFiles);
         this.setDevice(this.device,this.subFolder);
         if(!app.restoreBoolean(hasMentionedDragAndDropKey)){
-            alert("You can drag and drop a file here to upload it to that folder on your device");
+            await alert("You can drag and drop a file here to upload it to that folder on your device");
             app.store(hasMentionedDragAndDropKey,true);
         }
+    }
+    async onAppNameClicked(appNameClicked){
+        await app.showDeviceChoiceOnAppNameClicked(appNameClicked,device => device.canBrowseFiles())
     }
     async setDevice(device,subFolder = "/"){
         if(!device) return;
@@ -139,7 +142,7 @@ export class AppHelperFiles extends AppHelperBase{
             this.updateUrl();
             return await this.refreshFiles();
         }
-        this.loading = true;
+        this.loading = false;
         const result = await this.device.openFile({token: await app.getAuthToken(),path});
         if(!result) return;
 

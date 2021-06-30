@@ -10,10 +10,11 @@ export class DialogSingleChoice extends Dialog{
 }
 
 export class DialogInput extends Dialog{
-    constructor({title,placeholder}){
+    constructor({title,placeholder,initialText}){
         super()
         this.title = title;
         this.placeholder = placeholder;
+        this.initialText = initialText;
     }
 }
 export class DialogProgress extends Dialog{
@@ -24,9 +25,13 @@ export class DialogProgress extends Dialog{
     }
 }
 export class DialogOk extends Dialog{
-    constructor({title,text}){
+    
+    constructor({title,text,showCancel,buttons,buttonsDisplayFunc}){
         super()
         this.title = title;
         this.text = text;
+        this.showCancel = showCancel;
+        this.buttons = buttons;
+        this.buttonsDisplayFunc = buttonsDisplayFunc;
     }
 }

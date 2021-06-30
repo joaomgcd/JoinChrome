@@ -10,7 +10,8 @@
 	flex-direction: column;
 	box-shadow: 5px 5px 5px grey;
 	padding: 8px;
-	background-color: white;
+	background-color: var(--theme-background-color);
+	color: var(--theme-text-color);
 	box-sizing: initial;
 	position: relative;
 	align-self: center;
@@ -36,7 +37,7 @@
 }
 .notificationBody{
 	display:flex;
-	background-color: white;
+	background-color: var(--theme-background-color);
 	margin: 8px 0px 8px 0px;
 	cursor: pointer;
 }
@@ -55,16 +56,18 @@
 .notificationtext{
 	word-wrap: break-word;
 	font-family: 'Roboto', sans-serif;
-	color: #757575;
+	color: var(--theme-accent-color-lowlight);
 	overflow:hidden;
 	line-height:1.5em;
-	max-height:7.5em;
+}
+.notificationmessageimage{
+	width: 100px;
 }
 .notificationdate{
 	display: flex;
 	align-items: center;
 	font-family: 'Roboto', sans-serif;
-	color: #757575;
+	color: var(--theme-accent-color-lowlight);
 	margin-left: auto;
 	font-size: small;
 }
@@ -109,10 +112,21 @@
 	font-size: small;
 }
 .notificationTop{
-	color: gray;
 	display: flex;
 	font-family: 'Roboto', sans-serif;
+}
+.notificationtopleft{
+	flex-grow: 1;
+	display: flex;
+	color: gray;
 	align-items: center;
+}
+.notificationclosebutton{
+	cursor: pointer;
+	font-size: x-large;
+}
+.notificationclosebutton:hover{
+	background-color: var(--theme-accent-color-light);
 }
 #textanddate{
 	display: flex;

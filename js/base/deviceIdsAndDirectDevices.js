@@ -217,7 +217,7 @@ var DeviceIdsAndDirectDevices = function(deviceIds,allDevices, showNotificationF
 		.then(myIp=>{
 			return Promise.all(options.devices.map(device => {
 				var doForOneDevice = function(options){
-					var sameNetwork  = isInSameLocalNetwork(device.regId2,myIp);
+					var sameNetwork  = true; //isInSameLocalNetwork(device.regId2,myIp);
 					var regId = options.secondTry || !sameNetwork ? device.regId : device.regId2;
 					var postOptions = {
 						method: 'POST',

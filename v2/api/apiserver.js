@@ -1,7 +1,7 @@
 const USE_LOCAL_SERVER = false;
 const JOIN_SERVER_LOCAL = "http://localhost:8080";
 // const JOIN_SERVER = "https://joinjoaomgcd.appspot.com";
-const JOIN_SERVER = "https://testsjoaomgcd.appspot.com";
+const JOIN_SERVER = self.joinServer;
 const JOIN_BASE_URL = `${USE_LOCAL_SERVER ? JOIN_SERVER_LOCAL : JOIN_SERVER}/_ah/api/`;
 const get = async (url,parameters) => {
     const token = await self.getAuthTokenPromise();
@@ -39,6 +39,8 @@ const deleteAutorization = async (endpoint,parameters) => await del(`${JOIN_BASE
 export class ApiServer{
     static async getDevices(){
         const result = await getRegistration("listDevices");
+        if(!result.success) throw Error(result.errorMessage);
+        
         return result.records;
         // const result = await gapi.client.registration.listDevices();
         // const devicesRaw = result.result.records;

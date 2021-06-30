@@ -4,6 +4,7 @@ import { ControlMediaInfos } from "./controlmediainfo.js";
 import { MediaInfo, MediaInfos } from "./mediainfo.js";
 import { DBMediaInfos } from "./dbmediainfo.js";
 import { GCMRequestFile } from "../gcm/gcmapp.js";
+import { ControlDialogSingleChoice } from "../dialog/controldialog.js";
 
 const keyLastControlledMediaInfo = "lastcontrolledmediainfo";
 /**@type {App} */
@@ -14,7 +15,7 @@ export class AppHelperMedia extends AppHelperBase{
      * @param {App} app 
      */
     constructor(args = {app}){
-        super();
+        super(args.app);
         app = args.app;
         EventBus.register(this);  
     }
@@ -119,7 +120,7 @@ export class AppHelperMedia extends AppHelperBase{
         await device.searchAndPlayMedia({packageName:mediaInfo.packageName,query:text});
         const warnedUserAppsNotPlayingKey = "warnuserappsnotplaying";
         if(!app.restoreBoolean(warnedUserAppsNotPlayingKey)){
-            alert("Warning:  Join asks the app to automatically start playing but some apps simply don't do it. Unfortunately that's beyond Join's control.");
+            await alert("Warning:  Join asks the app to automatically start playing but some apps simply don't do it. Unfortunately that's beyond Join's control.");
             app.store(warnedUserAppsNotPlayingKey,true);
         }
     }
@@ -130,23 +131,24 @@ export class AppHelperMedia extends AppHelperBase{
     }
     async onGCMMediaInfo(gcm){
         const device = await app.getDevice(gcm.senderId);
+        if(!device) return;
+        
         const mediaInfo = new MediaInfo(gcm,device);
         await this.updateMediaInfo(mediaInfo);
     }
     async updateMediaInfos(mediaInfos){
+        if(!mediaInfos) return;
         if(!this.controlMediaInfos) return;
         
         // const device = mediaInfos.device;
-        await mediaInfos.convertArtToBase64(await app.getAuthToken());
+        // await mediaInfos.convertArtToBase64(await app.getAuthToken());
         await this.controlMediaInfos.updateMediaInfos(mediaInfos);
     }
     async updateMediaInfo(mediaInfo){
         if(!this.controlMediaInfos) return;
         
-        const device = mediaInfo.device;
         await mediaInfo.convertArtToBase64(await app.getAuthToken());
         await this.controlMediaInfos.updateMediaInfo(mediaInfo);
-        await this.dbMedia.updateSingle({device,mediaInfo});
     }
     async onGCMRespondFile(gcm){
         const responseFile = gcm.responseFile;
@@ -164,11 +166,23 @@ export class AppHelperMedia extends AppHelperBase{
         const device = await app.getDevice(responseFile.senderId);
         if(!device) return;
 
-        const mediaInfosRaw = await app.googleDrive.downloadContent({fileId});
+        let mediaInfosRaw = await app.googleDrive.downloadContent({fileId});
+        mediaInfosRaw = await Encryption.decrypt(mediaInfosRaw);
         const mediaInfos = new MediaInfos(mediaInfosRaw,device);
         await mediaInfos.convertArtToBase64(await app.getAuthToken());
         await this.dbMedia.updateAll(device.deviceId,mediaInfos);
-        const promises = mediaInfos.map(mediaInfo=>this.updateMediaInfo(mediaInfo));
-        await Promise.all(promises);
+        const latest = await mediaInfos.latest;
+        if(!latest) return;
+
+        await this.updateMediaInfo(latest);
+    }
+    async onMediaAppNamePressed(mediaAppNamePressed){
+        const control = this.controlMediaInfos.findMediaInfoControls(mediaAppNamePressed.mediaInfo);
+        const position = mediaAppNamePressed.position;
+        const selected = await ControlDialogSingleChoice.showAndWait({position,choices:control.mediaInfos,choiceToLabelFunc:mediaInfo=>mediaInfo.appName});
+        if(!selected) return;
+
+        selected.date = new Date().getTime();
+        this.updateMediaInfo(selected);
     }
 }

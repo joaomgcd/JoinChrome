@@ -36,6 +36,7 @@
 .devicename{    
     font-size: small;
     font-weight: bold;
+    word-break: break-all;
 }
 
 .devicelocalnetwork{
@@ -45,7 +46,7 @@
     bottom: 0px;
     left: 0px;
     opacity: 1;
-    fill: var(--theme-text-color);
+    fill: var(--theme-text-color-on-accent);
 }
 
 .devicewarning{
@@ -61,4 +62,27 @@
 }
 .devicelocalnetworkcontainer:hover .devicelocalnetworktext {
     display: block;
+}
+.filedragover{
+    padding: 8px;
+    display: none;
+}
+#devicestabroot .filedragover{
+    display: block;
+}
+
+@media only screen and (min-width: 600px) {
+    #devicestabroot #devices{
+        width: 220px;
+    }
+}
+@media only screen and (min-width: 1300px) {    
+    #devicestabroot #devices{
+        width: 400px;
+    }
+}
+@media only screen and (min-width: 1500px) {    
+    #devicestabroot #devices{
+        width: 600px;
+    }
 }

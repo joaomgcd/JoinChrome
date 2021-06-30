@@ -45,13 +45,17 @@ export class DBGoogleDriveLoader{
                     stillLoading = true;
                 }else{
                     await this.reportStatus(`Loading from Google Drive for ${device.deviceName}...`);
-                    items = await this.loadFromGoogleDrive(dbGoogleDriveArgs);                        
+                    // try{
+                        items = await this.loadFromGoogleDrive(dbGoogleDriveArgs);                        
+                    // }catch(error){
+                    //     console.log("Error loading from Google Drive", error);
+                    // }
                 }
             }
             if(dbItems && items){
                 dbItems.updateAll(dbGoogleDriveArgs.deviceId,items);
             }
-            return items;
+            return await Encryption.decrypt(items);
         }
         try{
             if(!dbItems || refresh){

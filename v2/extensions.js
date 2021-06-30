@@ -1,4 +1,15 @@
-
+let UtilFinal = null;
+try{
+	UtilFinal = Util
+}catch(error){
+	try{
+		const {Util} = require("./util.js")
+		UtilFinal = Util
+	}catch{
+		console.log(error);
+		throw error;
+	}
+}
 
 Array.prototype.groupBy = function(keyGetter){
 	if(!this || this.length == 0) return [];
@@ -22,6 +33,38 @@ Array.prototype.groupBy = function(keyGetter){
 Array.prototype.count = function(filter){
 	return this.filter(filter).length;
 }
+Array.prototype.minBy = function(selector){
+	if(this.length == 0) return null;
+
+	let minItem = this[0];
+	let min = selector(minItem) || Number.MAX_SAFE_INTEGER;
+	for(const item of this){
+		const number = selector(item);
+		if(number == undefined || number == null) continue;
+		
+		if(number<min){
+			min = number;
+			minItem = item;
+		}
+	}
+	return minItem;
+} 
+Array.prototype.maxBy = function(selector){
+	if(this.length == 0) return null;
+
+	let maxItem = this[0];
+	let max = selector(maxItem) || Number.MIN_SAFE_INTEGER;
+	for(const item of this){
+		const number = selector(item);
+		if(number == undefined || number == null) continue;
+		
+		if(number>max){
+			max = number;
+			maxItem = item;
+		}
+	}
+	return maxItem;
+} 
 Array.prototype.sortByMultiple = function(invert,...compareFieldFuncs){
     const array = this;
     if(compareFieldFuncs.length == 0){
@@ -46,12 +89,12 @@ Array.prototype.sortByMultiple = function(invert,...compareFieldFuncs){
                 if(rightValue == null && rightValue == null){
                     return 0;
                 }
-                if(Util.toClass(leftValue) == Util.toClass(rightValue)){
-                    if(Util.isString(leftValue)){
+                if(UtilFinal.toClass(leftValue) == UtilFinal.toClass(rightValue)){
+                    if(UtilFinal.isString(leftValue)){
                         comparisonResult = leftValue.toLowerCase().localeCompare(rightValue.toLowerCase()) * -1;
-                    }else if(Util.isNumber(leftValue)){
+                    }else if(UtilFinal.isNumber(leftValue)){
                         comparisonResult =  rightValue - leftValue;
-                    }else if(Util.isBoolean(leftValue)){
+                    }else if(UtilFinal.isBoolean(leftValue)){
                         comparisonResult =  leftValue ? (rightValue ? 0 : -1) : (!rightValue ? 0 : 1);
                     }						
                 }

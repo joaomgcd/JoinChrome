@@ -39,4 +39,7 @@ export class DBGCM{
         gcm.done = true;
         await this.updateSingle(gcm);
     }
+    async clear(){        
+        await this.db.gcm.clear();
+    }
 }

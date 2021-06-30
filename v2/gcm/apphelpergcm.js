@@ -14,6 +14,7 @@ export class AppGCMHandler{
  */
     constructor(_app){
         app = _app;
+        this.app = app;
         EventBus.register(this);  
     }
     async onGCMNotification(gcm){
@@ -25,7 +26,7 @@ export class AppGCMHandler{
         gcm.senderId = gcm.requestNotification.senderId;
         notifications.forEach(async notification=>{
             gcm.notificationId = notification.id;
-            const options = await GCMNotificationBase.getNotificationOptions(notification);
+            const options = await GCMNotificationBase.getNotificationOptions(notification,Util,GoogleDrive);
             Object.assign(options.data,await gcm.gcmRaw);
             options.data.notificationForClick = notification;
             const notificationJoin = new NotificationInfo(options);
@@ -33,6 +34,22 @@ export class AppGCMHandler{
             await app.showNotification(options,gcm);
             //notificationJoin.notify();
         });
+    }
+    async onGCMMediaInfo(gcm){
+        const device = await app.getDevice(gcm.senderId);
+        if(!device) return;
+
+        const {MediaInfo} = await import("../media/mediainfo.js");
+        const mediaInfo = new MediaInfo(gcm,device);
+        // await mediaInfo.convertArtToBase64(await app.getAuthToken());
+
+        const notification = {};
+        await GCMMediaInfoBase.modifyNotification(gcm,notification,Util);
+        await app.showNotification(notification,gcm);
+        
+        const {DBMediaInfos} = await import("../media/dbmediainfo.js");
+        const dbMedia = new DBMediaInfos(app.db);
+        await dbMedia.updateSingle({device,mediaInfo});
     }
     /**
      * 
@@ -47,7 +64,7 @@ export class AppGCMHandler{
         if(justNotification){
             return {push,notification};
         }
-        await AppGCMHandler.handlePushUrl(push);
+        await AppGCMHandler.handlePushUrl(push,gcmPush);
         await AppGCMHandler.handlePushClipboard(push);
         await AppGCMHandler.handlePushFiles(push);
         await AppGCMHandler.handlePushLocation(push);
@@ -59,7 +76,7 @@ export class AppGCMHandler{
             const {SettingEventGhostNodeRedPort} = await import("../settings/setting.js");
             const settingEventGhostNodeRedPort = new SettingEventGhostNodeRedPort();
             const isSendingToApp = await settingEventGhostNodeRedPort.value;
-            if(isSendingToApp){
+            if(isSendingToApp && !push.commandLine){
                 notification = null;
             }
         }
@@ -69,13 +86,18 @@ export class AppGCMHandler{
         const clipboard = push.clipboard;
         if(!clipboard) return;
         
+        if(clipboard.startsWith("http")){
+            await Util.openWindow(clipboard);
+        }
     }
-    static async handlePushUrl(push){
+    static async handlePushUrl(push,gcm){
         const url = push.url;
         if(!url) return;
 
         const opened = await Util.openWindow(url);
         if(!opened) return;
+
+        gcm.done = true;
     }
     static async handlePushFiles(push){        
         var files = push.files;
@@ -115,14 +137,25 @@ export class AppGCMHandler{
         var {push,notification} = await AppGCMHandler.handleGCMPush(app,gcm);
         if(!notification || !push) return;
 
+        const shouldNotify = await this.handleGCMPush({gcm,push,notification});
+        if(!shouldNotify) return;
+        
+        notification = new NotificationInfo(notification);
+        
+        await app.showNotification(notification,gcm);     
+
+        // (await app.dbGCM).addGcm(gcm);
+           
+    }
+    /**
+     * 
+     * @returns {Boolean} true if notification should be created, false otherwise 
+     */
+    async handleGCMPush({gcm, push, notification}){
         if(push.clipboard){
             notification.text = `Click to set to "${push.clipboard}"`;
         }
-        notification = new NotificationInfo(notification);
-        
-        (await app.dbGCM).addGcm(gcm);
-        
-        await app.showNotification(notification,gcm);        
+        return true;
     }
     
     async onGCMNotificationClear(gcm){
@@ -159,4 +192,3 @@ export class AppGCMHandler{
     
 }
 class RequestLoadDevicesFromServer{}
-class RequestRefreshDevices{}

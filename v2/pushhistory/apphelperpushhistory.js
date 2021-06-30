@@ -10,7 +10,7 @@ export class AppHelperPushHistory extends AppHelperBase{
      * @param {App} app 
      */
     constructor(args = {app}){
-        super();
+        super(args.app);
         app = args.app;
         this.device = args.device;
     }
@@ -44,6 +44,9 @@ export class AppHelperPushHistory extends AppHelperBase{
         }finally{
             app.controlTop.loading = false;
         }
+    }
+    async onAppNameClicked(appNameClicked){
+        await app.showDeviceChoiceOnAppNameClicked(appNameClicked,device => device.canShowPushHistory())
     }
     async onAppDeviceSelected(appDeviceSelected){
         await this.refresh(appDeviceSelected.device);

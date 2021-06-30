@@ -24,14 +24,19 @@ export class ControlMediaInfos extends Control{
         return "./v2/media/mediainfos.css";
     }
     findMediaInfoControls(mediaInfoOrInfos){
+        const controlsMediaInfos = this.controlsMediaInfos;
+        if(controlsMediaInfos == null) return null;
+
         mediaInfoOrInfos = mediaInfoOrInfos.asMediaInfos;
-        return this.controlsMediaInfos.find(controlMediaInfoDevice=>controlMediaInfoDevice.mediaInfos.matches(mediaInfoOrInfos));
+        return controlsMediaInfos.find(controlMediaInfoDevice=>controlMediaInfoDevice.mediaInfos.matches(mediaInfoOrInfos));
     }
     async updateMediaInfos(mediaInfos){
         let controlMediaInfoDevice = this.findMediaInfoControls(mediaInfos);
         if(!controlMediaInfoDevice){
             mediaInfos = new MediaInfos(mediaInfos,mediaInfos.device);
             this.mediaInfoLists.push(mediaInfos);
+            // controlMediaInfoDevice = new ControlMediaInfoDevice(mediaInfos,this.tokenGetter);
+            // this.controlsMediaInfos.push(controlMediaInfoDevice);
             await this.render();
         }else{
             await controlMediaInfoDevice.updateMediaInfos(mediaInfos);
@@ -64,6 +69,7 @@ export class ControlMediaInfos extends Control{
             UtilDOM.hide(this.noMediaInfosElement);            
             for(const mediaInfos of this.mediaInfoLists){
                 if(!mediaInfos || mediaInfos.length == 0) continue;
+                if(!mediaInfos.device) continue;
 
                 const controlMediaInfoDevice = new ControlMediaInfoDevice(mediaInfos,this.tokenGetter);
                 const render = await controlMediaInfoDevice.render();
@@ -72,6 +78,13 @@ export class ControlMediaInfos extends Control{
 
             }
         }
+    }
+    async unload(){
+        await super.unload();
+
+        if(!this.controlsMediaInfos) return;
+        
+        await Promise.all(this.controlsMediaInfos.map(control=>control.unload()))
     }
    
 }
@@ -97,9 +110,13 @@ export class ControlMediaInfoDevice extends Control{
     }
     
     async updateMediaInfos(mediaInfos){
-        for(const mediaInfo of mediaInfos){
+        const latestMediaInfo = await mediaInfos.latest;
+        if(!latestMediaInfo) return;
+        
+        await this.updateMediaInfo(latestMediaInfo);
+        /*for(const mediaInfo of mediaInfos){
             await this.updateMediaInfo(mediaInfo);
-        }
+        }*/
         if(!mediaInfos.extraInfo || !this.controlMediaHeader) return;
 
         this.controlMediaHeader.extraInfo = mediaInfos.extraInfo;
@@ -109,7 +126,8 @@ export class ControlMediaInfoDevice extends Control{
         return this.controlsMediaInfos ? this.controlsMediaInfos.find(controlMediaInfo=>controlMediaInfo.mediaInfo.matches(mediaInfo)) : null;
     }
     async updateMediaInfo(mediaInfo){
-        let controlMediaInfo = this.findMediaInfoControl(mediaInfo);
+        let controlMediaInfo = this.controlsMediaInfos[0];
+        // let controlMediaInfo = this.findMediaInfoControl(mediaInfo);
         if(!controlMediaInfo){
             controlMediaInfo = await this.addMediaInfoControl(mediaInfo);
         }else{
@@ -125,9 +143,11 @@ export class ControlMediaInfoDevice extends Control{
         this.controlMediaHeader = new ControlMediaHeader(this.mediaInfos.extraInfo,this.mediaInfos.device);
         const renderHeader = await this.controlMediaHeader.render();                
         this.mediaInfosElement.appendChild(renderHeader);
-        for(const mediaInfo of this.mediaInfos){
-            await this.addMediaInfoControl(mediaInfo);
-        }
+        const latestMediaInfo = await this.mediaInfos.latest;
+        this.addMediaInfoControl(latestMediaInfo);
+        // for(const mediaInfo of this.mediaInfos){
+        //     await this.addMediaInfoControl(mediaInfo);
+        // }
     }
     async addMediaInfoControl(mediaInfo){
         const controlMediaInfo = new ControlMediaInfo(mediaInfo,this.tokenGetter);
@@ -148,7 +168,9 @@ export class ControlMediaInfoDevice extends Control{
     }
     
     async togglePlay(mediaInfo){
-        let controlMediaInfo = this.findMediaInfoControl(mediaInfo);
+        // let controlMediaInfo = this.findMediaInfoControl(mediaInfo);
+        
+        const controlMediaInfo = this.controlsMediaInfos[0];
         if(!controlMediaInfo) return;
         
         await controlMediaInfo.togglePlay();
@@ -211,6 +233,7 @@ export class ControlMediaInfo extends Control{
         this.mediaInfoElement = root;
         this.iconElement = await this.$(".mediaicon");
         this.appElement = await this.$(".mediaapp");
+        this.appSelectorElement = await this.$(".mediaapparrowdown");
         this.deviceElement = await this.$(".mediadevice");
         this.titleElement = await this.$(".mediatitle");
         this.textElement = await this.$(".mediatext");
@@ -220,9 +243,16 @@ export class ControlMediaInfo extends Control{
         this.pauseElement = await this.$("[button=pause]");
         this.searchElement = await this.$(".mediabutton.search");
 
-        const image = await this.getUrlWithToken(Util.getImageUrl(this.mediaInfo.art)) || `/images/join.png`;
-        UtilDOM.setImageSourceOrHide(this.iconElement, image);
+        const token = await this.tokenGetter();
+        Util.getImageAsBase64(this.mediaInfo.art, token).then(image=>{
+            UtilDOM.setImageSourceOrHide(this.iconElement, image || `./images/join.png`);
+        }).catch(error=>null);
+        UtilDOM.setImageSourceOrHide(this.iconElement, `./images/join.png`);
         this.appElement.innerHTML = this.mediaInfo.appName;
+        const selectApp =  async () => await EventBus.post(new MediaAppNamePressed(this.mediaInfo,this.appElement));
+        
+        this.appElement.onclick = async () => await selectApp();
+        this.appSelectorElement.onclick = async () => await selectApp();
         this.deviceElement.innerHTML = this.mediaInfo.device.deviceName;
         this.titleElement.innerHTML = this.mediaInfo.track;
         let artistAndAlbum = this.mediaInfo.artist;
@@ -263,6 +293,12 @@ class MediaButtonPressed{
 }
 class SearchPressed{    
     constructor({mediaInfo,position}){
+        this.mediaInfo = mediaInfo;
+        this.position = position;
+    }
+}
+class MediaAppNamePressed{    
+    constructor(mediaInfo,position){
         this.mediaInfo = mediaInfo;
         this.position = position;
     }

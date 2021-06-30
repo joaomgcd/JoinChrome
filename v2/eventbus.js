@@ -11,8 +11,11 @@ export class EventBus{
 	static registerSticky(obj){
 		return EventBus.get().registerSticky(obj)
 	}
-	static async post(obj){
-		return await (EventBus.get().post(obj));
+	static async post(obj, className){
+		return await (EventBus.get().post(obj,className));
+	}
+	static async postAndWaitForResponse(data, classResponse, timeout, className){  
+		return await (EventBus.get().postAndWaitForResponse(data, classResponse, timeout, className));
 	}
 	static postSticky(obj){
 		return EventBus.get().postSticky(obj)
@@ -34,7 +37,7 @@ export class EventBus{
 			return;
 		}
 		this.registered.push(obj);
-      //back.console.log(registered);
+        // console.log("EventBus registered",this.registered.length);
 	}
 	async registerSticky(obj){	
 		const index = this.registeredSticky.indexOf(obj);
@@ -50,6 +53,7 @@ export class EventBus{
             }
           }
         }
+        // console.log("EventBus registered sticky",this.registeredSticky.length);
 	}
     removeStickyData(clazz){
       if(clazz){
@@ -68,8 +72,10 @@ export class EventBus{
 			this.registeredSticky.splice(indexSticky,1);
 		}
 	}
-    async sendToRegistered(data, registered){      
-		var className = data.constructor.name;
+    async sendToRegistered(data, registered, className){
+		if(!className){
+			className = data.constructor.name;
+		}
 		for (var i = 0; i < registered.length; i++) {
 			const subscriber = registered[i];
 			const eventName = this.getEventName(className);
@@ -79,8 +85,13 @@ export class EventBus{
 			}
 		}
     }
-	async post(data){  
-      await this.sendToRegistered(data,this.registered);
+	async postAndWaitForResponse(data, classResponse, timeout, className){  
+		const resultPromise = this.waitFor(classResponse,timeout);
+		await this.post(data,className);
+		return await resultPromise;
+	}
+	async post(data, className){  
+      await this.sendToRegistered(data,this.registered,className);
 	}
 	async postSticky(data){        
       var className = data.constructor.name;
@@ -91,6 +102,12 @@ export class EventBus{
 	}
     getWaitForPromise(clazz,timeout,registerFunc){
 		const me = this;
+		let nameToWait = null;
+		if(clazz && clazz.constructor && clazz.constructor.name == "String"){
+			nameToWait = clazz;
+		}else{
+			nameToWait = clazz.name;
+		}
 		return new Promise((resolve,reject)=>{        
 			var objToRegister = {};
 			var timeOutObject = null;
@@ -100,7 +117,7 @@ export class EventBus{
 					me.unregister(objToRegister);
 				},timeout);
 			}
-			objToRegister[this.getEventName(clazz.name)] = (data)=>{
+			objToRegister[this.getEventName(nameToWait)] = (data)=>{
 				if(timeOutObject){
 					clearTimeout(timeOutObject);
 				}

@@ -11,7 +11,10 @@ class LoaderMediaInfos extends DBGoogleDriveLoader{
     async loadFromLocalNetwork(args){
         const mediaInfos = await MediaInfos.fromLocalNetwork(args);
         if(mediaInfos){
-            await mediaInfos.convertArtToBase64(args.token);
+            const latest = await mediaInfos.latest;
+            if(latest){
+                await latest.convertArtToBase64(args.token);
+            }
         }
         return mediaInfos;
     }    
@@ -42,9 +45,10 @@ export class MediaInfos extends Array{
 		}
         super();
         this.device = device
-        if(Util.isArray(initial)){
+        if(Util.isArray(initial) || Util.isType(initial,"MediaInfos")){
             initial.mediaInfosForClients = initial;
-            initial.extraInfo = {mediaVolume:1,maxMediaVolume:15};
+            const first = initial[0] || {};
+            initial.extraInfo = {mediaVolume:first.mediaVolume || 1,maxMediaVolume: first.maxMediaVolume || 15};
         }
         this.extraInfo = initial.extraInfo;
         if(!initial.mediaInfosForClients) return;
@@ -61,7 +65,8 @@ export class MediaInfos extends Array{
         return mediaInfos;
     }
     static async fromLocalNetwork({device,token}){
-        const raw = await device.getViaLocalNetwork({path:`media`,token});
+        let path = `media`;
+        const raw = await device.getViaLocalNetwork({path,token});
         const result = new MediaInfos(raw.payload,device);
         return result;
     }
@@ -87,6 +92,8 @@ export class MediaInfos extends Array{
         }
     }
     matches(otherMediaInfos){
+        if(!this.device || !otherMediaInfos || !otherMediaInfos.device) return;
+        
         return this.device.deviceId == otherMediaInfos.device.deviceId
     }
     async convertArtToBase64(token){   
@@ -96,6 +103,20 @@ export class MediaInfos extends Array{
     get asMediaInfos(){
         return this;
     }
+    /**@type {MediaInfo} */
+    get latest(){
+        return MediaInfos.getLatest(this);
+    }
+    static getLatest(mediaInfosArray){
+        mediaInfosArray.sortByMultiple(false,mediaInfo=>{
+            if(mediaInfo.playing) return Number.MAX_SAFE_INTEGER;
+            
+            if(mediaInfo.date) return mediaInfo.date;
+            
+            return Number.MIN_SAFE_INTEGER;
+        })
+        return mediaInfosArray[0];
+    }
 }
 
 export class MediaInfo{
@@ -104,7 +125,7 @@ export class MediaInfo{
         this.device = device;
     }
     matches(otherMediaInfo){
-        return this.packageName == otherMediaInfo.packageName && this.device.deviceId == otherMediaInfo.device.deviceId
+        return /*this.packageName == otherMediaInfo.packageName &&*/ this.device.deviceId == otherMediaInfo.device.deviceId
     }
     update(mediaInfo){
         Object.assign(this,mediaInfo);

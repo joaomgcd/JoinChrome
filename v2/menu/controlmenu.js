@@ -29,7 +29,7 @@ const cssMenu = `
 	transition: all 0.3s;
 }
 #menuheader{	
-    background-image: url(/images/account_background.png);
+    background-image: url(./images/account_background.png);
 	background-size: contain;
 	color: white;
 	/* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
@@ -170,6 +170,9 @@ export class ControlMenu extends Control{
         this.menuBackgroundElement.style["background-color"] = `rgba(0, 0, 0, ${value})`;
     }
     
+    findSelectedControlMenuEntry(){
+        return this.controlsMenuEntries.find(controlMenuEntry => controlMenuEntry.isSelected);
+    }
     set selectedEntry(menuEntry){
         const controlMenuEntry = this.controlsMenuEntries.find(controlMenuEntry => {
             return Object.is(controlMenuEntry.menuEntry,menuEntry)
@@ -188,6 +191,16 @@ export class ControlMenu extends Control{
         this.accountNameElement.innerHTML = user.name;
         this.accountEmailElement.innerHTML = user.email;
     }
+    async renderTabsTo(element){
+        element.innerHTML = "";
+        const selected = this.findSelectedControlMenuEntry();
+        for(const menuEntry of this.menu){
+            const control = new ControlMenuEntry(menuEntry,true);
+            control.isSelected = Object.is(selected.menuEntry,menuEntry);
+            let render = await control.render();
+            element.appendChild(render);
+        }
+    }
 }
 const cssMenuEntry = `
 .menuentry{
@@ -195,13 +208,24 @@ const cssMenuEntry = `
 	padding: 16px;
 	padding-top: 8px;
 	padding-bottom: 8px;
-	cursor: pointer;
+    cursor: pointer;
+}
+.menuentry.nolabel{
+	padding: 0px;
 }
 .menuentry .icon{
-	margin-right: 32px;
+}
+.menuentry .label{
+    margin-left: 32px;
+}
+.menuentry.nolabel .label{
+    display: none;
 }
 .menuentry.selected{
 	background-color: var(--theme-accent-color-light);
+}
+.menuentry.nolabel.selected{
+	background-color: transparent;
 }
 .menuentry svg{
 	fill: var(--theme-text-color);
@@ -218,9 +242,11 @@ export class ControlMenuEntry extends Control{
      * 
      * @param {MenuEntry} menuEntry 
      */
-    constructor(menuEntry){
+    constructor(menuEntry,hideLabel){
         super();
         this.menuEntry = menuEntry;
+        this.hideLabel = hideLabel;
+        EventBus.register(this);
     }
     // getHtmlFile(){
     //     return "./v2/menu/menuentry.html";
@@ -235,12 +261,16 @@ export class ControlMenuEntry extends Control{
         return cssMenuEntry;
     }
     
+    async onMenuEntry(menuEntry){
+        UtilDOM.addOrRemoveClass(this.menuElement,this.menuEntry == menuEntry,"selected");
+    }
     async renderSpecific({root}){ 
         this.menuElement = root;     
         this.iconElement =  await this.$(".icon");   
         this.iconImage =  this.iconElement.querySelector("img");     
         this.labelElement = await this.$(".label");   
 
+        UtilDOM.addOrRemoveClass(this.menuElement,this.hideLabel,"nolabel");
         UtilDOM.addOrRemoveClass(this.menuElement,this.isSelected,"selected");
         if(this.menuEntry.isIconSet){
             if(this.menuEntry.isIconSvg){

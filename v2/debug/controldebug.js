@@ -31,19 +31,42 @@ export class ControlDebug extends Control{
         const showAllDebugs = window.location.href.indexOf("debug")>0;
         if(!showAllDebugs && !isError) return;
 
+        const body = `This happenened when I: _____
+
+Error Details:
+${message}`
+        this.reportElement.href = `mailto:support@joaoapps.com?subject=${encodeURIComponent("[Join Desktop] Error")}&body=${encodeURIComponent(body)}`
         this.debugTextElement.innerHTML = message;
-        UtilDOM.show(this.debugTextElement);
+        UtilDOM.show(this.wrapperElement);
     }    
     getHtml(){
-        return `<div id="debug" class="hidden"></div>`;
+        return `
+        <div id="debugwrapper" class="hidden">
+            <div id="debug"></div>
+            <a id="debugreportlink">Report</a>
+            <div id="debugclose">Close X</div>
+        </div>`;
     }
-    // getHtmlFile(){
-    //     return "./v2/debug/debug.html";
-    // }
-    
+    getStyle(){
+        return `
+            #debugwrapper{
+                display: flex;
+            }
+            #debug{
+                flex-grow: 1;
+            }
+            #debugclose{
+                cursor: pointer;
+            }
+        `;
+    }
     async renderSpecific({root}){
-        this.debugTextElement = root;
+        this.wrapperElement = root;
+        this.debugTextElement = await this.$("#debug");
+        this.debugCloseElement = await this.$("#debugclose");
+        this.reportElement = await this.$("#debugreportlink");
 
+        this.debugCloseElement.onclick = ()  => UtilDOM.hide(this.wrapperElement)
         return root;
     }
 }

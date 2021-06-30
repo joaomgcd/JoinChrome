@@ -12,7 +12,7 @@ if(typeof window !== 'undefined'){
           webRoot = 'http://' + window.location.host.replace("8081","8080") + '/';
     }
 }
- webRoot = 'https://testsjoaomgcd.appspot.com/';
+webRoot = self.joinServer;
 const apiRoot =  webRoot + '_ah/api';
 
 export class ApiLoader{
@@ -55,6 +55,9 @@ export class ApiLoader{
                 }).then(()=>{
                     console.log("Done loading APIs!");
                     resolve();
+                },e=>{
+                    console.error(e);
+                    reject(e);
                 });
             };
             if(gapi.client && gapi.client.oauth2){

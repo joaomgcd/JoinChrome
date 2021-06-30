@@ -3,19 +3,25 @@ import { UtilDOM } from '../utildom.js';
 import { AppContext } from '../appcontext.js';
 import { EventBus } from '../eventbus.js';
 
-const selectedDeviceKey = "selectedDeviceId"
 export class ControlDevices extends Control {
-    constructor(devices){
+    constructor({devices,selectedIdOrIds,hasToHaveSelection,controlId}){
         super();
+        this.selectedDeviceIdOrIds = selectedIdOrIds;
         this.devices = devices;
+        this.hasToHaveSelection = hasToHaveSelection;
+        this.id = controlId;
+    }
+    
+    get isMultiple(){
+        return Util.isArray(this.selectedDeviceIdOrIds);
     }
     set devices(devices){
         this._devices = devices;
-        const selectedDeviceId = AppContext.context.localStorage.get(selectedDeviceKey);
+        const selectedDeviceIdOrIds = this.selectedDeviceIdOrIds;
         var anySelected = false;
         this.deviceControls = devices.map(device=>{
-            const controlDevice = new ControlDevice(device);
-            const isSelected = device.deviceId == selectedDeviceId;
+            const controlDevice = new ControlDevice(device,this);
+            const isSelected = this.isMultiple ? selectedDeviceIdOrIds.includes(device.deviceId) : device.deviceId == selectedDeviceIdOrIds;
             controlDevice.setIsSelected(isSelected);
             if(isSelected){
                 anySelected = true;
@@ -26,7 +32,7 @@ export class ControlDevices extends Control {
             this.setSelectedDevice(null);
             return;
         }
-        if(!anySelected){
+        if(!anySelected && this.hasToHaveSelection){
             this.setSelectedDevice(this.deviceControls[0]);
         }
     }
@@ -37,7 +43,7 @@ export class ControlDevices extends Control {
 		return this.devices.getDevice(deviceId);
 	}
     async testLocalNetworkDevices(){
-        return await this.devices.testLocalNetworkDevices();
+        return await this.devices.testLocalNetworkDevices({});
     }
     // getHtmlFile(){
     //     return "./v2/device/devices.html";
@@ -46,6 +52,7 @@ export class ControlDevices extends Control {
         return `<div>
                     <div id="nodevices" class="hidden">No Devices</div>
                     <div id="loadingdevices" class="hidden">Loading Devices...</div>
+                    <div class="filedragover">Drop Files on a device to upload</div>
                     <div id="devices" class="hidden"></div>        
                 </div>`;
     }
@@ -53,24 +60,42 @@ export class ControlDevices extends Control {
         return "./v2/device/devices.css";
     }
     setSelectedDevice(deviceControl,wasClick){
-        this.deviceControls.forEach(deviceControl=>deviceControl.setIsSelected(false));
+        if(!this.isMultiple || !deviceControl){
+            this.deviceControls.forEach(deviceControl=>deviceControl.setIsSelected(false));
+        }
         if(!deviceControl){
-            AppContext.context.localStorage.delete(selectedDeviceKey);
             EventBus.postSticky(new SelectedDevice(null));
+            this.selectedDeviceIdOrIds = this.isMultiple ? [] : null;
             return;
         }
-        deviceControl.setIsSelected(true,wasClick);
-        AppContext.context.localStorage.set(selectedDeviceKey,deviceControl.device.deviceId);
+        const isSelected = this.isMultiple ? !deviceControl.isSelected : true;
+        deviceControl.setIsSelected(isSelected,wasClick);
+        this.selectedDeviceIdOrIds = this.isMultiple ? this.currentSelectedDeviceIds : deviceControl.device.deviceId;
+    }
+    set currentSelectedDeviceIds(value){
+        this.selectedDeviceIdOrIds = value;
+    }
+    get currentSelectedDeviceIds(){
+        if(!this.deviceControls) return [];
+
+        const selectedDeviceControls = this.deviceControls.filter(deviceControl=>deviceControl.isSelected);
+        const selectedIds = [];
+        for(const deviceControl of selectedDeviceControls){
+            selectedIds.push(deviceControl.device.deviceId);
+        }
+        return selectedIds;
     }
     async renderSpecific({root}){
         this.devicesControl = await this.$("#devices");
         this.noDevicesControl = await this.$("#nodevices");
         this.loadingDevicesControl = await this.$("#loadingdevices");
+        this.fileDragOverElement = await this.$(".filedragover");
 
         if(!this.deviceControls || this.deviceControls.length == 0){
             UtilDOM.hide(this.devicesControl);
             UtilDOM.show(this.noDevicesControl);
-            UtilDOM.show(this.loadingDevicesControl);
+            UtilDOM.hide(this.loadingDevicesControl);
+            UtilDOM.hide(this.fileDragOverElement);
             return;
         }
         UtilDOM.hide(this.noDevicesControl);
@@ -84,6 +109,13 @@ export class ControlDevices extends Control {
                 this.setSelectedDevice(deviceControl,true);
             }
             this.devicesControl.appendChild(deviceRender);
+            UtilDOM.handleDroppedFiles(deviceRender, async files => {
+                // UtilDOM.hide(this.fileDragOverElement);
+                await deviceControl.requestPushFiles(files);
+            },async ()=>{
+                await this.setSelectedDevice(deviceControl,true,false);
+                // UtilDOM.show(this.fileDragOverElement);
+            });
         }
         return root;
     }
@@ -107,9 +139,10 @@ const deviceHtml = `<div class='device'>
                         <div colspan='2' class='devicename'>DEVICE_NAME</div>
                     </div>`
 export class ControlDevice extends Control{
-    constructor(device){
+    constructor(device,controlDevices){
         super();
         this.device = device;
+        this.controlDevices = controlDevices;
     }
     // getHtmlFile(){
     //     return "./v2/device/device.html";
@@ -124,11 +157,14 @@ export class ControlDevice extends Control{
         this.deviceLocalNetworkElement = await this.$(".devicelocalnetworkcontainer");
         this.deviceWarningElement = await this.$(".devicewarningcontainer");
 
-        this.deviceNameElement.innerHTML = this.device.deviceName;
+        this.deviceNameElement.innerHTML = this.device.isMyDevice ? `This Device (${this.device.deviceName})` : this.device.deviceName;
         this.deviceIconElement.src = this.device.getIcon();
         await this.setIsSelected(this.isSelected);
         this.updateLocalNetwork();
         return root;
+    }
+    async requestPushFiles(files){
+        await EventBus.post(new RequestPushFiles({files,device:this.device}));
     }
     updateLocalNetwork(){
         UtilDOM.showOrHide(this.deviceLocalNetworkElement, this.device.canContactViaLocalNetwork);
@@ -142,6 +178,7 @@ export class ControlDevice extends Control{
             await EventBus.postSticky(new SelectedDevice(this,wasClick));
             this.root.classList.add("selecteddevice");
         }else{            
+            await EventBus.postSticky(new UnselectedDevice(this,wasClick));
             this.root.classList.remove("selecteddevice");
         }
     }
@@ -151,4 +188,16 @@ class SelectedDevice {
         this.controlDevice = controlDevice;
         this.wasClick = wasClick;
 	}
+}
+class UnselectedDevice {
+	constructor(controlDevice,wasClick){
+        this.controlDevice = controlDevice;
+        this.wasClick = wasClick;
+	}
+}
+class RequestPushFiles{
+    constructor({files,device}){
+        this.files = files;
+        this.device = device;
+    }
 }

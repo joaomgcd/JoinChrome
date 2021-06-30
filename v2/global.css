@@ -2,6 +2,7 @@
 	--theme-accent-color: #FF9800;
 	--theme-accent-color-lowlight: #757575;
 	--theme-text-color: black;
+	--theme-text-color-on-accent: white;
 	--theme-background-color: white;
 	--theme-background-color-hover: #eeeeee;
 	--theme-background-color-panel: #F0F0F0;
@@ -56,6 +57,14 @@ body{
   background-color: var(--theme-background-color);
   z-index: 999999999999999;
   box-shadow: 0 1px 5px 0 rgba(60,64,67,.15), 0 4px 4px 0 rgba(60,64,67,.10), 0 -0.1px 3px 0 rgba(60,64,67,.08);
+  -webkit-app-region: no-drag;
+  max-width: 500px;
+}
+.dialog *{
+  -webkit-app-region: no-drag;
+}
+#mycontroldialogsuperdimmedbackground{
+  -webkit-app-region: no-drag;
 }
 a{
   color: var(--theme-accent-color);
@@ -72,6 +81,12 @@ a:hover{
   overflow-x: hidden;
 }
 
+svg.delete{
+  cursor:pointer;
+}
+svg.delete:hover{
+  fill: var(--theme-accent-color);
+}
 .buttontext{
 	align-self: center;
 	flex-grow: 1;
@@ -105,7 +120,7 @@ a:hover{
     position:relative;    
     width:100%;
   }
-input 				{
+input:not([type=checkbox]){
   font-size:18px;
   padding:10px 10px 10px 5px;
   display:block;
@@ -121,7 +136,7 @@ textarea{
   input:focus 		{ outline:none; }
   
   /* LABEL ======================================= */
-  label 				 {
+  input:not([type=checkbox]) ~ label 				 {
     color:#999; 
     font-size:18px;
     font-weight:normal;
@@ -131,9 +146,12 @@ textarea{
     top:10px;
     transition:0.2s ease all; 
   }
+  label{
+    color: var(--theme-accent-color);
+  }
   
   /* active state */
-  input:focus ~ label, input:valid ~ label ,#generatedUrl label		{
+  input:focus ~ label, input:not([type=checkbox]):valid ~ label ,#generatedUrl label		{
     top:-20px;
     font-size:14px;
     color:var(--theme-accent-color);
@@ -208,6 +226,7 @@ textarea{
     cursor: pointer;
     z-index: 0;
     padding: 0.7em 0.57em;
+    color: var(--theme-text-color-on-accent);
   }
   .disabled{
     cursor: not-allowed;
@@ -219,5 +238,5 @@ textarea{
       color: red;
   }
   svg{
-    fill: var(--theme-background-color);
+    fill: var(--theme-text-color-on-accent);
   }

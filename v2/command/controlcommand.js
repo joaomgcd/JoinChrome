@@ -2,20 +2,24 @@ import { Control } from '../control.js';
 import { Commands } from './command.js';
 import { AppContext } from '../appcontext.js';
 import { EventBus } from '../eventbus.js';
+import { UtilDOM } from '../utildom.js';
 
 export class ControlCommands extends Control {
-    constructor(){
+    constructor(args = {initial,hideBookmarklets,shortcutsAndCommands}){
         super();
-        const commands = new Commands();
-        this.commandControls = commands.map(command=>new ControlCommand(command));
+        if(!args.initial){
+            args.initial = [];
+        }
+        this.commands = new Commands(args.initial,args);
+        this.shortcutsAndCommands = args.shortcutsAndCommands;
         this.onSelectedDevice = selectedDevice => {
             this.selectedControlDevice = selectedDevice.controlDevice;
             this.updateEnabled();
         }
         EventBus.registerSticky(this);
     }
-    getHtmlFile(){
-        return "./v2/command/commands.html";
+    getHtml(){
+        return `<div class='button-container'></div>`;
     }
     getStyleFile(){
         return "./v2/command/commands.css";
@@ -25,12 +29,25 @@ export class ControlCommands extends Control {
     }*/
     async renderSpecific({root}){
         root.innerHTML = "";
+        this.commandControls = this.commands.map(command=>{
+            const shortcutAndCommand = this.shortcutsAndCommands.find(shortcutAndCommand => shortcutAndCommand.command.matches(command));
+            let shortcut = null;
+            if(shortcutAndCommand){
+                shortcut = shortcutAndCommand.shortcut;
+            }
+            return new ControlCommand(command,shortcut);
+        });
         //const selectedDevice = this.getSelectedDevice();
         for(const commandControl of this.commandControls){
             const commandRender = await commandControl.render();
             commandRender.onclick = async e => {
                 if(!commandControl.isEnabled){
                     console.log("Clicked disabled command",commandControl.command.getText());
+                    return;
+                }
+                const selectedControlDevice = this.selectedControlDevice;
+                if(!selectedControlDevice){
+                    alert("Please select a device first");
                     return;
                 }
                 //console.log("Clicked command",commandControl.command.getText());
@@ -43,6 +60,8 @@ export class ControlCommands extends Control {
         return root;
     }
     updateEnabled(){
+        if(!this.commandControls) return;
+
         this.commandControls.forEach(commandControl=>commandControl.updateEnabled(this.selectedControlDevice));
     }
     setLink({command,device,apiKey}){
@@ -51,18 +70,42 @@ export class ControlCommands extends Control {
     }
 }
 export class ControlCommand extends Control {
-    constructor(command){
+    constructor(command,shortcut){
         super();
         this.command = command;
+        this.shortcut = shortcut;
     }
-    getHtmlFile(){
-        return "./v2/command/command.html";
+    getHtml(){
+        return `<div class="devicebutton" role="button">
+            <div class="commandiconwrapper"></div>
+            <a class='buttonlink' ></a>
+            <a class='buttonlinkextended' ></a>
+            <svg class="commandkeyboardshortcut" style="width:24px;height:24px" viewBox="0 0 24 24"><path d="M4,5A2,2 0 0,0 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7A2,2 0 0,0 20,5H4M4,7H20V17H4V7M5,8V10H7V8H5M8,8V10H10V8H8M11,8V10H13V8H11M14,8V10H16V8H14M17,8V10H19V8H17M5,11V13H7V11H5M8,11V13H10V11H8M11,11V13H13V11H11M14,11V13H16V11H14M17,11V13H19V11H17M8,14V16H16V14H8Z" /></svg>
+            <div class="commandkeyboardshortcuttext"></div>
+        </div>`;
     }
     async renderSpecific({root}){
         this.commandButton = root;
         this.commandTextElement = await this.$(".buttonlink");
+        this.commandTextExtendedElement = await this.$(".buttonlinkextended");
+        this.commandIconWrapperElement = await this.$(".commandiconwrapper");
+        this.keyboardShortcutElement = await this.$(".commandkeyboardshortcut");
+        this.keyboardShortcutTextElement = await this.$(".commandkeyboardshortcuttext");
 
         this.commandTextElement.innerHTML = this.command.getText();
+        this.commandButton.setAttribute("aria-label",this.command.getText());
+        this.setExtendedText();
+
+        const icon = await UtilDOM.getUsableImgOrSvgElementSrc({src:this.command.icon,defaultImage:"./images/join.png"});
+        UtilDOM.setInnerHTMLOrHide(this.commandIconWrapperElement,icon);
+        UtilDOM.showOrHide(this.keyboardShortcutElement,this.command.supportsKeyboardShortcut);
+        UtilDOM.addOrRemoveClass(this.keyboardShortcutElement,this.shortcut?true:false,"configured");
+        const shortcutText = this.shortcut ? this.shortcut.toString() : null;
+        UtilDOM.setInnerHTMLOrHide(this.keyboardShortcutTextElement,shortcutText);
+        this.keyboardShortcutElement.onclick = async (e) => {
+            e.stopPropagation();
+            await EventBus.post(new KeyboardShortcutClicked(this.command));
+        }
 
         return root;
     }
@@ -70,15 +113,24 @@ export class ControlCommand extends Control {
         return !this.commandButton.classList.contains("disabled");
     }
     updateEnabled(deviceControl){
-        if(!this.commandButton) return;
+        if(!this.commandButton || !deviceControl) return;
 
-        if(deviceControl && deviceControl.device && this.command.shouldEnable(deviceControl.device)){
-            this.commandButton.classList.remove("disabled");
-        }else{            
-            this.commandButton.classList.add("disabled");
-        }
+        const device = deviceControl.device;
+        const enabled = deviceControl && deviceControl.device && this.command.shouldEnable(deviceControl.device);
+        UtilDOM.showOrHide(this.commandButton,enabled);
+        // UtilDOM.addOrRemoveClass(this.commandButton,!enabled,"disabled")
+        this.setExtendedText(device);
+    }
+    setExtendedText(device){
+        const extendedText = this.command.getTextExtended(device);
+        this.commandTextExtendedElement.innerHTML = extendedText || this.command.getText();
     }
     set link(value){
         this.commandTextElement.href = value
+    }
+}
+class KeyboardShortcutClicked{
+    constructor(command){
+        this.command = command;
     }
 }

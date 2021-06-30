@@ -5,17 +5,20 @@ import { ControlDebug } from "../debug/controldebug.js";
 import { ApiServer } from "../api/apiserver.js";
 import { EventBus } from "../eventbus.js";
 import { UtilDOM } from "../utildom.js";
-import { GCMLocalNetworkTest } from "../gcm/gcmapp.js";
+import { GCMLocalNetworkTest,GCMWebSocketRequest } from "../gcm/gcmapp.js";
 import { App } from "../app.js";
 import { SenderLocal } from "../api/sender.js";
 import { Devices } from "./device.js";
+import { AppContext } from "../appcontext.js";
 
 /** @type {App} */
 let app = null;
+
 export class AppHelperDevices extends AppHelperBase{
-    constructor(args = {app}){
-        super();
+    constructor(args = {app,allowUnsecureContent}){
+        super(args.app);
         app = args.app;
+        this.allowUnsecureContent = args.allowUnsecureContent;
     }
     async load(){
         app.controlTop.loading = true;
@@ -27,14 +30,48 @@ export class AppHelperDevices extends AppHelperBase{
         EventBus.register(this);
         app.controlTop.appName = `Join`;
         app.controlTop.appNameClickable = false;
-        const devices = await (await app.dbDevices).getAll()
+        const devices = await app.devicesFromDb;
         
-        this.controlDevices = new ControlDevices(devices);
-        await app.addElement(this.controlDevices);
+        const elementDevicesTabRoot = await UtilDOM.createElement({
+            type:"div",
+            id:"devicestabroot",
+            parent: app.contentElement
+        })
+        UtilDOM.addStyle(`
+            #devicestabroot{
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                width: 100vw;
+                overflow-x: hidden;
+            }
+            @media only screen and (min-width: 600px) {
+                #devicestabroot{
+                    flex-direction: row;
+                }
+            }
+        `);
+        let selectedId = null;
+        const lastSelected = await app.lastSelectedDevice;
+        if(lastSelected){
+            selectedId = lastSelected.deviceId;
+        }
+        this.controlDevices = new ControlDevices({devices,selectedIdOrIds:selectedId,hasToHaveSelection:true});
+        
+        await app.addElement(this.controlDevices,elementDevicesTabRoot);
         this.controlDevices.hideNoDevices();
 
-        this.controlCommands = new ControlCommands();
-        await app.addElement(this.controlCommands);
+        const {SettingCustomActions} = await import("../settings/setting.js")
+        const customActions = await (new SettingCustomActions({devices}).value);
+        const {CommandCustom} = await import("../command/command.js");
+        const customCommands = customActions
+            .filter(customAction=>customAction.name && customAction.command)
+            .map(customAction => {
+                const args = customAction.commandArgs;
+                return new CommandCustom(args);
+            })
+        this.controlCommands = new ControlCommands({initial: customCommands, hideBookmarklets:app.hideBookmarklets,shortcutsAndCommands:await app.configuredShortcutsAndCommands});
+        await app.addElement(this.controlCommands,elementDevicesTabRoot);
         if(devices.length == 0){
             UtilDOM.hide(this.controlCommands);
         }    
@@ -42,31 +79,98 @@ export class AppHelperDevices extends AppHelperBase{
         app.controlTop.loading = false;
 
     }
+    async onKeyboardShortcutClicked(keyboardShortcutClicked){
+        const command = keyboardShortcutClicked.command;
+        if(!command) return;
+
+        const {ControlDialogOk} = await import("../dialog/controldialog.js");
+        const existingShortcutForCommand = (await app.configuredShortcutsAndCommands).find(shortcutAndCommand => shortcutAndCommand.command.matches(command));
+        if(existingShortcutForCommand){
+            const buttons = [
+                {text:"Delete", shouldDelete:true},
+                {text:"Replace", shouldDelete:true, shouldConfigure:true},
+                {text:"Keep"}
+            ];
+            const button = (await ControlDialogOk.showAndWait({title:"Existing shortcut",text:"Command already has a shortcut. What do you want to do?",buttons,buttonsDisplayFunc:button => button.text})) || {};
+            if(button.shouldDelete){
+                await app.removeKeyboardShortcut(existingShortcutForCommand.shortcut);
+                await this.updateKeyboardShortcutsOnCommands();
+            }
+            if(!button.shouldConfigure) return;
+        }
+        const {ControlKeyboardShortcut} = await import("../keyboard/keyboardshortcut.js");
+        const shortcut = await ControlKeyboardShortcut.setupNewShortcut();
+        if(!shortcut) return;
+
+        const shortcutAndCommand = new ShortcutConfigured({shortcut,command});
+        await app.addKeyboardShortcutAndCommand(shortcutAndCommand);
+
+        await this.updateKeyboardShortcutsOnCommands();
+        let text = `Press ${shortcut} to run the ${command.getText()} command on the last selected device!`;
+        if(!app.areShortcutsGlobal){
+            text += `<br/><br/>Note: shortcuts will only work while this window is in focus! Use the <a target="_null" href="https://joaoapps.com/join/desktop/">Desktop App</a> to get shortcuts that work globally!`;
+        }
+        await ControlDialogOk.showAndWait({title:"Shortcut Configured!",text});
+    }
+    async updateKeyboardShortcutsOnCommands(){
+        this.controlCommands.shortcutsAndCommands = await app.configuredShortcutsAndCommands;
+        await this.controlCommands.render();
+    }
     updateUrl(){
         Util.changeUrl(`?devices`);
     }
     async updateDBDevices(devices){
-        const dbDevices = (await app.dbDevices);
-        await dbDevices.update(devices);
+        await app.setDevices(devices);
     } 
     async updateDBDevice(device){
-        const dbDevices = (await app.dbDevices);
-        await dbDevices.updateSingle(device);
+        await app.updateDevice(device);
     } 
     async loadDevicesFromServer(){
+
         app.controlTop.loading = true;        
         await app.loadJoinApis();
-        const devices = new Devices(await ApiServer.getDevices());
-        await this.refreshDevices(devices);
-        await this.updateDBDevices(devices);
-        if(devices.length > 0){
-            UtilDOM.show(this.controlCommands);
-        }
-        await devices.testLocalNetworkDevices();
-        app.controlTop.loading = false;
+        try{
+            const devicesFromServer = await ApiServer.getDevices();
+            const devices = new Devices(devicesFromServer);
+            const existing = await this.getDevices();
+            if(existing){
+                existing.transferSockets(devices);
+            }
+            await this.refreshDevices(devices);
+            await this.updateDBDevices(devices);
+            if(devices.length > 0){
+                UtilDOM.show(this.controlCommands);
+            }
+            await devices.testLocalNetworkDevices({allowUnsecureContent:app.allowUnsecureContent,token:await app.getAuthToken()});
+            await this.refreshDevices(devices);
+            app.controlTop.loading = false;
+            
+            // await app.checkConnectedClients();
+            EventBus.post(devices);
+            return devices;
         
-        // await app.checkConnectedClients();
-        return devices;
+        }catch(error){           
+            
+            const {ControlDialogOk} = await import("../dialog/controldialog.js"); 
+            await ControlDialogOk.showAndWait({title:"Error Loading Join Desktop",text:`Seems like your user is no longer authenticated. Will now sign out so you can sign in again.`,timeout:30000})                
+            const googleAccount = await app.googleAccount;
+            await googleAccount.signOut();
+            return new Devices();
+        }
+    }
+    async onConnectViaLocalNetworkSuccess(){       
+        await this.refreshDevices();
+    }
+    async onConnectViaLocalNetworkFailure(){       
+        await this.refreshDevices();
+    }
+    async onRequestPushFiles(request){
+        const files = request.files;
+        if(!files) return;
+
+        const device = request.device || this.selectedDevice
+        const token = await app.getAuthToken();
+        await device.pushFiles({files,token});
     }
     async refreshDevices(devices){
         if(!this.controlDevices) return;
@@ -89,8 +193,7 @@ export class AppHelperDevices extends AppHelperBase{
         const devicesFromControl = this.controlDevices.devices;
         if(devicesFromControl) return devicesFromControl;
 
-        const dbDevices = await app.dbDevices;
-        var devices = await dbDevices.getAll();
+        var devices = await app.devicesFromDb;
         if(!devices || devices.length == 0){
             devices = await this.loadDevicesFromServer();
         }
@@ -161,7 +264,10 @@ export class AppHelperDevices extends AppHelperBase{
     async openMenuEntry(request,menuEntry){
         const device = request.device;
         const args = await menuEntry.load(device.deviceId);
-        app.selectMenuEntry({menuEntry,args});
+        menuEntry.args = args;
+        await EventBus.post(menuEntry)
+        menuEntry.args = null;
+        // app.selectMenuEntry({menuEntry,args});
     }
     async onRequestOpenSms(request){
         await this.openMenuEntry(request,app.menuEntrySms);
@@ -179,6 +285,7 @@ export class AppHelperDevices extends AppHelperBase{
         await this.refreshDevices(request.devices);
     }
     async onSelectedDevice(selectedDevice){
+        
         if(!selectedDevice.wasClick) return;
 
         const controlDevice = selectedDevice.controlDevice;
@@ -186,10 +293,12 @@ export class AppHelperDevices extends AppHelperBase{
 
         const device = controlDevice.device;
 
+        app.lastSelectedDevice = device;
         if(this.apiBuilder){
             this.apiBuilder.device = device;
         }
         
+        if(AppContext.context.allowUnsecureContent) return;
         if(!device.hasFixableIssue) return;
 
         var serverAddress = device.tentativeLocalNetworkServerAddress;
@@ -213,80 +322,7 @@ export class AppHelperDevices extends AppHelperBase{
         await this.refreshDevices();
     }
     
-    async onGCMLocalNetworkRequest(gcm){
-        if(!app.isBrowserRegistered) return;
-
-		var serverAddress = gcm.secureServerAddress;
-		var senderId = gcm.senderId;
-		if(!serverAddress) return;
-
-        
-		const device = await this.getDevice(senderId)
-		if(!device) return;
-        
-		// device.canContactViaLocalNetwork = serverAddress;
-		// gcm.socket = device.getSocket();
-		console.log(`Testing local network on ${serverAddress}...`);
-		
-        const gcmTest = new GCMLocalNetworkTest();
-        const sender = new SenderLocal();
-		// gcmTest.senderId = app.myDeviceId;
-		try{           
-            const options = {
-                devices: [device],
-                gcmRaw: await gcmTest.gcmRaw,
-                overrideAddress: serverAddress
-            }
-            await sender.send(options);
-            // const url = `${serverAddress}test`;
-            // const token = await app.getAuthToken();
-            // await UtilWeb.get({url,token});
-            device.canContactViaLocalNetwork = serverAddress;
-            device.tentativeLocalNetworkServerAddress = null;
-			// const result = await device.send(gcmTest);
-			// if(!result || !result.success) {
-			// 	device.canContactViaLocalNetwork = false;
-			// 	return
-			// }
-			/*var webSocketServerAddress = me.webSocketServerAddress;
-			if(!webSocketServerAddress) return;
-
-			if(me.socket) return;
-			
-			me.socket = new WebSocket(webSocketServerAddress);
-			const socketDisconnected = () => {					
-				device.canContactViaLocalNetwork = false;
-				device.setSocket(null);
-			}
-			me.socket.onopen = e =>{
-				console.log("Socket open",e);
-				const gcmSocketTest = new GCMWebSocketRequest();
-				gcmSocketTest.senderId = localStorage.deviceId;
-				gcmSocketTest.send({socket:me.socket});
-				device.setSocket(me.socket);
-			}
-			me.socket.onmessage = e =>{			
-				console.log("Socket message",e);
-				const gcmRaw = JSON.parse(e.data);
-				GCMBase.executeGcmFromJson(gcmRaw.type,gcmRaw.json,me.joinApp);
-			}
-			me.socket.onclose = e => {
-				console.log("Socket closed",e);
-				socketDisconnected();
-			}
-			me.socket.onerror = e => {
-				console.log("Socket error",e);
-				socketDisconnected();
-			}*/
-		}catch(error){
-			console.error("Error conneting to local network device",device,error)
-            device.tentativeLocalNetworkServerAddress = serverAddress;
-            device.canContactViaLocalNetwork = false;
-		}finally{          
-            await this.updateDBDevice(device);
-            await this.refreshDevices(); 
-        }
-    }
+    
     async onRequestRefresh(){
         await this.loadDevicesFromServer();
     }
@@ -294,7 +330,7 @@ export class AppHelperDevices extends AppHelperBase{
         const command = request.command;
         const apiKey = this._apiKey;
         if(!apiKey){
-            alert("To use this feature, first click the JOIN API button and click the button to show your API Key");
+            await alert("To use this feature, first click the JOIN API button and click the button to show your API Key");
             if(!this.apiBuilder){
                 await this.onRequestToggleShowApiBuilder()
             }
@@ -302,8 +338,18 @@ export class AppHelperDevices extends AppHelperBase{
             const device = this.selectedDevice;
             this.controlCommands.setLink({command,device,apiKey});
             const commandText = command.getText();
-            alert(`Drag '${commandText}' to your bookmarks toolbar and then click on it when you want to perform the command.\n\nMake sure to drag the '${commandText}' text (not the button around it) or else it won't work.`);
+            await alert(`Drag '${commandText}' to your bookmarks toolbar and then click on it when you want to perform the command.\n\nMake sure to drag the '${commandText}' text (not the button around it) or else it won't work.`);
         }
     }
 
+}
+class WebSocketGCM{
+    constructor(gcmRaw){
+        this.gcmRaw = gcmRaw;
+    }
+}
+class ShortcutConfigured{
+    constructor(args = {shortcut,command}){
+        Object.assign(this,args);
+    }
 }
