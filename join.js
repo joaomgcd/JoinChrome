@@ -118,7 +118,7 @@ var createPushClipboardWindow = function(tab,params,paramsIfClosed,closeAfterCom
         if(!height){
             height = 606;
         }
-		chrome.windows.create({ url: url, type: 'popup' , left: screen.width - 230, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
+		chrome.windows.create({ url: url, type: 'popup' , left: screen.width - width, top: Math.round((screen.height / 2) - (height /2)), width : width, height: height},function(clipboardWindow){
 				popupWindowClipboard = clipboardWindow;
 				popupWindowClipboardId = clipboardWindow.id;
 		});
