@@ -125,6 +125,22 @@ export class SettingEventGhostNodeRedPort extends SettingTextInput{
         })
     }
 }
+export class SettingClipboardCommand extends SettingTextInput{
+    static get id(){
+        return "SettingClipboardCommand";
+    }
+    get isDbSetting(){
+        return true;
+    }
+    constructor(){
+        super({
+            id:SettingClipboardCommand.id,
+            label:"Clipboard Command",
+            placeholder:"Optional",
+            subtext:`If set, every time your PC clipboard changes the command will be sent to the devices selected above. In Tasker you can react to this with the 'Command' event and in the task use the 'Get Clipboard' action to retrieve the latest clipboard contents.`
+        })
+    }
+}
 class SettingIntInput extends SettingTextInput{    
     get value(){
         return (async ()=>{
@@ -183,7 +199,7 @@ export class SettingUseNativeNotifications extends SettingBoolean{
         super({
             id:SettingUseNativeNotifications.id,
             label:"Use Native Notifications",
-            subtext:`If set, will use your OS' native notification system which is more restricted than Join's internal one.`
+            subtext:`If set, will use your OS' native notification system which is more restricted than Join's internal one and may not show all notifications. If you use non-native notifications you can still see a stored list of your past notifications in the notifications tab inside the Join app.`
         })
     }
     get isDbSetting(){
@@ -326,6 +342,34 @@ export class SettingTheme extends SettingSingleOption{
             label:"Theme",
             options:SettingTheme.themeOptions
         })
+    }
+}
+export class SettingNotificationsDisplay extends SettingSingleOption{
+    static get id(){
+        return "SettingNotificationsDisplay";
+    }
+    get value(){
+        const fromSuper = super.value;
+        if(fromSuper) return fromSuper;
+
+        const mainDisplay = this.displays.find(display => display.isMain);
+        if(!mainDisplay) return null;
+
+        return mainDisplay.id;
+    }
+    set value(val){
+        super.value = val;
+        
+        EventBus.post(new RequestNotificationDisplayChanged(val));
+    }
+    constructor(displays){
+        super({
+            id:SettingNotificationsDisplay.id,
+            label:"Notifications Display",
+            subtext:"Display on which to show non-native notifications",
+            options:displays
+        })
+        this.displays = displays;
     }
 }
 export class SettingColor extends Setting{
@@ -621,6 +665,49 @@ export class SettingCustomActions extends Setting{
     }
 }
 
+export class SettingShowLinksAsNotificationsOnly extends SettingBoolean{  
+    static get id(){
+        return "SettingShowLinksAsNotificationsOnly";
+    } 
+    constructor(){
+        super({
+            id:SettingShowLinksAsNotificationsOnly.id,
+            label:"Receive Links As Notifications Only",
+            subtext:`If enabled, will only show a notification when receiving a link instead of opening the link right away. Click the notification to open the received link.`
+        })
+    }
+    get value(){
+        return (async ()=>{
+            const value = await super.value;
+            return value == true || value == "true";
+        })()
+    }
+    set value(v){
+        super.value = v
+    }
+}
+export class SettingHideTextInNotifications extends SettingBoolean{  
+    static get id(){
+        return "SettingHideTextInNotifications";
+    } 
+    constructor(){
+        super({
+            id:SettingHideTextInNotifications.id,
+            label:"Hide Text In Notifications",
+            subtext:`If enabled, notifications will not show the original notification text. You can see the real text in the Join app itself, in the notifications tab.`
+        })
+    }
+    get value(){
+        return (async ()=>{
+            const value = await super.value;
+            return value == true || value == "true";
+        })()
+    }
+    set value(v){
+        super.value = v
+    }
+}
+
 export class SettingAutoLaunch extends SettingBoolean{  
     static get id(){
         return "SettingAutoLaunch";
@@ -658,7 +745,7 @@ export class SettingLaunchMinimized extends SettingBoolean{
         super({
             id:SettingLaunchMinimized.id,
             label:"Launch Minimized",
-            subtext:`If set, app will launch minimized to the system tray instead of opening the window right away.`
+            subtext:`If set, app will launch minimized instead of opening the window right away. If on Windows will minimize to System Tray, if not will only minimize.`
         })
     }
     get isDbSetting(){
@@ -678,5 +765,10 @@ class RequestRefreshSettings{}
 class RequestAutoLaunchChanged{
     constructor(enabled){
         this.enabled = enabled;
+    }
+}
+class RequestNotificationDisplayChanged{
+    constructor(displayId){
+        this.displayId = displayId;
     }
 }
