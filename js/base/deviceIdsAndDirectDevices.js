@@ -383,7 +383,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 			}
 			result.errorMessage = errorMessage;
 			console.log(errorMessage);
-			showNotificationFunc("Error Direct Send", errorMessage);
+			// showNotificationFunc("Error Direct Send", errorMessage);
 		}
 	}
 }
