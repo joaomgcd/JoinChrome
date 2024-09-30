@@ -79,7 +79,7 @@ const handleConnectingToDesktopApp = async (setting,value) => {
         await gcmPush.sendToLocalPort({port:value});
         try{
             await ControlDialogOk.showAndWait({title:"Success!",text:`The companion app is working! Will now open a new tab to authenticate your user on it...`});
-            const googleDriveScopes = encodeURIComponent("https://www.googleapis.com/auth/drive.appfolder https://www.googleapis.com/auth/drive.file")
+            const googleDriveScopes = encodeURIComponent("email https://www.googleapis.com/auth/drive.appfolder https://www.googleapis.com/auth/drive.file")
             Util.openWindow(`https://accounts.google.com/o/oauth2/v2/auth?client_id=596310809542-giumrib7hohfiftljqmj7eaio3kl21ek.apps.googleusercontent.com&redirect_uri=http://127.0.0.1:${value}&response_type=code&scope=email%20profile%20${googleDriveScopes}&code_challenge&login_hint=${await app.userEmail}`);
             await UtilDOM.waitForWindowFocus();
             UtilDOM.addStyle(`.companiondialogok{
