@@ -20,6 +20,21 @@ var ContextMenu = function () {
 	const CONTEXT_VIDEO = "video";
 	const CONTEXT_AUDIO = "audio";
 
+
+	chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+		const { deviceId, contextId, contextTitle } = JSON.parse(info.menuItemId);
+		console.log("Context menu clicked", deviceId, contextId, contextTitle)
+		const device = UtilsDevices.getDeviceFromId(deviceId);
+		if (!device) return;
+
+		const contextMenuItem = me.contexts[contextId]?.first(context => context.title == contextTitle);
+		if (!contextMenuItem) return;
+
+		const handler = contextMenuItem.handler;
+		if (!handler) return;
+
+		await handler(device, info, tab, contextMenuItem);
+	});
 	var me = this;
 	var timeOut = null;
 	var push = function (device, data) {
@@ -191,7 +206,7 @@ var ContextMenu = function () {
 	var callNumberLink = function (device, info, tab) {
 		callNumber(device, info.linkUrl);
 	}
-	this.update = function (devices, blockMenu) {
+	this.update = async function (devices, blockMenu) {
 		chrome.contextMenus.removeAll();
 		if (blockMenu) return;
 
@@ -238,6 +253,7 @@ var ContextMenu = function () {
 		];
 		me.contexts = contexts;
 		chrome.contextMenus.create({
+			"id": "mute_notifications",
 			"type": "checkbox",
 			"checked": !getShowChromeNotifications(),
 			"title": "Mute Notifications",
@@ -330,7 +346,13 @@ var ContextMenu = function () {
 			return command =>/*command.showInContextMenu &&*/((withPromptText && command.promptText) || (!withPromptText && !command.promptText)) && command.deviceIds && command.deviceIds.indexOf(device.deviceId) >= 0
 		}
 		for (var contextId in contexts) {
-			devices.where(device => UtilsDevices.isNotHidden(device) && UtilsDevices.isNotDeviceGroup(device) && UtilsDevices.isNotDeviceShare(device)).doForAll(device => {
+			const eligibleDevices = await devices.whereAsync(
+				async (device) =>
+					await UtilsDevices.isNotHidden(device)
+					&& UtilsDevices.isNotDeviceGroup(device)
+					&& UtilsDevices.isNotDeviceShare(device)
+			);
+			eligibleDevices.doForAll(device => {
 				var context = contexts[contextId];
 				var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, false))
 				customCommandsForDevice = customCommandsForDevice.concat(deviceCommands.filter(getCustomDeviceCommandsFilter(device, true)))
@@ -340,7 +362,15 @@ var ContextMenu = function () {
 				}
 				contextWithCustomCommands.doForAll(contextMenuItem => {
 					if (contextMenuItem.isFavorite()) {
+						// var contextForDevice = contextId + device.deviceId + contextMenuItem.title;
+
+						// const relevantInfo = {
+						// 	deviceId: device.deviceId,
+						// 	contextId,
+						// 	contextTitle: contextMenuItem.title
+						// }
 						var options = {
+							"id": contextMenuItem.getRelevantInfoForId({ device, distinctInfo: "favorites" }),
 							"contexts": [contextId],
 							"onclick": function (info, tab) {
 								contextMenuItem.handler(device, info, tab, contextMenuItem);
@@ -355,8 +385,8 @@ var ContextMenu = function () {
 				});
 			})
 		}
-		devices.doForAll(function (device) {
-			if (UtilsDevices.isHidden(device)) {
+		devices.doForAll(async function (device) {
+			if (await UtilsDevices.isHidden(device)) {
 				return;
 			}
 			chrome.contextMenus.create({
@@ -398,8 +428,14 @@ var ContextMenu = function () {
 								return;
 							}
 						}
+						// const relevantInfo = {
+						// 	deviceId: device.deviceId,
+						// 	contextId,
+						// 	contextTitle: contextMenuItem.title
+						// }
+						// const idForContext = contextForDevice + contextId + contextMenuItem.title;
 						var options = {
-							"id": idForContext,
+							"id": contextMenuItem.getRelevantInfoForId({ device, distinctInfo: "tree" }),
 							"parentId": contextForDevice,
 							"contexts": [contextId],
 							"onclick": function (info, tab) {
@@ -438,6 +474,15 @@ var ContextMenu = function () {
 				joiner = " " + this.joiner + " ";
 			}
 			return this.title + joiner + contextName;
+		}
+		this.getRelevantInfoForId = ({ device, distinctInfo = "" }) => {
+			const relevantInfo = {
+				deviceId: device.deviceId,
+				contextId: this.context,
+				contextTitle: this.title,
+				distinctInfo
+			}
+			return JSON.stringify(relevantInfo);
 		}
 	}
 }

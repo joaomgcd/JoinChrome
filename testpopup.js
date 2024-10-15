@@ -1,6 +1,6 @@
 
-setTimeout(function(){
-	var back = chrome.extension.getBackgroundPage();	
-	back.eventBus.post(new back.Events.TestPopup());
+setTimeout(async function(){		
+	const eventBus = new EventBusCrossContext();
+	await eventBus.post(new back.Events.TestPopup());
 	window.close();
 },2000);

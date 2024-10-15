@@ -1,95 +1,87 @@
-var doRequestWithAuth = function(method, url,content, callback, callbackError, isRetry, token) {
-	getToken(function(token) {
-		if(token == null){
-			if (callbackError != null) {
-				callbackError("noauth");
-			}
-		}else{
-			var toClass = {}.toString;
-			var contentClass = toClass.call(content);
-			var isFileOrForm = contentClass == "[object File]" || contentClass == "[object FormData]";
-			var authHeader = "Bearer " + token;
-			//console.log("authHeader: " + authHeader);
-			console.log("Posting to: " + url);
-			var req = new XMLHttpRequest();
-			req.open(method, url, true);
-			req.setRequestHeader("authorization", authHeader);
-			if(content){
-				if(!isFileOrForm){
-					req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-				}
-			}
-			req.onload = function() {
-				console.log("POST status: " + this.status);
-				var result = {};
-				if(this.responseText){
-                    try{
-    					result = JSON.parse(this.responseText)
-                    }
-                    catch(err) {
-                        result = this.responseText;
-                    }
-				}
-				if(!isRetry && result.userAuthError){
-					console.log("Retrying with new token...");
-					removeCachedAuthToken(function(){
-						doRequestWithAuth(method, url,content, callback, callbackError, true);
-					})
-				}else{
-					if (callback != null) {
-						callback(result);
-					}
-				}
-			}
-			req.onerror = function(e) {
-				if (callbackError != null) {
-					callbackError(e.currentTarget);
-				}
-			}
-			var contentString = null;
-			if(content){
-				if(isFileOrForm){
-					contentString = content;
-				}else{
-					contentString = JSON.stringify(content);
-				}
-			}
-            try{
-                req.send(contentString);
-            }catch(error){
-                if (callbackError != null) {
-                    callbackError(error);
-                }
-            }
+if (!self["getToken"]) {
+	self["getToken"] = back.getToken;
+}
+var doRequestWithAuth = async function (method, url, content, callback, callbackError, isRetry, tokenInput) {
+	const token = await getToken(null, tokenInput);
+	if (token == null) {
+		if (callbackError != null) {
+			callbackError("noauth");
 		}
-	},token);
+	} else {
+		let isFileOrForm = content instanceof File || content instanceof FormData;
+		let headers = {
+			"Authorization": "Bearer " + token
+		};
+
+		if (content && !isFileOrForm) {
+			headers["Content-Type"] = "application/json; charset=UTF-8";
+		}
+
+		let options = {
+			method: method,
+			headers: headers,
+		};
+
+		if (content) {
+			options.body = isFileOrForm ? content : JSON.stringify(content);
+		}
+
+		try {
+			console.log("Fetching: " + url);
+			let response = await fetch(url, options);
+			let result;
+
+			try {
+				result = await response.json();
+			} catch (err) {
+				result = await response.text();
+			}
+
+			if (!isRetry && result.userAuthError) {
+				console.log("Retrying with new token...");
+				await removeCachedAuthToken();
+				return await doRequestWithAuth(method, url, content, callback, callbackError, true);
+			} else {
+				if (callback != null) {
+					callback(result);
+				}
+				return result;
+			}
+		} catch (error) {
+			if (callbackError != null) {
+				callbackError(error);
+			} else {
+				throw error;
+			}
+		}
+	}
+};
+var doPostWithAuth = async function (url, content, callback, callbackError) {
+	return await doRequestWithAuth("POST", url, content, callback, callbackError);
 }
-var doPostWithAuth = function(url,content, callback, callbackError) {
-    doRequestWithAuth("POST",url,content,callback,callbackError);
+var doPostWithAuthPromise = function (url, content) {
+	return new Promise(async function (resolve, reject) {
+		await doPostWithAuth(url, content, resolve, reject);
+	});
 }
-var doPostWithAuthPromise = function(url,content) {
-    return new Promise(function(resolve,reject){
-        doPostWithAuth(url,content,resolve,reject);
-    });
+var doPutWithAuth = function (url, content, callback, callbackError) {
+	return doRequestWithAuth("PUT", url, content, callback, callbackError);
 }
-var doPutWithAuth = function(url,content, callback, callbackError) {
-    doRequestWithAuth("PUT",url,content,callback,callbackError);
+var doPutWithAuthPromise = function (url, content) {
+	return new Promise(function (resolve, reject) {
+		doPutWithAuth(url, content, resolve, reject);
+	});
 }
-var doPutWithAuthPromise = function(url,content) {
-    return new Promise(function(resolve,reject){
-        doPutWithAuth(url,content,resolve,reject);
-    });
+var doDeleteWithAuth = function (url, content, callback, callbackError) {
+	return doRequestWithAuth("DELETE", url, content, callback, callbackError);
 }
-var doDeleteWithAuth = function(url,content, callback, callbackError) {
-	doRequestWithAuth("DELETE",url,content,callback,callbackError);
+var doGetWithAuth = async function (url, callback, callbackError, token) {
+	return await doRequestWithAuth("GET", url, null, callback, callbackError, false, token);
 }
-var doGetWithAuth = function(url, callback, callbackError,token) {
-	doRequestWithAuth("GET",url,null,callback,callbackError,false, token);
-}
-var doGetWithAuthPromise = function(url,token) {
-    return new Promise(function(resolve,reject){
-        doGetWithAuth(url,resolve,reject,token);
-    });
+var doGetWithAuthPromise = function (url, token) {
+	return new Promise(function (resolve, reject) {
+		doGetWithAuth(url, resolve, reject, token);
+	});
 }
 function base64ArrayBuffer(arrayBuffer) {
 	var base64 = ''
@@ -142,46 +134,46 @@ function base64ArrayBuffer(arrayBuffer) {
 
 	return base64
 }
-var doGetBase64 = function(url, callback) {
+var doGetBase64 = function (url, callback) {
 
 	if (url == null || url == "") {
 		callback(null);
 		return;
 	}
-	if(url.indexOf("http") < 0){
+	if (url.indexOf("http") < 0) {
 		callback(url);
 		return;
 	}
-	getToken(function(accessToken){
+	getToken(function (accessToken) {
 		console.log("Getting binary: " + url);
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
-		if(isDriveUrl(url)){
+		if (isDriveUrl(url)) {
 			xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
 		}
 		xhr.responseType = 'arraybuffer';
-		xhr.onload = function(e) {
+		xhr.onload = function (e) {
 			callback(base64ArrayBuffer(e.currentTarget.response));
 		};
-		xhr.onerror = function(e) {
+		xhr.onerror = function (e) {
 			callback(null);
 		};
 		xhr.send();
 	});
 }
-var isDriveUrl = function(url){
-	return url.indexOf("drive.google") > 0 || url.indexOf("docs.google")>0 || url.indexOf("googleapis.com")>0 ;
+var isDriveUrl = function (url) {
+	return url.indexOf("drive.google") > 0 || url.indexOf("docs.google") > 0 || url.indexOf("googleapis.com") > 0;
 }
-var doGetBase64Image = function(url, callback) {
+var doGetBase64Image = function (url, callback) {
 	if (url == null || url == "") {
 		callback(null);
 		return;
 	}
-	if(url.indexOf("http") < 0){
+	if (url.indexOf("http") < 0) {
 		callback(url);
 		return;
 	}
-	doGetBase64(url, function(base64) {
+	doGetBase64(url, function (base64) {
 		if (base64 != null) {
 			base64 = "data:image/png;base64," + base64
 		}
@@ -189,32 +181,32 @@ var doGetBase64Image = function(url, callback) {
 	});
 }
 
-var doGetBase64ImagePromise = function(url) {
-	return new Promise(function(resolve, reject){
-		doGetBase64Image(url,resolve);
+var doGetBase64ImagePromise = function (url) {
+	return new Promise(function (resolve, reject) {
+		doGetBase64Image(url, resolve);
 	});
 }
-var setImageFromUrl =function(url, imageElement){
+var setImageFromUrl = function (url, imageElement) {
 	return doGetBase64ImagePromise(url)
-	.then(function(base64){
-		imageElement.src = base64;
-		return base64;
-	});
+		.then(function (base64) {
+			imageElement.src = base64;
+			return base64;
+		});
 }
-var requestFileAsync = UtilsObject.async(function* (deviceId, payload, requestType){
+var requestFileAsync = async function (deviceId, payload, requestType) {
 	console.log("Asking for file remotely");
 	console.log(payload);
-	var response = yield doPostWithAuthPromise(joinserver + "requestfile/v1/request?alt=json",
-	{
-		"deviceId":deviceId,
-		"payload":payload,
-		"requestType":requestType,
-		"senderId": localStorage.deviceId
-	});
+	var response = await doPostWithAuthPromise(joinserver + "requestfile/v1/request?alt=json",
+		{
+			"deviceId": deviceId,
+			"payload": payload,
+			"requestType": requestType,
+			"senderId": localStorage.deviceId
+		});
 	console.log(response);
-	if(!response.success){
+	if (!response.success) {
 		throw new Error(response.errorMessage);
 	}
-	var fileResponse = yield back.eventBus.waitFor(back.Events.FileResponse,60000);
+	var fileResponse = await back.eventBus.waitFor(back.Events.FileResponse, 60000);
 	return fileResponse;
-});
+};

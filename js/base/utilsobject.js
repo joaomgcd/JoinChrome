@@ -1,114 +1,114 @@
 var UtilsObject = {
-	"applyProps":function(obj,objToApply,applyFunctions){
-		if(!objToApply){
-	        return;
-	    }
-	    for(var prop in objToApply){
-	    	var value = objToApply[prop];
-			if(value !== null && value !== undefined && value !== "" && (UtilsObject.toClass(value) != "[object Function]" || applyFunctions)){
+	"applyProps": function (obj, objToApply, applyFunctions) {
+		if (!objToApply) {
+			return;
+		}
+		for (var prop in objToApply) {
+			var value = objToApply[prop];
+			if (value !== null && value !== undefined && value !== "" && (UtilsObject.toClass(value) != "[object Function]" || applyFunctions)) {
 				obj[prop] = value;
 			}
-	    }
-	    return obj;
+		}
+		return obj;
 	},
-	"toClass": function(obj){
-	  return {}.toString.call(obj);
+	"toClass": function (obj) {
+		return {}.toString.call(obj);
 	},
-	"isString": function(obj){
-	  return UtilsObject.toClass(obj) == "[object String]";
+	"isString": function (obj) {
+		return UtilsObject.toClass(obj) == "[object String]";
 	},
-	"isFile": function(obj){
-	  return UtilsObject.toClass(obj) == "[object File]";
+	"isFile": function (obj) {
+		return UtilsObject.toClass(obj) == "[object File]";
 	},
-	"isArray": function(obj){
-	  return UtilsObject.toClass(obj) == "[object Array]";
+	"isArray": function (obj) {
+		return UtilsObject.toClass(obj) == "[object Array]";
 	},
-	"isNumber": function(obj){
-	  return UtilsObject.toClass(obj) == "[object Number]";
+	"isNumber": function (obj) {
+		return UtilsObject.toClass(obj) == "[object Number]";
 	},
-	"isBoolean": function(obj){
-	  return UtilsObject.toClass(obj) == "[object Boolean]";
+	"isBoolean": function (obj) {
+		return UtilsObject.toClass(obj) == "[object Boolean]";
 	},
-	"isFunction": function(obj){
-	  return UtilsObject.toClass(obj) == "[object Function]";
+	"isFunction": function (obj) {
+		return UtilsObject.toClass(obj) == "[object Function]";
 	},
-	"getStoredNumber": function(key, defaultValue){
-		if(!localStorage) return;
+	"getStoredNumber": function (key, defaultValue) {
+		if (!localStorage) return;
 		var value = localStorage[key];
-		if(value){
-			return Number(value);	
+		if (value) {
+			return Number(value);
 		}
 		return defaultValue;
 	},
-	"setStored": function(key, value){
-		if(!localStorage) return;
+	"setStored": function (key, value) {
+		if (!localStorage) return;
 		localStorage[key] = value;
 	},
-	"getArrayIfNot": function(obj){
-		if(UtilsObject.isArray(obj)){
+	"getArrayIfNot": function (obj) {
+		if (UtilsObject.isArray(obj)) {
 			return obj;
 		}
-	  	return [obj];
+		return [obj];
 	},
-	"wait":function(millis, callback){
-		return new Promise(function(resolve){
-			if(!millis){
+	"wait": function (millis, callback) {
+		return new Promise(function (resolve) {
+			if (!millis) {
 				return resolve();
 			}
-			var timeOut = setTimeout(resolve,millis);
-			if(callback){
+			var timeOut = setTimeout(resolve, millis);
+			if (callback) {
 				callback(timeOut);
 			}
 		});
 	},
-	"timeOut":function(millis){
+	"timeOut": function (millis) {
 		return UtilsObject
-		.wait(millis)
-		.then(function(){
-			throw new Error("timeout");
-		});
+			.wait(millis)
+			.then(function () {
+				throw new Error("timeout");
+			});
 	},
-	"errorPromise": function(errorMessage){
+	"errorPromise": function (errorMessage) {
 		return Promise.reject(new Error(errorMessage));
 	},
-	"ignoreError": function(error){
+	"ignoreError": function (error) {
 		console.log("Unimportant error: " + error);
 	},
-	"handleError": function(error, message){
-		if(message){
+	"handleError": function (error, message) {
+		if (message) {
 			message = message + ": ";
-		}else{
+		} else {
 			message = "";
 		}
 		var errorMessage = message + error;
-		showNotification("Join Error",errorMessage);
+		chrome.extension.getBackgroundPage().showNotification("Join Error", errorMessage);
 		console.log(errorMessage);
 		var stack = null;
-		if(error.stack){
+		if (error && error.stack) {
 			stack = error.stack;
-		}else{
+		} else {
 			//var err = new Error();
-    		//stack = err.stack;
+			//stack = err.stack;
 		}
-		if(stack){
+		if (stack) {
 			console.error(stack);
 		}
 	},
-	"async": function(makeGenerator){
+	"async": function (makeGenerator) {
 		return function () {
 			var generator = makeGenerator.apply(this, arguments);
 
-			function handle(result){
+			function handle(result) {
 				// result => { done: [Boolean], value: [Object] }
 				if (result.done) return Promise.resolve(result.value);
 
 				return Promise
-				.resolve(result.value)
-				.then(function (res){
-					return handle(generator.next(res));
-				}, function (err){
-					return handle(generator.throw(err));
-				});
+					.resolve(result.value)
+					.then(function (res) {
+						return handle(generator.next(res));
+					}, function (err) {
+						return handle(generator.throw(err));
+					});
 			}
 
 			try {
@@ -118,137 +118,137 @@ var UtilsObject = {
 			}
 		}
 	},
-	"guid": function(){
+	"guid": function () {
 		function s4() {
 			return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 		}
 		return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 	},
-	"customFormat": function(date,formatString,is12HourFormat){
-		var YYYY,YY,MMMM,MMM,MM,M,DDDD,DDD,DD,D,hhhh,hhh,hh,h,mm,m,ss,s,ampm,AMPM,dMod,th;
-		YY = ((YYYY=date.getFullYear())+"").slice(-2);
-		MM = (M=date.getMonth()+1)<10?('0'+M):M;
-		MMM = (MMMM=["January","February","March","April","May","June","July","August","September","October","November","December"][M-1]).substring(0,3);
-		DD = (D=date.getDate())<10?('0'+D):D;
-		DDD = (DDDD=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][date.getDay()]).substring(0,3);
-		th=(D>=10&&D<=20)?'th':((dMod=D%10)==1)?'st':(dMod==2)?'nd':(dMod==3)?'rd':'th';
-		formatString = formatString.replace("#YYYY#",YYYY).replace("#YY#",YY).replace("#MMMM#",MMMM).replace("#MMM#",MMM).replace("#MM#",MM).replace("#M#",M).replace("#DDDD#",DDDD).replace("#DDD#",DDD).replace("#DD#",DD).replace("#D#",D).replace("#th#",th);
+	"customFormat": function (date, formatString, is12HourFormat) {
+		var YYYY, YY, MMMM, MMM, MM, M, DDDD, DDD, DD, D, hhhh, hhh, hh, h, mm, m, ss, s, ampm, AMPM, dMod, th;
+		YY = ((YYYY = date.getFullYear()) + "").slice(-2);
+		MM = (M = date.getMonth() + 1) < 10 ? ('0' + M) : M;
+		MMM = (MMMM = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][M - 1]).substring(0, 3);
+		DD = (D = date.getDate()) < 10 ? ('0' + D) : D;
+		DDD = (DDDD = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()]).substring(0, 3);
+		th = (D >= 10 && D <= 20) ? 'th' : ((dMod = D % 10) == 1) ? 'st' : (dMod == 2) ? 'nd' : (dMod == 3) ? 'rd' : 'th';
+		formatString = formatString.replace("#YYYY#", YYYY).replace("#YY#", YY).replace("#MMMM#", MMMM).replace("#MMM#", MMM).replace("#MM#", MM).replace("#M#", M).replace("#DDDD#", DDDD).replace("#DDD#", DDD).replace("#DD#", DD).replace("#D#", D).replace("#th#", th);
 		// CHANGE NOTE: There appeared to be a lot of unused material. I cleaned up some of the code. We can restore it later if it was needed.
-		h=date.getHours();
+		h = date.getHours();
 		hh = h;
 		if (is12HourFormat) {
-			if (h==0) hh=12;
-			if (h>12) hh-=12;
-			AMPM=(h<12)?'AM':'PM';
+			if (h == 0) hh = 12;
+			if (h > 12) hh -= 12;
+			AMPM = (h < 12) ? 'AM' : 'PM';
 		} else {
-			hh = h<10?('0'+h):h;
+			hh = h < 10 ? ('0' + h) : h;
 			AMPM = "";
 		}
-		mm=(m=date.getMinutes())<10?('0'+m):m;
-		ss=(s=date.getSeconds())<10?('0'+s):s;
-		return formatString.replace("#hhhh#",hhhh).replace("#hhh#",hhh).replace("#hh#",hh).replace("#h#",h).replace("#mm#",mm).replace("#m#",m).replace("#ss#",ss).replace("#s#",s).replace("#ampm#",ampm).replace("#AMPM#",AMPM);
+		mm = (m = date.getMinutes()) < 10 ? ('0' + m) : m;
+		ss = (s = date.getSeconds()) < 10 ? ('0' + s) : s;
+		return formatString.replace("#hhhh#", hhhh).replace("#hhh#", hhh).replace("#hh#", hh).replace("#h#", h).replace("#mm#", mm).replace("#m#", m).replace("#ss#", ss).replace("#s#", s).replace("#ampm#", ampm).replace("#AMPM#", AMPM);
 	},
-	"formatDate": function(ms, full, is12HourFormat){
+	"formatDate": function (ms, full, is12HourFormat) {
 		var date = new Date(ms);
 		var now = new Date();
 		var format = "#hh#:#mm#";
 		if (is12HourFormat) {
-			format = format+" #AMPM#";
+			format = format + " #AMPM#";
 		}
-		date.customFormat = function(format){
-			return UtilsObject.customFormat(date,format,is12HourFormat);
+		date.customFormat = function (format) {
+			return UtilsObject.customFormat(date, format, is12HourFormat);
 		}
-		if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
+		if (now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()) {
 			return date.customFormat(format);
 		}
 
 		var yesterday = new Date(now);
-		yesterday.setDate(now.getDate()-1);
+		yesterday.setDate(now.getDate() - 1);
 
 		if (full) {
-			if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+			if (yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()) {
 				return "Yesterday, " + date.customFormat(format);
 			} else {
 				return date.customFormat("#MMM# #DD#, #hh#:#mm# #AMPM#");
 			}
 		} else {
-			if(yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()){
+			if (yesterday.getDate() == date.getDate() && yesterday.getMonth() == date.getMonth() && yesterday.getFullYear() == date.getFullYear()) {
 				return "Yesterday";
 			}
-		return date.customFormat("#MMM# #DD#");
+			return date.customFormat("#MMM# #DD#");
 		}
 	},
-	"openTab" : function(url){
+	"openTab": function (url) {
 		var win = window.open(url, '_blank');
 		win.focus();
 	},
-	"spliceString" : function(original, idx, rem, str) {
+	"spliceString": function (original, idx, rem, str) {
 		var start = original.slice(0, idx);
 		var end = original.slice(idx + Math.abs(rem));
 		/*console.log("start: " + start);
 		console.log("end: " + end);
 		console.log("adding: " + str);*/
-	    return  start + str + end;
+		return start + str + end;
 	},
-	"sort" : function(array,invert,...compareFieldFuncs){
-		if(compareFieldFuncs.length == 0){
+	"sort": function (array, invert, ...compareFieldFuncs) {
+		if (compareFieldFuncs.length == 0) {
 			array.sort();
-		}else{
-			var invertIfNeeded = value=> invert ? value * -1 : value;
-			array.sort((left,right)=>{
+		} else {
+			var invertIfNeeded = value => invert ? value * -1 : value;
+			array.sort((left, right) => {
 				var comparisonResult = 0;
-				for(var compareFieldFunc of compareFieldFuncs){
+				for (var compareFieldFunc of compareFieldFuncs) {
 					var leftValue = compareFieldFunc(left);
 					var rightValue = compareFieldFunc(right);
-					if(leftValue == null){
-						if(rightValue != null){
+					if (leftValue == null) {
+						if (rightValue != null) {
 							return invertIfNeeded(1);
 						}
-					}					
-					if(rightValue == null){
-						if(leftValue != null){
+					}
+					if (rightValue == null) {
+						if (leftValue != null) {
 							return invertIfNeeded(-1);
 						}
 					}
-					if(rightValue == null && rightValue == null){
+					if (rightValue == null && rightValue == null) {
 						return 0;
 					}
-					if(UtilsObject.toClass(leftValue) == UtilsObject.toClass(rightValue)){
-						if(UtilsObject.isString(leftValue)){
+					if (UtilsObject.toClass(leftValue) == UtilsObject.toClass(rightValue)) {
+						if (UtilsObject.isString(leftValue)) {
 							comparisonResult = leftValue.toLowerCase().localeCompare(rightValue.toLowerCase()) * -1;
-						}else if(UtilsObject.isNumber(leftValue)){
-							comparisonResult =  rightValue - leftValue;
-						}else if(UtilsObject.isBoolean(leftValue)){
-							comparisonResult =  leftValue ? (rightValue ? 0 : -1) : (!rightValue ? 0 : 1);
-						}						
+						} else if (UtilsObject.isNumber(leftValue)) {
+							comparisonResult = rightValue - leftValue;
+						} else if (UtilsObject.isBoolean(leftValue)) {
+							comparisonResult = leftValue ? (rightValue ? 0 : -1) : (!rightValue ? 0 : 1);
+						}
 					}
-					if(comparisonResult != 0){
+					if (comparisonResult != 0) {
 						return invertIfNeeded(comparisonResult);
 					}
 				}
 				return invertIfNeeded(comparisonResult);
-			});	
+			});
 		}
 	},
-	"first" : function(array,...compareFieldFuncs){
-		for(compareFieldFunc of compareFieldFuncs){
+	"first": function (array, ...compareFieldFuncs) {
+		for (compareFieldFunc of compareFieldFuncs) {
 			var result = array.first(compareFieldFunc);
-			if(result){
+			if (result) {
 				return result;
 			}
 		}
 		return null;
 	},
-	"whereMax" : function(array,...compareFieldFuncs){
-		if(!array || array.length == 0){
+	"whereMax": function (array, ...compareFieldFuncs) {
+		if (!array || array.length == 0) {
 			return null;
 		}
 		var max = Number.MIN_VALUE;
 		var result = null;
-		for(compareFieldFunc of compareFieldFuncs){			
-			for(item of array){
+		for (compareFieldFunc of compareFieldFuncs) {
+			for (item of array) {
 				var prop = compareFieldFunc(item);
-				if(prop > max){
+				if (prop > max) {
 					max = prop;
 					result = item;
 				}
@@ -256,35 +256,63 @@ var UtilsObject = {
 		}
 		return result;
 	},
-	"doOnce" : function(controlId,func){
-		if(!localStorage) return;
-		if(!localStorage[controlId]){
+	"doOnce": function (controlId, func) {
+		if (!localStorage) return;
+		if (!localStorage[controlId]) {
 			localStorage[controlId] = true;
 			func();
 		}
+	},
+	"areObjectsEqual": function (obj1, obj2) {
+		// If both are not objects, they can't be equal
+		if (!(obj1 instanceof Object) || !(obj2 instanceof Object)) {
+			return obj1 === obj2;
+		}
+
+		// Collect all unique keys from both objects
+		const keys1 = Object.keys(obj1);
+		const keys2 = Object.keys(obj2);
+		const allKeys = new Set([...keys1, ...keys2]);
+
+		// Compare each key
+		for (const key of allKeys) {
+			const val1 = obj1[key];
+			const val2 = obj2[key];
+
+			// Handle nested objects
+			if (val1 instanceof Object && val2 instanceof Object) {
+				if (!areObjectsEqual(val1, val2)) {
+					return false;
+				}
+			} else if (val1 !== val2) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 };
 
-Array.prototype.first = function(func) {
+Array.prototype.first = function (func) {
 	for (var i = 0; i < this.length; i++) {
 		var item = this[i];
-		if(func(item)){
+		if (func(item)) {
 			return item;
 		}
 	};
 	return null;
 };
-Array.prototype.partition = function(filter) {
-  return this.reduce(
-    (r, e, i, a) => {
-      r[filter(e, i, a) ? 0 : 1].push(e);
-      return r;
-    }, [[], []]);
+Array.prototype.partition = function (filter) {
+	return this.reduce(
+		(r, e, i, a) => {
+			r[filter(e, i, a) ? 0 : 1].push(e);
+			return r;
+		}, [[], []]);
 }
-Array.prototype.groupBy = function(keyGetter) {
-  return this.reduce(function(rv, x) {
-  	var key = keyGetter(x);
-    (rv[key] = rv[key] || []).push(x);
-    return rv;
-  }, {});
+Array.prototype.groupBy = function (keyGetter) {
+	return this.reduce(function (rv, x) {
+		var key = keyGetter(x);
+		(rv[key] = rv[key] || []).push(x);
+		return rv;
+	}, {});
 }

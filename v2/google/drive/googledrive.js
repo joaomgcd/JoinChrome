@@ -389,6 +389,8 @@ class GoogleDrive {
 			return getDeviceFile(getDeviceContactsFileName(deviceId), forceDownload);
 		};
 		me.getMyDevicePushes = function (forceDownload) {
+			if(!localStorage?.deviceId) return [];
+			
 			return me.getDevicePushes(localStorage.deviceId, forceDownload);
 		};
 		me.addPushToDevice = function (deviceId, push) {

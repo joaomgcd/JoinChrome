@@ -3,49 +3,49 @@ const importSmsComponents = async () => {
 	var smsContactHtml = await smsHtml.getSmsContact();
 	var smsMessageHtml = await smsHtml.getSmsMessage();
 	return {
-		"smsContactHtml":smsContactHtml,
-		"smsMessageHtml":smsMessageHtml
+		"smsContactHtml": smsContactHtml,
+		"smsMessageHtml": smsMessageHtml
 	}
 }
 
 var smsElement = document.getElementById("sms");
 
 function isNumeric(val) {
-		return Number(parseFloat(val))==val;
+	return Number(parseFloat(val)) == val;
 }
-function getSortResult(value,sortDescending){
-	if(value == 0){
+function getSortResult(value, sortDescending) {
+	if (value == 0) {
 		return 0;
 	}
-	if(value < 0){
+	if (value < 0) {
 		return sortDescending ? 1 : -1;
-	}else{
+	} else {
 		return sortDescending ? -1 : 1;
 	}
 }
-function sortByField(sortFieldGetter, sortDescending){
-	return function(c1,c2){
+function sortByField(sortFieldGetter, sortDescending) {
+	return function (c1, c2) {
 		var field1 = sortFieldGetter(c1);
 		var field2 = sortFieldGetter(c2);
-		if(!field1){
-			if(!field2){
+		if (!field1) {
+			if (!field2) {
 				return 0;
 			}
-			return getSortResult(1,sortDescending);
+			return getSortResult(1, sortDescending);
 		}
-		if(!field2){
-			return getSortResult(-1,sortDescending);
+		if (!field2) {
+			return getSortResult(-1, sortDescending);
 		}
-		if(isNumeric(field1)){
-			return getSortResult(field1 - field2,sortDescending);
-		}else{
-			if(field1 < field2) return getSortResult(-1,sortDescending);
-				if(field1 > field2) return getSortResult(1,sortDescending);
-				return 0;
+		if (isNumeric(field1)) {
+			return getSortResult(field1 - field2, sortDescending);
+		} else {
+			if (field1 < field2) return getSortResult(-1, sortDescending);
+			if (field1 > field2) return getSortResult(1, sortDescending);
+			return 0;
 		}
 	};
 }
-var ContactsGetter = function(deviceId){
+var ContactsGetter = function (deviceId) {
 	var googleDriveManager = new GoogleDriveManager();
 	var me = this;
 	this.deviceId = deviceId;
@@ -54,145 +54,144 @@ var ContactsGetter = function(deviceId){
 	this.contactsInfo = localContacts ? JSON.parse(localContacts) : null;
 	this.lastsms = null;
 
-	me.initContactsIfEmpty = function(){
-		if(!me.contactsInfo){
+	me.initContactsIfEmpty = function () {
+		if (!me.contactsInfo) {
 			me.contactsInfo = {};
 		}
-		if(!me.contactsInfo.contacts){
+		if (!me.contactsInfo.contacts) {
 			me.contactsInfo.contacts = [];
 		}
 	}
-	me.saveLocalContacts = function(){
+	me.saveLocalContacts = function () {
 		localStorage[fileKey] = JSON.stringify(me.contactsInfo);
 	}
-	me.sortContacts = function(sortFieldGetter,sortDescending){
-		if(me.contactsInfo.contacts){
-			if(sortFieldGetter){
-				me.contactsInfo.contacts.sort(sortByField(sortFieldGetter,sortDescending));
+	me.sortContacts = function (sortFieldGetter, sortDescending) {
+		if (me.contactsInfo.contacts) {
+			if (sortFieldGetter) {
+				me.contactsInfo.contacts.sort(sortByField(sortFieldGetter, sortDescending));
 			}
 		}
 	}
-	me.processResults = function(sortFieldGetter,sortDescending){
-		if(!me.contactsInfo){
+	me.processResults = function (sortFieldGetter, sortDescending) {
+		if (!me.contactsInfo) {
 			console.log("Not processing yet. Contacts are empty");
 			return;
 		}
-		if(!me.lastsms){
+		if (!me.lastsms) {
 			console.log("Not processing yet. Last SMS are empty");
 			return;
 		}
 		// console.log("Contacts Getter processing now!");
 		me.initContactsIfEmpty();
-		me.lastsms.doForAll(function(lastsms){
-			if(lastsms && lastsms.address){
-				var contact = me.contactsInfo.contacts.first(function(contact){
+		me.lastsms.doForAll(function (lastsms) {
+			if (lastsms && lastsms.address) {
+				var contact = me.contactsInfo.contacts.first(function (contact) {
 					return contact.number == lastsms.address;
 				});
-				if(!contact){
-					if(lastsms.address.indexOf(",") > -1){
+				if (!contact) {
+					if (lastsms.address.indexOf(",") > -1) {
 						var numberSplit = lastsms.address.split(",");
-						var contactsForNumbers = numberSplit.select(number=>{
-							var contactForNumber = me.contactsInfo.contacts.first(contact=>contact.number == number);
-							if(!contactForNumber){
-								contactForNumber =  {"name":number,"number":number};
+						var contactsForNumbers = numberSplit.select(number => {
+							var contactForNumber = me.contactsInfo.contacts.first(contact => contact.number == number);
+							if (!contactForNumber) {
+								contactForNumber = { "name": number, "number": number };
 							}
 							return contactForNumber;
 						});
-						contact = {"name":contactsForNumbers.joinJoaomgcd(", ",contact=>contact.name),"number":contactsForNumbers.joinJoaomgcd(",",contact=>contact.number)};
-					}else{
-						contact = {"name":lastsms.address,"number":lastsms.address}
+						contact = { "name": contactsForNumbers.joinJoaomgcd(", ", contact => contact.name), "number": contactsForNumbers.joinJoaomgcd(",", contact => contact.number) };
+					} else {
+						contact = { "name": lastsms.address, "number": lastsms.address }
 					}
 					me.contactsInfo.contacts.push(contact);
 				}
 				contact.lastsms = lastsms;
 			}
 		});
-		me.sortContacts(sortFieldGetter,sortDescending);
+		me.sortContacts(sortFieldGetter, sortDescending);
 		me.saveLocalContacts();
 		return me.contactsInfo;
 	}
-	this.addSms = function(sms){
+	this.addSms = function (sms) {
 		me.initContactsIfEmpty();
-		var contact = me.contactsInfo.contacts.first(function(contact){
+		var contact = me.contactsInfo.contacts.first(function (contact) {
 			return contact.number == sms.number;
 		});
-		if(!contact){
-			contact = {"name":sms.number,"number":sms.number}
+		if (!contact) {
+			contact = { "name": sms.number, "number": sms.number }
 			me.contactsInfo.contacts.push(contact);
 		}
 		contact.lastsms = sms;
 		contact.lastsms.address = sms.number;
 		me.saveLocalContacts();
 	}
-	me.getLocalInfo = function(sortFieldGetter, sortDescending){
-		if(me.contactsInfo){
-			me.sortContacts(sortFieldGetter,sortDescending);
+	me.getLocalInfo = async function (sortFieldGetter, sortDescending) {
+		if (me.contactsInfo) {
+			me.sortContacts(sortFieldGetter, sortDescending);
 		}
 		return me.contactsInfo;
 	}
-	me.getInfo = function(sortFieldGetter, sortDescending){		
+	me.getInfo = async function (sortFieldGetter, sortDescending) {
 		setRefreshing(true);
 		me.contactsInfo = null;
 		me.lastsms = null;
-		return Promise
-		.all([
-			me.getLastSms(),
-			me.getContacts()
-		])
-		.then(function(results){
+		try {
+			const results = await Promise
+				.all([
+					me.getLastSms(),
+					me.getContacts()
+				]);
 			setRefreshing(false);
-			return me.processResults(sortFieldGetter,sortDescending);
-		})
-		.catch(function(error){
+			return me.processResults(sortFieldGetter, sortDescending);
+		} catch (error) {
 			console.error(error);
 			setRefreshing(false);
 			return UtilsObject.errorPromise("Error downloading SMS files: " + error);
-		});
-	}
-	me.getContactForNumber = UtilsObject.async(function* (numberToFind, local){
-		var info = null;
-		if(local){
-			info = yield me.getLocalInfo(null,false);
-		}else{
-			info = yield me.getInfo(null,false);
 		}
-		var contact = info.contacts.first(function(contact){
+	}
+	me.getContactForNumber = async function (numberToFind, local) {
+		var info = null;
+		if (local) {
+			info = await me.getLocalInfo(null, false);
+		} else {
+			info = await me.getInfo(null, false);
+		}
+		var contact = info.contacts.first(function (contact) {
 			return contact.number == numberToFind;
 		});
-		if(!contact){
-			contact = {"name":numberToFind,"number":numberToFind};
+		if (!contact) {
+			contact = { "name": numberToFind, "number": numberToFind };
 		}
 		return contact;
-	});
-	me.getLastSms = function(){
+	};
+	me.getLastSms = function () {
 		return googleDriveManager.downloadContent({
 			fileName: "lastsms=:=" + me.deviceId
 		})
-		.then(function(lastsms){
-			if(lastsms.error){
-				var message = "Error getting lastsms: " + lastsms.error.message;				
-				return UtilsObject.errorPromise(message);
-			}
-			me.lastsms = lastsms;
-			return lastsms;
-		});
+			.then(function (lastsms) {
+				if (lastsms.error) {
+					var message = "Error getting lastsms: " + lastsms.error.message;
+					return UtilsObject.errorPromise(message);
+				}
+				me.lastsms = lastsms;
+				return lastsms;
+			});
 	}
-	me.getContacts = function(){
+	me.getContacts = function () {
 		return googleDriveManager.downloadContent({
 			fileName: "contacts=:=" + me.deviceId
 		})
-		.then(function(contactsInfo){
-			if(contactsInfo.error){
-				var message = "Error getting contacts: " + contactsInfo.error.message;
-				return UtilsObject.errorPromise(message);
-			}
-			me.contactsInfo = contactsInfo;
-			return contactsInfo;
+			.then(function (contactsInfo) {
+				if (contactsInfo.error) {
+					var message = "Error getting contacts: " + contactsInfo.error.message;
+					return UtilsObject.errorPromise(message);
+				}
+				me.contactsInfo = contactsInfo;
+				return contactsInfo;
 
-		});
+			});
 	}
 }
-var ContactMessagesGetter = function(deviceId, contact){
+var ContactMessagesGetter = function (deviceId, contact) {
 	var me = this;
 
 	var googleDriveManager = new GoogleDriveManager();
@@ -203,93 +202,93 @@ var ContactMessagesGetter = function(deviceId, contact){
 	var localMessages = localStorage[fileKey];
 	me.messages = localMessages ? JSON.parse(localMessages) : null;
 
-	this.saveLocalMessages = function(){
-		if(me.messages){
+	this.saveLocalMessages = function () {
+		if (me.messages) {
 			localStorage[fileKey] = JSON.stringify(me.messages);
 		}
 	}
-	this.addSms = function(sms){
-		if(!me.messages){
-			me.messages = {"number":sms.number,smses:[]};
+	this.addSms = function (sms) {
+		if (!me.messages) {
+			me.messages = { "number": sms.number, smses: [] };
 		}
-		me.messages.smses.removeIf(function(existingSms){
+		me.messages.smses.removeIf(function (existingSms) {
 			return existingSms.date == sms.date;
 		});
 		me.messages.smses.push(sms);
 		me.saveLocalMessages();
 	}
-	var addStoredSmsToMyMessages = function(purge){		
-		var storedSmses = back.backgroundEventHandler.getSmsWhilePopupClosed(me.deviceId,purge);
-		for(var storedSms of storedSmses){
-			if(!me.messages.smses.first((sms)=>{
-				if(sms.text != storedSms.text){
+	var addStoredSmsToMyMessages = async function (purge) {
+		var storedSmses = await back.backgroundEventHandler.getSmsWhilePopupClosed(me.deviceId, purge);
+		for (var storedSms of storedSmses) {
+			if (!me.messages.smses.first((sms) => {
+				if (sms.text != storedSms.text) {
 					return false;
 				}
 				var timeDifference = Math.abs(sms.date - storedSms.date);
 				console.log("Same text, time difference: " + timeDifference);
 				return timeDifference < 10000;
-			})){
-				if(storedSms.number == me.number){
+			})) {
+				if (storedSms.number == me.number) {
 					back.console.log("Adding stored sms:");
 					back.console.log(storedSms);
 					me.messages.smses.push(storedSms);
-				}else{
+				} else {
 					back.console.log("Not Adding stored sms because different number:");
 					back.console.log(storedSms);
 				}
 			}
 		}
 	}
-	this.getInfo = UtilsObject.async(function* (callback,callbackProgress,callbackError,sortFieldGetter, sortDescending, local){
+	this.getInfo = UtilsObject.async(function* (callback, callbackProgress, callbackError, sortFieldGetter, sortDescending, local) {
 		setRefreshing(true);
-		
-		if(me.messages){			
+
+		if (me.messages) {
 			addStoredSmsToMyMessages(false);
 			callback(me.messages);
-		}else if(me.contact.lastsms){
-			callback({"smses":[me.contact.lastsms]});
+		} else if (me.contact.lastsms) {
+			callback({ "smses": [me.contact.lastsms] });
 		}
-		if(local){
+		if (local) {
 			setRefreshing(false);
 			return;
 		}
-		try{
-			var messages = yield googleDriveManager.downloadContent({fileName: fileKey});
-			if(messages.error){
-				console.log("Error getting messsages for "+me.number+": " + contacts.error.message);
+		try {
+			var messages = yield googleDriveManager.downloadContent({ fileName: fileKey });
+			if (messages.error) {
+				console.log("Error getting messsages for " + me.number + ": " + contacts.error.message);
 				callbackError(contacts.error.message);
 				setRefreshing(false);
 				return;
 			}
-			try{
-				if(messages.smses){
+			try {
+				if (messages.smses) {
 					messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
 					var allRemotesExist = true;
-					if(!me.messages){
+					if (!me.messages) {
 						allRemotesExist = false;
-					}else{
+					} else {
 						for (var i = 0; i < messages.smses.length; i++) {
 							var remote = messages.smses[i];
-							if(i<me.messages.smses.length){
+							if (i < me.messages.smses.length) {
 								var local = me.messages.smses[i];
-								if(remote.date != local.date){
+								if (remote.date != local.date) {
 									allRemotesExist = false;
 									break;
-								}	
-							}else{
+								}
+							} else {
 								allRemotesExist = false;
 								break;
 							}
 						}
 					}
 					back.console.log(`All remotes exist: ${allRemotesExist}`);
-					if(allRemotesExist){
+					if (allRemotesExist) {
 						return;
 					}
 				}
 				me.messages = messages;
-			}finally{
-				if(me.messages.smses){
+			} finally {
+				if (me.messages.smses) {
 					me.messages.smses.sort(sortByField(sortFieldGetter, sortDescending));
 				}
 				addStoredSmsToMyMessages(true);
@@ -297,7 +296,7 @@ var ContactMessagesGetter = function(deviceId, contact){
 				me.saveLocalMessages();
 				setRefreshing(false);
 			}
-		}catch(error){
+		} catch (error) {
 			console.log("Error downloading lastsms file: " + error);
 			delete localStorage[fileKey];
 			fileResponse = yield requestFileAsync(me.deviceId, me.number, 4);
@@ -315,12 +314,12 @@ var ContactMessagesGetter = function(deviceId, contact){
 			var fileResponse = yield back.eventBus.waitFor(back.Events.FileResponse,60000);*/
 			console.log("Response File");
 			console.log(fileResponse.fileId);
-			me.getInfo(callback,callbackProgress,callbackError,sortFieldGetter, sortDescending,false);
+			me.getInfo(callback, callbackProgress, callbackError, sortFieldGetter, sortDescending, false);
 			setRefreshing(false);
 		}
 	});
 }
-var SmsApp = function(){
+var SmsApp = function () {
 
 	var me = this;
 	me.isShowingNumberMessages = false;
@@ -350,136 +349,133 @@ var SmsApp = function(){
 	var mmsAttachment = null;
 	var highlightColor = "#FF9800";
 	var lowlightColor = "#757575";
-	smsAttachFileImagePreviewDelete.onclick = e => {	
+	smsAttachFileImagePreviewDelete.onclick = e => {
 		mmsAttachment = null;
-		smsAttachFileImagePreviewWrapper.classList.add("hidden");		
+		smsAttachFileImagePreviewWrapper.classList.add("hidden");
 	}
-	var setButtonColor = function(e, color){
+	var setButtonColor = function (e, color) {
 		//tintImage(e.target,color);
 	}
-	var buttonHover = function(e){
-		setButtonColor(e,highlightColor);
+	var buttonHover = function (e) {
+		setButtonColor(e, highlightColor);
 	};
-	var buttonHoverOut = function(e){
-		setButtonColor(e,lowlightColor);
+	var buttonHoverOut = function (e) {
+		setButtonColor(e, lowlightColor);
 	};
-	smsEmojiElement.onclick = e => Dialog.showEmojiDialog()().then(emoji=>{
+	smsEmojiElement.onclick = e => Dialog.showEmojiDialog()().then(emoji => {
 		var index = smsInputElement.selectionStart;
-		smsInputElement.value = UtilsObject.spliceString(smsInputElement.value,index,0,emoji);
+		smsInputElement.value = UtilsObject.spliceString(smsInputElement.value, index, 0, emoji);
 		smsInputElement.focus();
-		smsInputElement.selectionStart = index+1;
-		smsInputElement.selectionEnd = index+1;
+		smsInputElement.selectionStart = index + 1;
+		smsInputElement.selectionEnd = index + 1;
 	});
-	smsInputContainerElement.ondragover = e =>{
+	smsInputContainerElement.ondragover = e => {
 		makeDropZoneReady(dropzoneElement)
-		.then(files=>attachFile(files));
+			.then(files => attachFile(files));
 	}
-	var attachFile = function(files){
-		try{
+	var attachFile = function (files) {
+		try {
 			var publiclyUrl = "Publicly accessible image URL";
 			var initialAction = files ? Promise.resolve(files) : UtilsDom.pickFile();
 			return initialAction
-			/*return Dialog.showMultiChoiceDialog({
-									    items:[{"id":"file","text":"Local File"},{"id":"url","text":publiclyUrl}],
-									    title:"Which Number?"
-									})()
-		    .then(typeOfFile=>{
-		    	if(typeOfFile.id == "file"){
-			    	return back.UtilsDom.pickFile()
-			    }else{
-			    	return Dialog.showInputDialog({
-						title: publiclyUrl,
-						subtitle:"Make sure that the url corresponds to an image and is a URL accessible from anywhere",
-						placeholder:"Image URL"
-					});
-			    }
-		    })*/
-		   .then(files => {
-		   		if(!files){
-		   			files = back.UtilsDom.fileInput.files;
-		   		}
-		   		if(!files || files.length == 0){
-		   			return;
-		   		}
-		   		var readFile = null;
-		   		if(UtilsObject.isString(files)){
-		   			readFile = Promise.resolve().then(()=>files);
-		   		}else{
-		   			readFile = UtilsDom.readPickedFile(files[0]);
-		   		}
-		   		readFile.then(result=>{smsAttachFileImagePreviewWrapper.classList.remove("hidden"); smsAttachFileImagePreview.src = result;})
-		   		.then(()=>{
-		   			smsAttachFileImageLoadingElement.classList.remove("hidden");
-		   			return googleDriveManager.uploadFiles({
-			            folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
-			            notify: false
-			        }, files);
-			   	})
-		        .then(uploadResults => {
-		   			smsAttachFileImageLoadingElement.classList.add("hidden");
-		        	if(uploadResults && uploadResults.length > 0){
-		        		mmsAttachment = GoogleDriveManager.getDownloadUrlFromFileId(uploadResults[0]);
-		        		//return setImageFromUrl(uploadedImageUrl,smsAttachFileImageElement);	
-		        	}
-		        });
-		   	});
-		}catch(error){
+				/*return Dialog.showMultiChoiceDialog({
+											items:[{"id":"file","text":"Local File"},{"id":"url","text":publiclyUrl}],
+											title:"Which Number?"
+										})()
+				.then(typeOfFile=>{
+					if(typeOfFile.id == "file"){
+						return back.UtilsDom.pickFile()
+					}else{
+						return Dialog.showInputDialog({
+							title: publiclyUrl,
+							subtitle:"Make sure that the url corresponds to an image and is a URL accessible from anywhere",
+							placeholder:"Image URL"
+						});
+					}
+				})*/
+				.then(files => {
+					if (!files || files.length == 0) {
+						return;
+					}
+					var readFile = null;
+					if (UtilsObject.isString(files)) {
+						readFile = Promise.resolve().then(() => files);
+					} else {
+						readFile = UtilsDom.readPickedFile(files[0]);
+					}
+					readFile.then(result => { smsAttachFileImagePreviewWrapper.classList.remove("hidden"); smsAttachFileImagePreview.src = result; })
+						.then(() => {
+							smsAttachFileImageLoadingElement.classList.remove("hidden");
+							return googleDriveManager.uploadFiles({
+								folderName: GoogleDriveManager.getBaseFolderForMyDevice(),
+								notify: false
+							}, files);
+						})
+						.then(uploadResults => {
+							smsAttachFileImageLoadingElement.classList.add("hidden");
+							if (uploadResults && uploadResults.length > 0) {
+								mmsAttachment = GoogleDriveManager.getDownloadUrlFromFileId(uploadResults[0]);
+								//return setImageFromUrl(uploadedImageUrl,smsAttachFileImageElement);	
+							}
+						});
+				});
+		} catch (error) {
 			return Promise.reject(error);
 		}
 	}
-	smsAttachFileImageElement.onclick = e =>{		
+	smsAttachFileImageElement.onclick = e => {
 		var promise = attachFile();//isPopup ? attachFile() : Promise.reject("Not in popup");
 		promise
-		.catch(error=>makeDropZoneReady(dropzoneElement,"Drop file to attach"))
-		.then(files=>{
-			if(files){
-				attachFile(files);
-			}
-		});
+			.catch(error => makeDropZoneReady(dropzoneElement, "Drop file to attach"))
+			.then(files => {
+				if (files) {
+					attachFile(files);
+				}
+			});
 	}
 	smsAttachFileElement.onmouseover = buttonHover;
 	smsAttachFileElement.onmouseout = buttonHoverOut;
-	smsInputElement.addEventListener("keydown",function(e){
-		if(e.keyCode == 13 && !e.shiftKey){
+	smsInputElement.addEventListener("keydown", function (e) {
+		if (e.keyCode == 13 && !e.shiftKey) {
 			e.preventDefault();
 			me.sendSms();
 		}
 	});
-	smsInputElement.addEventListener("keyup",function(e){
+	smsInputElement.addEventListener("keyup", function (e) {
 		localStorage.smsDraft = smsInputElement.value;
 	});
 	smsInputElement.onpaste = async e => {
 		const items = e.clipboardData.items;
-		if(!items) return;
+		if (!items) return;
 
 		const currentValue = smsInputElement.value;
-		const pastedFiles = Array.from(items).map(item=>item.getAsFile()).filter(file=>file ? true : false);       
-		if(!pastedFiles || pastedFiles.length == 0) return;
-			 
+		const pastedFiles = Array.from(items).map(item => item.getAsFile()).filter(file => file ? true : false);
+		if (!pastedFiles || pastedFiles.length == 0) return;
+
 		await attachFile(pastedFiles);
 		smsInputElement.value = currentValue;
 	}
-	if(localStorage.smsDraft){
+	if (localStorage.smsDraft) {
 		smsInputElement.value = localStorage.smsDraft;
 	}
-	newSmsButtonIcon.addEventListener("click",function(e){
+	newSmsButtonIcon.addEventListener("click", async function (e) {
 		// console.log("new SMS");
 		me.writeContactListFunction = smsApp.writeContactListForSms;
-		me.writeContactListFunction(contactFindInputElement.value);
+		await me.writeContactListFunction(contactFindInputElement.value);
 	});
-	newCallButtonIcon.addEventListener("click",function(e){
+	newCallButtonIcon.addEventListener("click", async function (e) {
 		// console.log("new SMS");
 		me.writeContactListFunction = smsApp.writeContactListForCall;
-		me.writeContactListFunction(contactFindInputElement.value);
+		await me.writeContactListFunction(contactFindInputElement.value);
 	});
-	contactFindInputElement.addEventListener("input",function(e){
-		me.writeContactListFunction(contactFindInputElement.value);
+	contactFindInputElement.addEventListener("input", async function (e) {
+		await me.writeContactListFunction(contactFindInputElement.value);
 	});
 	me.contactFindInputElementEnterFunc = null;
-	contactFindInputElement.addEventListener("keyup",function(e){
-		if(e.keyCode == 13){
-			if(me.contactFindInputElementEnterFunc){
-				me.contactFindInputElementEnterFunc();
+	contactFindInputElement.addEventListener("keyup", async function (e) {
+		if (e.keyCode == 13) {
+			if (me.contactFindInputElementEnterFunc) {
+				await me.contactFindInputElementEnterFunc();
 			}
 		}
 	});
@@ -489,130 +485,129 @@ var SmsApp = function(){
 	// console.log("Checking URL for params");
 	// console.log(deviceIdFromUrl + ";"+numberFromUrl);
 	this.deviceId = deviceIdFromUrl ? deviceIdFromUrl : localStorage.smsDeviceId;
-	me.contact = numberFromUrl ? {"number":numberFromUrl,"name":getURLParameter("name")} : (localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null);
+	me.contact = numberFromUrl ? { "number": numberFromUrl, "name": getURLParameter("name") } : (localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null);
 	this.number = null;
 	me.contactsScroll = null;
-	me.onTabSelected = function(tabSelected){
-		if(tabSelected.tabId == "sms"){
-			me.clearSmsNotification();
+	me.onTabSelected = async function (tabSelected) {
+		if (tabSelected.tabId == "sms") {
+			await me.clearSmsNotification();
 			me.scrollSmsListToBottom();
 			me.focusSmsInput();
 		}
 	}
-	me.clearSmsNotification = function(){
-		back.getCurrentTabPromise()
-		.then(function(currentTab){
-			if(isPopup){
-				if(!currentTab){
-					return;
-				}
-				if(!currentTab.url){
-					return;
-				}
-				if(currentTab.url != window.location.toString()){
-					return;
-				}
-			}
-			back.console.log("Selected tab from clear sms notification: " + localStorage.selectedTab);
-			if(localStorage.selectedTab != "sms"){
+	me.clearSmsNotification = async function () {
+		const currentTab = await back.getCurrentTabPromise();
+		if (isPopup) {
+			if (!currentTab) {
 				return;
 			}
-			if(!me.number){
+			if (!currentTab.url) {
 				return;
 			}
-			back.notifications.where(function(notification){
-				return notification.id == back.UtilsSMS.getNotificationId(me.deviceId, me.number);
-			}).doForAll(function(notification){
-				setTimeout(function(){
-					notification.cancel();
-				},2000);
-			});
+			if (currentTab.url != window.location.toString()) {
+				return;
+			}
+		}
+		await back.console.log("Selected tab from clear sms notification: " + localStorage.selectedTab);
+		if (localStorage.selectedTab != "sms") {
+			return;
+		}
+		if (!me.number) {
+			return;
+		}
+		const notifications = await back.getNotificationsRaw()
+		notifications.where(function (notification) {
+			return notification.id == UtilsSMS.getNotificationId(me.deviceId, me.number);
+		}).doForAll(function (notification) {
+			setTimeout(function () {
+				notification.cancel();
+			}, 2000);
 		});
 	}
-	me.scrollSmsListToBottom = function(){
-		if(me.number){
-			smsContainerElement.scrollTop = smsContainerElement.scrollHeight;	
+	me.scrollSmsListToBottom = function () {
+		if (me.number) {
+			smsContainerElement.scrollTop = smsContainerElement.scrollHeight;
 		}
 	}
-	me.focusSmsInput = function(){
+	me.focusSmsInput = function () {
 		smsInputElement.focus();
 	}
-	var setPlaceholderText = function(text){
-		smsContainerElement.innerHTML = "<h5 id='tabsplaceholder'>"+text+"</h5>";
+	var setPlaceholderText = function (text) {
+		smsContainerElement.innerHTML = "<h5 id='tabsplaceholder'>" + text + "</h5>";
 	}
-	var setTitleText = function(text){
+	var setTitleText = function (text) {
 		smsTitleElement.innerHTML = text;
 	}
-	var setTitlePhoto = function(src){
-		if(src){
-			smsTitlePhotoElement.src = src;	
+	var setTitlePhoto = function (src) {
+		if (src) {
+			smsTitlePhotoElement.src = src;
 			smsTitlePhotoElement.classList.remove("hidden");
-		}else{
+		} else {
 			smsTitlePhotoElement.classList.add("hidden");
 		}
 	}
-	var showTitle = function(show){
-		if(!show){
+	var showTitle = function (show) {
+		if (!show) {
 			me.contactListShowing = false;
 		}
 		showNewSmsButton(!show);
-		if(!show){
+		if (!show) {
 			smsTitleContainerElement.classList.add("hidden");
-		}else{
+		} else {
 			smsTitleContainerElement.classList.remove("hidden");
 		}
 	}
-	if(isPopup){
+	if (isPopup) {
 		smsTitleContainerElement.classList.add("inpopup");
-	}else{
+	} else {
 		smsTitleContainerElement.classList.remove("inpopup");
 	}
-	var showInput = function(show){
-		if(!show){
+	var showInput = function (show) {
+		if (!show) {
 			smsInputContainerElement.classList.add("hidden");
-		}else{
+		} else {
 			smsInputContainerElement.classList.remove("hidden");
 		}
 	}
-	var showContactFind = function(show){
-		if(!show){
+	var showContactFind = function (show) {
+		if (!show) {
 			contactFindContainerElement.classList.add("hidden");
-		}else{
+		} else {
 			contactFindContainerElement.classList.remove("hidden");
 			contactFindInputElement.focus();
 		}
 	}
-	var showNewSmsButton = function(show){
-		if(!show){
+	var showNewSmsButton = function (show) {
+		if (!show) {
 			newSmsButton.classList.add("hidden");
-		}else{
+		} else {
 			newSmsButton.classList.remove("hidden");
 		}
 	}
-	me.addSms = function(deviceId,sms){
-		var contact = {"number":sms.number, "lastsms": sms};
+	me.addSms = function (deviceId, sms) {
+		var contact = { "number": sms.number, "lastsms": sms };
 		var contactsGetter = new ContactsGetter(deviceId);
 		contactsGetter.addSms(sms);
-		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
+		var contactMessagesGetter = new ContactMessagesGetter(deviceId, contact);
 		contactMessagesGetter.addSms(sms);
 		//back.console.log("Added SMS");
 		//back.console.log(sms);	
 	}
-	me.receiveSms= function(deviceId, sms){
-		if(!sms.date){
+	me.receiveSms = function (deviceId, sms) {
+		if (!sms.date) {
 			sms.date = Date.now();
 		}
 		sms.received = true;
-		me.addSms(deviceId,sms);
+		me.addSms(deviceId, sms);
 		//back.console.log("Added received SMS");
 		//back.console.log(sms);		
 	}
-	if(textFromUrl){
+	if (textFromUrl) {
 		//me.receiveSms(deviceIdFromUrl,{"number":numberFromUrl,"text":textFromUrl});
 	}
-	var findContactForElement = function(element){
+	var findContactForElement = function (element) {
 		var element = event.target;
-		while(!element.contact){
+		while (!element.contact) {
 			element = element.parentElement;
 		}
 		var contact = element.contact;
@@ -621,60 +616,59 @@ var SmsApp = function(){
 	var contactSvg = `<svg width="256" height="256" viewBox="-10 -12 283 283" xmlns="http://www.w3.org/2000/svg">
   <path d="M 130 222.16 C 98 222.16 69.712 205.776 53.2 181.2 C 53.584 155.6 104.4 141.52 130 141.52 C 155.6 141.52 206.416 155.6 206.8 181.2 C 190.288 205.776 162 222.16 130 222.16 M 130 40.4 C 151.208 40.4 168.4 57.59 168.4 78.8 C 168.4 100.01 151.208 117.2 130 117.2 C 108.792 117.2 91.6 100.01 91.6 78.8 C 91.6 57.59 108.792 40.4 130 40.4 M 130 2 C 59.308 2 2 59.306 2 130 C 2 200.694 59.308 258 130 258 C 200.692 258 258 200.694 258 130 C 258 59.216 200.4 2 130 2 Z"/>
 </svg>`;
-	var writeContactsInfo = function(deviceId, contactsInfo){
-		if(me.isShowingNumberMessages){
+	var writeContactsInfo = async function (deviceId, contactsInfo) {
+		if (me.isShowingNumberMessages) {
 			return;
 		}
-		if(contactsInfo && contactsInfo.contacts){
-			importSmsComponents().then(result=>{
-				const {smsContactHtml,smsMessageHtml} = result;
-				var contacts = contactsInfo.contacts;
-				smsContainerElement.innerHTML = "";
-				for (var i = 0; i < contacts.length; i++) {
-						var contact = contacts[i];
-						if(contact.lastsms){
-							var contactElement = smsContactHtml.cloneNode(true);
-							contactElement.contact = contact;
-							var contactPictureContainer = contactElement.querySelector("#smscontactpicture");
-							var contactPictureElement = contactPictureContainer.querySelector("img");
-							var contactSvgElement = contactPictureContainer.querySelector("svg");
-							var contactNameElement = contactElement.querySelector("#smscontactname");
-							var contactCallElement = contactElement.querySelector("#smscontactcall");
-							var contactTextElement = contactElement.querySelector("#smscontacttext");
-							var contactDateElement = contactElement.querySelector("#smscontactdate");
-							contactNameElement.innerHTML = contact.name;
-							contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: " )+ back.sanitizeHTML(contact.lastsms.text);
-							contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
+		if (contactsInfo && contactsInfo.contacts) {
+			const result = await importSmsComponents();
+			const { smsContactHtml, smsMessageHtml } = result;
+			var contacts = contactsInfo.contacts;
+			smsContainerElement.innerHTML = "";
+			for (var i = 0; i < contacts.length; i++) {
+				var contact = contacts[i];
+				if (contact.lastsms) {
+					var contactElement = smsContactHtml.cloneNode(true);
+					contactElement.contact = contact;
+					var contactPictureContainer = contactElement.querySelector("#smscontactpicture");
+					var contactPictureElement = contactPictureContainer.querySelector("img");
+					var contactSvgElement = contactPictureContainer.querySelector("svg");
+					var contactNameElement = contactElement.querySelector("#smscontactname");
+					var contactCallElement = contactElement.querySelector("#smscontactcall");
+					var contactTextElement = contactElement.querySelector("#smscontacttext");
+					var contactDateElement = contactElement.querySelector("#smscontactdate");
+					contactNameElement.innerHTML = contact.name;
+					contactTextElement.innerHTML = (contact.lastsms.received ? "" : "You: ") + await back.sanitizeHTML(contact.lastsms.text);
+					contactDateElement.innerHTML = contact.lastsms.date.formatDate(false);
 
-							var contactPhoto = contact.photo;
-							if(!contact.photo){
-								contactPictureElement.classList.add("hidden");
-							}else{
-								contactPictureElement.src = contactPhoto;
-								contactSvgElement.classList.add("hidden");
-							}
-							contactElement.addEventListener("click",function(event){
-								var contact = findContactForElement(event.target);
-								me.contactsScroll = smsContainerElement.scrollTop;
-								me.writeContactMessages(deviceId, contact);
-							});
-							contactCallElement.addEventListener("click",function(event){
-								var contact = findContactForElement(event.target);
-								back.pushCall(me.deviceId,true,contact);
-								event.stopPropagation();
-							});
-							smsContainerElement.appendChild(contactElement);
-						}
+					var contactPhoto = contact.photo;
+					if (!contact.photo) {
+						contactPictureElement.classList.add("hidden");
+					} else {
+						contactPictureElement.src = contactPhoto;
+						contactSvgElement.classList.add("hidden");
+					}
+					contactElement.addEventListener("click", function (event) {
+						var contact = findContactForElement(event.target);
+						me.contactsScroll = smsContainerElement.scrollTop;
+						me.writeContactMessages(deviceId, contact);
+					});
+					contactCallElement.addEventListener("click", function (event) {
+						var contact = findContactForElement(event.target);
+						back.pushCall(me.deviceId, true, contact);
+						event.stopPropagation();
+					});
+					smsContainerElement.appendChild(contactElement);
 				}
-				if(me.contactsScroll){
-					smsContainerElement.scrollTop = me.contactsScroll;
-				}else{						
-					smsContainerElement.scrollTop = 0;
-				}
-			});			
+			}
+			if (me.contactsScroll) {
+				smsContainerElement.scrollTop = me.contactsScroll;
+			} else {
+				smsContainerElement.scrollTop = 0;
+			}
 		}
 	};
-	me.writeSms = UtilsObject.async(function* (deviceId, local){
+	me.writeSms = async function (deviceId, local) {
 		me.isShowingNumberMessages = false;
 		me.number = null;
 		me.contact = null;
@@ -685,83 +679,83 @@ var SmsApp = function(){
 		showInput(false);
 		showContactFind(false);
 		var contactsGetter = new ContactsGetter(deviceId);
-		var sortFunc = function(contact){
+		var sortFunc = function (contact) {
 			var lastsms = contact.lastsms;
-			if(!lastsms){
+			if (!lastsms) {
 				return null;
 			}
 			return lastsms.date;
 		};
 		var sortDescending = true;
-		try{
-			writeContactsInfo(deviceId, yield contactsGetter.getLocalInfo(sortFunc,sortDescending));
+		try {
+			await writeContactsInfo(deviceId, await contactsGetter.getLocalInfo(sortFunc, sortDescending));
 			UtilsDom.replaceAllSvgInline();
-			if(!local){
-				writeContactsInfo(deviceId, yield contactsGetter.getInfo(sortFunc,sortDescending));
+			if (!local) {
+				await writeContactsInfo(deviceId, await contactsGetter.getInfo(sortFunc, sortDescending));
 				UtilsDom.replaceAllSvgInline();
 			}
-		}catch(error){
+		} catch (error) {
 			console.error(error);
-			var deviceSelected = yield me.assureDeviceIdSelected();
-			setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");			
+			var deviceSelected = await me.assureDeviceIdSelected();
+			setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");
 			setRefreshing(true);
-			var fileResponse = yield requestFileAsync(me.deviceId, "", 3);			
+			var fileResponse = await requestFileAsync(me.deviceId, "", 3);
 			setRefreshing(false);
-			if(fileResponse){
+			if (fileResponse) {
 				me.refresh(false);
 				return;
 			}
 			setPlaceholderText(error + "<br/><br/>Make sure the SMS Service is enabled on this device in the Android App -&gt; Settings -&gt; SMS.<br/>If it is, go back to the devices tab here in Chrome, click on your device and select 'Send an SMS message' to re-select your device.");
 		}
-	});
-	var createLinkToRevealMmsAttachment = function(smsAttachmentElement, imageElementId){
-		var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
-		linkToReveal.innerHTML =  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg> View Image';
+	};
+	var createLinkToRevealMmsAttachment = function (smsAttachmentElement, imageElementId) {
+		var linkToReveal = UtilsDom.createElement(smsAttachmentElement, "a", imageElementId);
+		linkToReveal.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg> View Image';
 		linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);
 	}
-	var hideMmsAttachment = function(imageElement){
+	var hideMmsAttachment = function (imageElement) {
 		back.console.log("hiding " + imageElement.id);
 		var smsAttachmentElement = imageElement.parentElement;
 		smsAttachmentElement.innerHTML = "";
 		createLinkToRevealMmsAttachment(smsAttachmentElement, imageElement.id);
 	}
-	var revealMmsAttachment = function(smsAttachmentElement, askForFileRemotely){
+	var revealMmsAttachment = function (smsAttachmentElement, askForFileRemotely) {
 		var attachmentId = smsAttachmentElement.sms.attachmentPartId;
 		var imageElementId = back.UtilsSMS.getAttachmentString(attachmentId);
 		smsAttachmentElement.innerHTML = ``;
-		var imageElement = UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":"icons/loading.gif","class":"loading","title":"Click to hide"});
+		var imageElement = UtilsDom.createElement(smsAttachmentElement, "img", imageElementId, { "src": "icons/loading.gif", "class": "loading", "title": "Click to hide" });
 		var start = null;
 		return back.UtilsSMS.getCachedAttachment(attachmentId)
-		.then(attachment => {
-			if(attachment){
-				imageElement.src = attachment.data;
-			}else{
-				var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
-				return firstStep.
-				then(()=>googleDriveManager.getFile({fileName:imageElementId}))		
-				.then(file=>setImageFromUrl(file.url,imageElement))
-				.then(()=>UtilsSMS.setCachedAttachment(attachmentId,imageElement.src))
-			}
-		})
-		.then(()=>{
-			imageElement.classList.remove("loading");
-			imageElement.classList.add("mmsimage");
-			imageElement.onclick = event => hideMmsAttachment(event.target);
-		})
-		.catch(error=>{
-			if(!askForFileRemotely){
-				return revealMmsAttachment(smsAttachmentElement,true);	
-			}else{
-				imageElement.src = "error.png"
-				console.error(error);
-			}
-			/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
-			linkToReveal.innerHTML = " Try Again";
-			linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement, true);	*/
-		});
+			.then(attachment => {
+				if (attachment) {
+					imageElement.src = attachment.data;
+				} else {
+					var firstStep = askForFileRemotely ? requestFileAsync(me.deviceId, attachmentId, 6) : Promise.resolve();
+					return firstStep.
+						then(() => googleDriveManager.getFile({ fileName: imageElementId }))
+						.then(file => setImageFromUrl(file.url, imageElement))
+						.then(() => UtilsSMS.setCachedAttachment(attachmentId, imageElement.src))
+				}
+			})
+			.then(() => {
+				imageElement.classList.remove("loading");
+				imageElement.classList.add("mmsimage");
+				imageElement.onclick = event => hideMmsAttachment(event.target);
+			})
+			.catch(error => {
+				if (!askForFileRemotely) {
+					return revealMmsAttachment(smsAttachmentElement, true);
+				} else {
+					imageElement.src = "error.png"
+					console.error(error);
+				}
+				/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
+				linkToReveal.innerHTML = " Try Again";
+				linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement, true);	*/
+			});
 	}
-	me.writeContactMessages = async function (deviceId, contact, local){
-		const {smsContactHtml,smsMessageHtml} = await importSmsComponents();
+	me.writeContactMessages = async function (deviceId, contact, local) {
+		const { smsContactHtml, smsMessageHtml } = await importSmsComponents();
 		me.deviceId = deviceId;
 		me.contact = contact;
 		localStorage.smsDeviceContact = JSON.stringify(me.contact);
@@ -769,7 +763,7 @@ var SmsApp = function(){
 		var number = contact.number;
 		me.isShowingNumberMessages = true;
 		me.number = number;
-		setPlaceholderText("Getting Messages for "+ name +"...");
+		setPlaceholderText("Getting Messages for " + name + "...");
 		var title = name;
 		setTitleText(title);
 		setTitlePhoto(contact.photo)
@@ -779,16 +773,16 @@ var SmsApp = function(){
 		mmsAttachment = null;
 		smsAttachFileImagePreviewWrapper.classList.add("hidden");
 
-		me.clearSmsNotification();
+		await me.clearSmsNotification();
 		smsInputElement.placeholder = "Send message to " + number;
 		me.focusSmsInput();
-		var contactMessagesGetter = new ContactMessagesGetter(deviceId,contact);
-		contactMessagesGetter.getInfo(function(contactMessages){
-			if(!me.isShowingNumberMessages){
+		var contactMessagesGetter = new ContactMessagesGetter(deviceId, contact);
+		contactMessagesGetter.getInfo(async function (contactMessages) {
+			if (!me.isShowingNumberMessages) {
 				return;
 			}
 			var smses = contactMessages.smses;
-			if(!contactMessages || !contactMessages.smses){
+			if (!contactMessages || !contactMessages.smses) {
 				setPlaceholderText("No messages for " + name);
 				return;
 			}
@@ -805,10 +799,10 @@ var SmsApp = function(){
 				var smsAttachmentElement = smsMessageElement.querySelector("#smsmessageattachment");
 				var smsDateElement = smsMessageElement.querySelector("#smsmessagedate");
 				var smsLoaderElement = smsMessageElement.querySelector("#smsmessageprogress");
-				
+
 				smsTextElement.onclick = event => {
 					var url = event.target["href"]
-					if(url){
+					if (url) {
 						event.preventDefault();
 						openTab(url);
 						return true;
@@ -816,99 +810,99 @@ var SmsApp = function(){
 					return false;
 				}
 				var smsText = sms.text;
-				if(smsText){
-					smsText = smsText.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>")	
+				if (smsText) {
+					smsText = smsText.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br/>")
 				}
-				smsTextElement.innerHTML = back.sanitizeHTML(back.Autolinker.link(smsText,{"stripPrefix" : false}));
-				if(sms.subject){
+				smsTextElement.innerHTML = await back.sanitizeAndCreateLinksInHtml(smsText);
+				if (sms.subject) {
 					smsSubjectElement.innerHTML = `Subject: ${back.sanitizeHTML(sms.subject)}`;
-				}else{
+				} else {
 					smsSubjectElement.classList.add("hidden");
 				}
-				if(sms.urgent){
+				if (sms.urgent) {
 					smsUrgentElement.classList.remove("hidden");
-				}else{
+				} else {
 					smsUrgentElement.classList.add("hidden");
 				}
 
-				if(number.indexOf(",")>0){
-					if(sms.sender){
+				if (number.indexOf(",") > 0) {
+					if (sms.sender) {
 						smsSenderElement.innerHTML = sms.sender;
-					}else{
+					} else {
 						smsSenderElement.innerHTML = "You";
-					}					
-				}else{
+					}
+				} else {
 					smsSenderElement.classList.add("hidden");
 				}
-				if(sms.attachmentPartId){
+				if (sms.attachmentPartId) {
 					var imageElementId = back.UtilsSMS.getAttachmentString(sms.attachmentPartId);
-					if(!sms.attachment){
+					if (!sms.attachment) {
 						smsAttachmentElement.sms = sms;
 						createLinkToRevealMmsAttachment(smsAttachmentElement, imageElementId);
 						/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 						linkToReveal.innerHTML = "See Image";
 						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);*/
 						back.UtilsSMS.getCachedAttachment(sms.attachmentPartId)
-						.then(attachment =>{
-							if(attachment){
-								back.console.log("revealing attachment")
-								back.console.log(attachment)
-								revealMmsAttachment(document.getElementById(back.UtilsSMS.getAttachmentString(attachment.id)).parentElement)
-								.then(()=>me.scrollSmsListToBottom());	
-							}
-						});
-					}else{
-						UtilsDom.createElement(smsAttachmentElement,"img",imageElementId,{"src":sms.attachment});
-					}			
-				}else{
+							.then(attachment => {
+								if (attachment) {
+									back.console.log("revealing attachment")
+									back.console.log(attachment)
+									revealMmsAttachment(document.getElementById(back.UtilsSMS.getAttachmentString(attachment.id)).parentElement)
+										.then(() => me.scrollSmsListToBottom());
+								}
+							});
+					} else {
+						UtilsDom.createElement(smsAttachmentElement, "img", imageElementId, { "src": sms.attachment });
+					}
+				} else {
 					smsAttachmentElement.classList.add("hidden");
-				}						
-				
+				}
+
 				smsDateElement.innerHTML = sms.date.formatDate(true);
-				if(sms.received){
+				if (sms.received) {
 					smsMessageElement.classList.add("received");
-				}else{
+				} else {
 					smsMessageContainerElement.classList.add("sent");
 				}
-				if(!sms.progress){
+				if (!sms.progress) {
 					smsLoaderElement.classList.add("hidden");
-				}else{
+				} else {
 					smsLoaderElement.classList.remove("hidden");
 				}
 				smsContainerElement.appendChild(smsMessageContainerElement);
 			}
 			me.scrollSmsListToBottom();
-		},function(progress){
+		}, function (progress) {
 			setPlaceholderText(progress);
-		},function(error){
-			setPlaceholderText("Error getting Messages for "+ name +": " + error);
-		},function(sms){
+		}, function (error) {
+			setPlaceholderText("Error getting Messages for " + name + ": " + error);
+		}, function (sms) {
 			return sms.date;
-		},false,local);
+		}, false, local);
 
 	}
-	me.writeContactListForSms = function(filter){
-		me.writeContactList(filter,function(deviceId, contact){
+	me.writeContactListForSms = async function (filter) {
+		await me.writeContactList(filter, function (deviceId, contact) {
 			me.writeContactMessages(deviceId, contact);
 		});
 	}
 	me.writeContactListFunction = me.writeContactListForSms;
-	me.writeContactListForCall = function(filter){
-		me.writeContactList(filter,function(deviceId, contact){
+	me.writeContactListForCall = async function (filter) {
+		await me.writeContactList(filter, function (deviceId, contact) {
 			back.pushCall(deviceId, true, contact);
 		});
 	}
-	var writeContactListFromInfo = function(filter, contactsInfo, callback){
+	var writeContactListFromInfo = function (filter, contactsInfo, callback) {
 		// console.log(contactsInfo);
-		if(contactsInfo.contacts){
-			var contacts = contactsInfo.contacts.where(contact=>contact.number && contact.number.indexOf(",")<0);
+		if (contactsInfo.contacts) {
+			var contacts = contactsInfo.contacts.where(contact => contact.number && contact.number.indexOf(",") < 0);
 			smsContainerElement.innerHTML = "";
-			if(filter){
+			if (filter) {
 				filter = filter.toLowerCase();
 			}
-			var addContactToList = function(contact){
-				importSmsComponents().then(result=>{
-					const {smsContactHtml,smsMessageHtml} = result;
+			var addContactToList = function (contact) {
+				importSmsComponents().then(result => {
+					const { smsContactHtml, smsMessageHtml } = result;
 					var contactElement = smsContactHtml.cloneNode(true);
 					contactElement.contact = contact;
 					var contactNameElement = contactElement.querySelector("#smscontactname");
@@ -920,17 +914,17 @@ var SmsApp = function(){
 					contactCallElement.innerHTML = "";
 					contactDateElement.innerHTML = "";
 
-					contactElement.addEventListener("click",function(event){
+					contactElement.addEventListener("click", function (event) {
 						var element = event.target;
-						while(!element.contact){
+						while (!element.contact) {
 							element = element.parentElement;
 						}
 						var contact = element.contact;
 						callback(me.deviceId, contact)
 					});
 					smsContainerElement.appendChild(contactElement);
-					me.contactFindInputElementEnterFunc = ()=>{
-						if(smsContainerElement.children.length > 0){
+					me.contactFindInputElementEnterFunc = () => {
+						if (smsContainerElement.children.length > 0) {
 							var contact = smsContainerElement.children[0].contact;
 							callback(me.deviceId, contact);
 						}
@@ -938,39 +932,39 @@ var SmsApp = function(){
 				});
 			}
 			for (var i = 0; i < contacts.length; i++) {
-					var contact = contacts[i];
-					var numberForFilter = contact.number.replace(" ","").replace("+","").replace("-","");
-					if(!filter || contact.name.toLowerCase().indexOf(filter) >= 0 || numberForFilter.indexOf(filter) >= 0){
-						addContactToList(contact);
-					}
+				var contact = contacts[i];
+				var numberForFilter = contact.number.replace(" ", "").replace("+", "").replace("-", "");
+				if (!filter || contact.name.toLowerCase().indexOf(filter) >= 0 || numberForFilter.indexOf(filter) >= 0) {
+					addContactToList(contact);
+				}
 			}
-			if(filter /*&& filter.match(/[0-9]+/) == filter*/){
-				addContactToList({"name":"Unlisted Contact","number": filter});
+			if (filter /*&& filter.match(/[0-9]+/) == filter*/) {
+				addContactToList({ "name": "Unlisted Contact", "number": filter });
 			}
 			me.contactListShowing = true;
 		}
 	}
-	me.writeContactList = function(filter,callback){
+	me.writeContactList = async function (filter, callback) {
 		setTitleText("Contacts");
 		setTitlePhoto(null);
 		showTitle(true);
 		showContactFind(true);
-		var sortFunc = function(contact){
+		var sortFunc = function (contact) {
 			return contact.name;
 		};
 		var sortDescending = false;
 		var contactsGetter = new ContactsGetter(me.deviceId);
-		writeContactListFromInfo(filter, contactsGetter.getLocalInfo(sortFunc,sortDescending),callback);
+		writeContactListFromInfo(filter, await contactsGetter.getLocalInfo(sortFunc, sortDescending), callback);
 	}
-	this.sendSms = function(){	
+	this.sendSms = function () {
 		var text = smsInputElement.value;
 		var mmsfile = mmsAttachment;
-		if(!text && !mmsfile){
+		if (!text && !mmsfile) {
 			return;
 		}
 		var subject = smsSubjectElement.value;
 		var urgent = smsUrgentElement.checked;
-		var push = new back.GCMPush();
+		var push = new GCMPush();
 		push.senderId = me.deviceId;
 		push.smsnumber = me.number;
 		//push.smscontactname = "João Dias";
@@ -982,145 +976,146 @@ var SmsApp = function(){
 		push.responseType = 0;
 		push.requestId = "SMS";
 		var tempAttachId = "sentAttachment";
-		back.UtilsSMS.setCachedAttachment(tempAttachId,smsAttachFileImagePreview.src)
-		.then(()=>{			
-			var sms = {
-				"text": text,
-				"number":me.number,
-				"progress":true,
-				"attachmentPartId":mmsAttachment ? tempAttachId : null,
-				"subject": subject,
-				"urgent": urgent
-			};
-			var sendSmsResult = function(event){
-				sms.progress = false;
-				back.removeEventListener("smssent",sendSmsResult,false);
-				if(event.success){
+		UtilsSMS.setCachedAttachment(tempAttachId, smsAttachFileImagePreview.src)
+			.then(async () => {
+				var sms = {
+					"text": text,
+					"number": me.number,
+					"progress": true,
+					"attachmentPartId": mmsAttachment ? tempAttachId : null,
+					"subject": subject,
+					"urgent": urgent
+				};
+				var sendSmsResult = function (event) {
+					sms.progress = false;
+					back.removeEventListener("smssent", sendSmsResult, false);
+					if (event.success) {
 						// console.log("SMS pushed");
 						//back.showNotification("Join","SMS sent!");
-				}else{
+					} else {
 						var error = "Error sending SMS: " + event.errorMessage;
 						console.log(error);
-						back.showNotification("Join",error);
-				}
-				me.addSms(me.deviceId,sms);
+						back.showNotification("Join", error);
+					}
+					me.addSms(me.deviceId, sms);
+					me.refresh(true);
+					var isReply = getURLParameter("reply");
+					if (isReply) {
+						window.close();
+					}
+				};
+				back.addEventListener("smssent", sendSmsResult, false);
+				push.send(me.deviceId);
+				//back.showNotification("Join","SMS pushed. Waiting for response...");
+				sms.date = Date.now();
+				sms.received = false;
+				me.addSms(me.deviceId, sms);
 				me.refresh(true);
-				var isReply = getURLParameter("reply");
-				if(isReply){
-					window.close();
-				}
-			};
-			back.addEventListener("smssent",sendSmsResult,false);
-			push.send(me.deviceId);
-			//back.showNotification("Join","SMS pushed. Waiting for response...");
-			sms.date = Date.now();
-			sms.received = false;
-			me.addSms(me.deviceId,sms);
-			me.refresh(true);
-			me.newInput();
-			me.clearSmsNotification();
-		});
+				me.newInput();
+				await me.clearSmsNotification();
+			});
 	}
-	this.newInput = function(){
+	this.newInput = function () {
 		smsInputElement.value = "";
 		smsSubjectElement.value = "";
 		smsUrgentElement.checked = false;
 		smsMmsExtrasElement.classList.add("hidden")
 		smsInputElement.focus();
 		mmsAttachment = null;
-		smsAttachFileImageElement.src ="icons/attachment.png";
-		smsAttachFileImagePreviewWrapper.classList.add("hidden");		
+		smsAttachFileImageElement.src = "icons/attachment.png";
+		smsAttachFileImagePreviewWrapper.classList.add("hidden");
 		delete localStorage.smsDraft;
 	}
-	this.assureDeviceIdSelected = UtilsObject.async(function* (){
-		if(!localStorage.smsDeviceId){
+	this.assureDeviceIdSelected = async function () {
+		if (!localStorage.smsDeviceId) {
 			return true;
 		}
-		if(!back.devices){
+		const devices = UtilsDevices.getDevices();
+		if (!devices) {
 			return true;
 		}
-		if(!me.deviceId || !back.devices.first(device=>device.deviceId == me.deviceId)){
+		if (!me.deviceId || !devices.first(device => device.deviceId == me.deviceId)) {
 			console.error("SMS Device doesn't exist!");
-			var devicesForSms = back.devices.where(UtilsDevices.canSendSMS);
-			var choices = devicesForSms.select(device=>({"id":device.deviceId,"text":device.deviceName}));
-			try{
+			var devicesForSms = devices.where(UtilsDevices.canSendSMS);
+			var choices = devicesForSms.select(device => ({ "id": device.deviceId, "text": device.deviceName }));
+			try {
 				delete localStorage.smsDeviceId;
-				var chosen = yield Dialog.showMultiChoiceDialog({
-				    items:choices,
-				    title:"Which device for SMS?"
+				var chosen = await Dialog.showMultiChoiceDialog({
+					items: choices,
+					title: "Which device for SMS?"
 				})();
 				console.log("chosen device: " + chosen.id);
 				localStorage.smsDeviceId = chosen.id;
 				me.deviceId = chosen.id;
 				return true;
-			}catch(error){
+			} catch (error) {
 				delete localStorage.smsDeviceId;
 				selectTab("devices");
 				return false;
-			}		
+			}
 		}
 		return true;
-	});
-	this.refresh = UtilsObject.async(function* (local){
-		yield me.assureDeviceIdSelected();
-		if(me.contact){
-			me.writeContactMessages(me.deviceId,me.contact,local);
-		}else{
-			me.writeSms(me.deviceId,local);
+	};
+	this.refresh = async function (local) {
+		await me.assureDeviceIdSelected();
+		if (me.contact) {
+			me.writeContactMessages(me.deviceId, me.contact, local);
+		} else {
+			me.writeSms(me.deviceId, local);
 		}
-	});
+	};
 
-	document.querySelector("#smstitlecontainer").addEventListener("click",function(){
+	document.querySelector("#smstitlecontainer").addEventListener("click", function () {
 		me.writeSms(me.deviceId);
 	});
-	UtilsDom.onClickAndLongClick(document.querySelector("#smssend"),e=>me.sendSms(),e=>{smsMmsExtrasElement.classList.toggle("hidden")});
-	
-	if(me.deviceId){
+	UtilsDom.onClickAndLongClick(document.querySelector("#smssend"), e => me.sendSms(), e => { smsMmsExtrasElement.classList.toggle("hidden") });
+
+	if (me.deviceId) {
 		me.refresh(false);
 	}
 }
 
 var smsApp = new SmsApp();
 //smsApp.contact = localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null;
-var refreshSms = function(){
+var refreshSms = function () {
 	smsApp.refresh();
 }
-var sendSms = function(event){
+var sendSms = function (event) {
 	var sms = event.sms;
-	if(sms && sms.number){
+	if (sms && sms.number) {
 		var contactsGetter = new ContactsGetter(event.deviceId);
-		contactsGetter.getContactForNumber(sms.number,true)
-		.then(async function(contact){
-			await smsApp.writeContactMessages(event.deviceId,contact,false);
-			smsReceived(event);
-		});
+		contactsGetter.getContactForNumber(sms.number, true)
+			.then(async function (contact) {
+				await smsApp.writeContactMessages(event.deviceId, contact, false);
+				smsReceived(event);
+			});
 	} else {
 		smsApp.writeSms(event.deviceId);
 	}
 }
-back.addEventListener("sendsms",sendSms,false);
+back.addEventListener("sendsms", sendSms, false);
 
-var phoneCall = function(event){
+var phoneCall = function (event) {
 	smsApp.deviceId = event.deviceId;
-    smsApp.writeContactListFunction = smsApp.writeContactListForCall;
-    smsApp.writeContactListFunction();
+	smsApp.writeContactListFunction = smsApp.writeContactListForCall;
+	smsApp.writeContactListFunction();
 }
-back.addEventListener("phonecall",phoneCall,false);
+back.addEventListener("phonecall", phoneCall, false);
 
-var smsReceived = function(event){
+var smsReceived = async function (event) {
 	//back.console.log("Received SMS in popup from " + event.deviceId);
 	//back.console.log(event.sms);
-	smsApp.receiveSms(event.deviceId,event.sms);
+	smsApp.receiveSms(event.deviceId, event.sms);
 	smsApp.refresh(true);
-	smsApp.clearSmsNotification();
+	await smsApp.clearSmsNotification();
 }
 
 back.addEventListener('smsreceived', smsReceived, false);
 back.eventBus.register(smsApp);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading sms...");
-	back.removeEventListener("sendsms",sendSms,false);
-	back.removeEventListener("phonecall",phoneCall,false);
-	back.removeEventListener('smsreceived',smsReceived,false);
+	back.removeEventListener("sendsms", sendSms, false);
+	back.removeEventListener("phonecall", phoneCall, false);
+	back.removeEventListener('smsreceived', smsReceived, false);
 	back.eventBus.unregister(smsApp);
 }, true);

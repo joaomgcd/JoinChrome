@@ -1,43 +1,53 @@
 <!DOCTYPE html>
 <html>
-	<head>
-<meta charset="UTF-8">
-		<script src="../../js/aes.js"></script>
-		<script src="../../js/pbkdf2.js"></script>
-		<script src="../../utils.js"></script>
-		<script src="../../js/gcm.js"></script>
-		<script src="../../js/base/constants.js"></script>
-		<script src="../../js/base/deviceIdsAndDirectDevices.js"></script>
-		<script src="../../js/base/utilsdom.js"></script>
-		<script src="../../js/base/utilsdevices.js"></script>
-		<script src="../../js/base/utilsobject.js"></script>
-		<script src="../../js/base/dialog/dialog.js"></script>
-		<script src="../../js/base/dialog/notification.js"></script>
-		<link type="text/css" rel="stylesheet" href="../../materialize/css/materialize.min.css"  media="screen,projection"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../base_styles.css"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../notification_styles.css"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../global_styles.css"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../css/dialog.css"/>
-		<style type="text/css">
-			html{
-			    background-color: var(--theme-background-color-panel);
-			}
-			.hidden{
-				display: none !important;
-			}
-			#notifications{
-				overflow-y: auto;
-			}
-			input[type='button'] {
-				background-color: var(--theme-background-color-panel);
-			}
-			input[type='button']:hover {
-				background-color: var(--theme-background-color); 
-			}
-		</style>
-	</head>
-	<body>
-		<div id="notifications">notification</div>
-	</body>
-	<script src="../../notifications.js"></script>
+
+<head>
+	<meta charset="UTF-8">
+	<script src="../../cross_context.js"></script>
+	<script src="../../background_page_emulation.js"></script>
+	<script src="../../js/aes.js"></script>
+	<script src="../../js/pbkdf2.js"></script>
+	<script src="../../utils.js"></script>
+	<script src="../../js/gcm.js"></script>
+	<script src="../../js/base/constants.js"></script>
+	<script src="../../js/base/deviceIdsAndDirectDevices.js"></script>
+	<script src="../../js/base/utilsdom.js"></script>
+	<script src="../../js/base/utilsdevices.js"></script>
+	<script src="../../js/base/utilsobject.js"></script>
+	<script src="../../js/base/dialog/dialog.js"></script>
+	<script src="../../js/base/semaphore.js"></script>
+	<script src="../../js/base/dialog/notification.js"></script>
+	<link type="text/css" rel="stylesheet" href="../../materialize/css/materialize.min.css" media="screen,projection" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../base_styles.css" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../notification_styles.css" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../global_styles.css" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../css/dialog.css" />
+	<style type="text/css">
+		html {
+			background-color: var(--theme-background-color-panel);
+		}
+
+		.hidden {
+			display: none !important;
+		}
+
+		#notifications {
+			overflow-y: auto;
+		}
+
+		input[type='button'] {
+			background-color: var(--theme-background-color-panel);
+		}
+
+		input[type='button']:hover {
+			background-color: var(--theme-background-color);
+		}
+	</style>
+</head>
+
+<body>
+	<div id="notifications">notification</div>
+</body>
+<script src="../../notifications.js"></script>
+
 </html>

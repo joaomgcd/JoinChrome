@@ -151,7 +151,7 @@ joindevices.groups.deviceGroups = new joindevices.groups.DeviceGroups();
 var RESPONSE_TYPE_PUSH = 0;
 var RESPONSE_TYPE_FILE = 1;
 var back = chrome.extension.getBackgroundPage();
-var doPostWithAuth = back.doPostWithAuth;
+// var doPostWithAuth = back.doPostWithAuth;
 
 /***********************************************************/
 
@@ -168,9 +168,9 @@ var notificationPages = {
  	"reddit.news": "https://www.reddit.com/message/inbox/",
 	"com.google.android.apps.playconsole":"https://play.google.com/apps/publish/"
 };
-var copyUserNotificationPages = function(){
+var copyUserNotificationPages = async function(){
 	try{
-		var userCreated = JSON.parse(back.getNotificationWebsites());
+		var userCreated = JSON.parse(await back.getNotificationWebsites());
 		for(var prop in userCreated){
 			notificationPages[prop] = userCreated[prop];
 		}
@@ -179,17 +179,17 @@ var copyUserNotificationPages = function(){
 		console.log(err);
 	}
 }
-var getNotificationPage = function(notification){
-	copyUserNotificationPages();
+var getNotificationPage = async function(notification){
+	await copyUserNotificationPages();
 	var url = notificationPages[notification.appPackage];
 	if(!url && notification.url){
 		url = notification.url;
 	}
 	return url;
 }
-var openNotificationPage = function(notification){
-	copyUserNotificationPages();
-	var appPage = getNotificationPage(notification);
+var openNotificationPage = async function(notification){
+	await copyUserNotificationPages();
+	var appPage = await getNotificationPage(notification);
 	if(appPage){
 		openTab(appPage);
 	}
@@ -820,13 +820,14 @@ function guid() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
 	s4() + '-' + s4() + s4() + s4();
 }
-var getCliendId = function(){
-	return chrome.runtime.getManifest().oauth2.client_id_web;
+var getCliendId = async function(){
+	const manifest = await chrome.runtime.getManifest();
+	return manifest.oauth2.client_id_web;
 }
-var getAuthUrl = function(selectAccount,background){
-	var manifest = chrome.runtime.getManifest();
+var getAuthUrl = async function(selectAccount,background){
+	var manifest = await chrome.runtime.getManifest();
 	var url = "https://accounts.google.com/o/oauth2/v2/auth?response_type=token";
-	url += "&client_id=" + getCliendId();
+	url += "&client_id=" + await getCliendId();
 	if(!background){
 		url += "&redirect_uri=" + encodeURIComponent(AUTH_CALLBACK_URL);
 	}else{
@@ -911,9 +912,9 @@ Number.prototype.formatDate = function(full){
 	var date = new Date(this);
 	var now = new Date();
 	var format = "#hh#:#mm#";
-	if (back.get12HourFormat()) {
-		format = format+" #AMPM#";
-	}
+	// if (back.get12HourFormat()) {
+	// 	format = format+" #AMPM#";
+	// }
 
 	if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && now.getFullYear() == date.getFullYear()){
 		return date.customFormat(format);
@@ -953,14 +954,14 @@ function tintImage(image, color) {
 
 var setPopupIcon = function(alternative){
 	if(alternative){
-		chrome.browserAction.setIcon({
+		chrome.action.setIcon({
 			path: {
 				"19": "icons/alternative_19.png",
 				"38": "icons/alternative_38.png"
 			}
 		});
 	  }else{
-		chrome.browserAction.setIcon({
+		chrome.action.setIcon({
 			path: {
 				"19": "icons/small.png",
 				"38": "icons/medium.png"

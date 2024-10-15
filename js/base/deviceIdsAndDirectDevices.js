@@ -43,7 +43,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 	};
 	var me = this;
 	if (!allDevices) {
-		allDevices = back.devices;
+		allDevices = UtilsDevices.getDevices();
 	}
 	if (!showNotificationFunc) {
 		showNotificationFunc = back.showNotification;
@@ -63,7 +63,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 	this.convertGroupToDeviceIds = function (device) {
 		var devicesResult = [];
 		if (device.deviceId.indexOf("group." == 0)) {
-			var devicesForGroup = back.joindevices.groups.deviceGroups.getGroupDevices(allDevices, device.deviceId);
+			var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(allDevices, device.deviceId);
 			if (devicesForGroup && devicesForGroup.length > 0) {
 				for (var i = 0; i < devicesForGroup.length; i++) {
 					var deviceForGroup = devicesForGroup[i];
@@ -158,7 +158,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 		}))
 			.then(allResults => ({ "results": allResults }));
 	}
-	var doDirectIpRequest = function (options) {
+	var doDirectIpRequest = async function (options) {
 		function IPnumber(IPaddress) {
 			var colonPosition = IPaddress.indexOf(":");
 			if (colonPosition >= 0) {
@@ -236,7 +236,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 	this.getDeviceTypeFunc = type => deviceTypesDirectFuncs[type + ""];
 
 
-	var sendAndHandleResult = UtilsObject.async(function* (funcToCall, options) {
+	var sendAndHandleResult = async function(funcToCall, options) {
 		var devices = options.devices;
 		var gcmString = options.gcmString;
 		var gcm = options.gcm;
@@ -244,7 +244,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 		var callback = options.callback;
 		var serverDevices = options.serverDevices;
 		var regIds = devices.select(device => device.regId2);
-		var multicastResult = yield funcToCall({ regIds: regIds, gcmString: gcmString, gcmType: gcm.getCommunicationType(), gcmParams: gcmParams, devices: devices, gcm: gcm });
+		var multicastResult = await funcToCall({ regIds: regIds, gcmString: gcmString, gcmType: gcm.getCommunicationType(), gcmParams: gcmParams, devices: devices, gcm: gcm });
 
 		for (var i = 0; i < devices.length; i++) {
 			var device = devices[i];
@@ -258,8 +258,8 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 
 		console.log("Posted direct GCM");
 		console.log(gcmString);
-	});
-	this.send = UtilsObject.async(function* (sendThroughServer, gcm, gcmParams, callback, callbackError, options) {
+	};
+	this.send = async function (sendThroughServer, gcm, gcmParams, callback, callbackError, options) {
 		if (!gcm) {
 			me.callCallback(callbackError, "No message to push");
 			return;
@@ -318,7 +318,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 					var groupCustomFunc = groupsByCustomFunc[groupKeyCustomFunc];
 					if (groupKeyCustomFunc == "false") {
 						options.devices = groupCustomFunc;
-						yield sendAndHandleResult(doDirectGCMRequest, options);
+						await sendAndHandleResult(doDirectGCMRequest, options);
 					} else {
 						var groups = groupCustomFunc.groupBy(device => device.deviceType);
 						for (var groupKey in groups) {
@@ -329,7 +329,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 
 							var funcToCall = forThisType.func;
 							options.devices = group;
-							yield sendAndHandleResult(funcToCall, options);
+							await sendAndHandleResult(funcToCall, options);
 						}
 					}
 
@@ -356,7 +356,7 @@ var DeviceIdsAndDirectDevices = function (deviceIds, allDevices, showNotificatio
 				}
 			}, callbackError);
 		}
-	});
+	};
 	this.handleGcmResult = function (device, result, options) {
 		console.log("Direct GCM result");
 		console.log(result);

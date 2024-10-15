@@ -10,6 +10,7 @@ body{
 	padding-right: 24px;
 	height: auto;
 	width: auto;
+	min-height: auto;
 }
 #title{
 	margin-top:16px;

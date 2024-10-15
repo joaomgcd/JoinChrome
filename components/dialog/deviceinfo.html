@@ -1,71 +1,82 @@
 <!DOCTYPE html>
 <html>
-	<head>
-<meta charset="UTF-8">
-		<script src="../../js/aes.js"></script>
-		<script src="../../js/pbkdf2.js"></script>
-		<script src="../../utils.js"></script>
-		<script src="../../js/base/eventBus.js"></script>
-		<script src="../../js/gcm.js"></script>
-		<script src="../../js/base/deviceIdsAndDirectDevices.js"></script>
-		<script src="../../js/base/utilsdom.js"></script>
-		<script src="../../js/base/utilsdevices.js"></script>
-		<script src="../../js/base/utilsobject.js"></script>
-		<script src="../../js/base/dialog/dialog.js"></script>
-		<script src="../../js/base/dialog/deviceinfo.js"></script>
-		<link type="text/css" rel="stylesheet" href="../../materialize/css/materialize.min.css"  media="screen,projection"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../base_styles.css"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../global_styles.css"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../css/dialog.css"/>
-		<link type="text/css" themesheet rel="stylesheet" href="../../css/deviceinfo.css"/>
-	</head>
-	<body>
-		<img src="/icons/refresh.png" id="refresh" class="hidden">
-		<div id="loading">
-			Loading...
-			<div  class="loader"></div>
-		</div>
-		<div id="deviceinfo" class="hidden">
-			<div id="topinfo">
-				<div id="iconcontainer">
-					<img id="icon" src="">
-					<div id="batterypercent"></div>
-				</div>
-				<div id="nameversion">
-					<div id="name"></div>
-					<div id="model"></div>
-					<div id="version"></div>
-				</div>
+
+<head>
+	<meta charset="UTF-8">
+	<script src="../../cross_context.js"></script>
+	<script src="../../background_page_emulation.js"></script>
+	<script src="../../js/aes.js"></script>
+	<script src="../../js/pbkdf2.js"></script>
+	<script src="../../utils.js"></script>
+	<script src="../../js/base/eventBus.js"></script>
+	<script src="../../js/gcm.js"></script>
+	<script src="../../js/base/deviceIdsAndDirectDevices.js"></script>
+	<script src="../../js/base/utilsdom.js"></script>
+	<script src="../../js/base/utilsdevices.js"></script>
+	<script src="../../js/base/utilsobject.js"></script>
+	<script src="../../js/base/dialog/dialog.js"></script>
+	<script src="../../js/base/dialog/deviceinfo.js"></script>
+	<link type="text/css" rel="stylesheet" href="../../materialize/css/materialize.min.css" media="screen,projection" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../base_styles.css" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../global_styles.css" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../css/dialog.css" />
+	<link type="text/css" themesheet rel="stylesheet" href="../../css/deviceinfo.css" />
+</head>
+
+<body>
+	<img src="/icons/refresh.png" id="refresh" class="hidden">
+	<div id="loading">
+		Loading...
+		<div class="loader"></div>
+	</div>
+	<div id="deviceinfo" class="hidden">
+		<div id="topinfo">
+			<div id="iconcontainer">
+				<img id="icon" src="">
+				<div id="batterypercent"></div>
 			</div>
-			<div id="internalstorage" class="storage section">				
-				<div class="title"><div>Internal Storage</div><div class="size"></div></div>
-				<div class="bar">
-					<div class="using"> </div>
-				</div>
-			</div>
-			<div id="externalstorage" class="storage section">
-				<div class="title"><div>External Storage</div><div class="size"></div></div>
-				<div class="bar">
-					<div class="using"> </div>
-				</div>
-			</div>
-			<div class="section" id="dnd">
-				<div>
-					<input type="checkbox" id="dnd1" /><label class="dndLabel" for="dnd1">Do Not Disturb</label>
-				</div>
-				<form id="formdnd">
-					<input name="dnd" type="radio" id="dnd3" /><label class="dndLabel" for="dnd3">Total Silence</label>
-					<input name="dnd" type="radio" id="dnd4" /><label class="dndLabel" for="dnd4">Alarms Only</label>
-					<input name="dnd" type="radio" id="dnd2" /><label class="dndLabel" for="dnd2">Priority Only</label>
-				</form>
-			</div>
-			<div class="section">
-				<div>Volumes</div>
-				<div id="interruptionfilter"></div>
-				<div id="mediavolume" class="volume"></div>
-				<div id="alarmvolume" class="volume"></div>
-				<div id="ringvolume" class="volume"></div>
+			<div id="nameversion">
+				<div id="name"></div>
+				<div id="model"></div>
+				<div id="version"></div>
 			</div>
 		</div>
-	</body>
+		<div id="internalstorage" class="storage section">
+			<div class="title">
+				<div>Internal Storage</div>
+				<div class="size"></div>
+			</div>
+			<div class="bar">
+				<div class="using"> </div>
+			</div>
+		</div>
+		<div id="externalstorage" class="storage section">
+			<div class="title">
+				<div>External Storage</div>
+				<div class="size"></div>
+			</div>
+			<div class="bar">
+				<div class="using"> </div>
+			</div>
+		</div>
+		<div class="section" id="dnd">
+			<div>
+				<input type="checkbox" id="dnd1" /><label class="dndLabel" for="dnd1">Do Not Disturb</label>
+			</div>
+			<form id="formdnd">
+				<input name="dnd" type="radio" id="dnd3" /><label class="dndLabel" for="dnd3">Total Silence</label>
+				<input name="dnd" type="radio" id="dnd4" /><label class="dndLabel" for="dnd4">Alarms Only</label>
+				<input name="dnd" type="radio" id="dnd2" /><label class="dndLabel" for="dnd2">Priority Only</label>
+			</form>
+		</div>
+		<div class="section">
+			<div>Volumes</div>
+			<div id="interruptionfilter"></div>
+			<div id="mediavolume" class="volume"></div>
+			<div id="alarmvolume" class="volume"></div>
+			<div id="ringvolume" class="volume"></div>
+		</div>
+	</div>
+</body>
+
 </html>

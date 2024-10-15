@@ -1,4 +1,4 @@
-var TaskerCommand = function(){
+var TaskerCommand = function () {
 	this.commandId = null;
 	this.label = null;
 	this.commandText = null;
@@ -7,82 +7,82 @@ var TaskerCommand = function(){
 	this.deviceIds = [];
 	this.isFavoriteRightClick = false;
 }
-var TaskerCommands = function(){
+var TaskerCommands = function () {
 	var commands = localStorage.taskerCommands ? JSON.parse(localStorage.taskerCommands) : [];
 	var saveCommandsImmediate = () => {
 		localStorage.taskerCommands = JSON.stringify(commands);
 		back.updateContextMenu();
 		return this.getCommands();
 	}
-	this.saveCommands = debounce(saveCommandsImmediate,1000);
-	
-	var findCommand = commandId => this.getCommands().find(command=>command.commandId == commandId)
-	this.performCommand = UtilsObject.async(function* (deviceId, commandId, possibleArg){
+	this.saveCommands = debounce(saveCommandsImmediate, 1000);
+
+	var findCommand = commandId => this.getCommands().find(command => command.commandId == commandId)
+	this.performCommand = UtilsObject.async(function* (deviceId, commandId, possibleArg) {
 		var command = findCommand(commandId);
-		if(!command){
+		if (!command) {
 			back.console.error(`Command ${commandId} not found`);
 			return;
 		}
 		var extraText = null;
-		if(command.promptText){
-			if(possibleArg){
+		if (command.promptText) {
+			if (possibleArg) {
 				extraText = possibleArg;
-			}else{
+			} else {
 				extraText = yield Dialog.showInputDialog({
-				    title: command.label,
-				    placeholder: "",
-				    subtitle: command.promptText
+					title: command.label,
+					placeholder: "",
+					subtitle: command.promptText
 				})();
 			}
 		}
 		var text = extraText ? `${command.commandText}=:=${extraText}` : command.commandText;
-		back.pushTaskerCommand(deviceId,true,text);
-    	back.setLastPush(deviceId, LAST_PUSH_CUSTOM_COMMAND+"=:="+command.commandId); 
+		back.pushTaskerCommand(deviceId, true, text);
+		back.setLastPush(deviceId, LAST_PUSH_CUSTOM_COMMAND + "=:=" + command.commandId);
 	});
-	this.getCommands = ()=>commands;	
+	this.getCommands = () => commands;
 	this.addCommand = newCommand => {
 		this.removeCommand(newCommand);
 		commands.push(newCommand);
 		return this.saveCommands();
-	}	
-	this.hasCommandDevice = (commandId,deviceIds) => {
-		var command = findCommand(commandId);
-		if(!command) return false;
-		return command.deviceIds.indexOf(commandId)>=0;
 	}
-	this.setCommandDevices = (commandId,deviceIds) => {
+	this.hasCommandDevice = (commandId, deviceIds) => {
+		var command = findCommand(commandId);
+		if (!command) return false;
+		return command.deviceIds.indexOf(commandId) >= 0;
+	}
+	this.setCommandDevices = (commandId, deviceIds) => {
 		var command = findCommand(commandId);
 		command.deviceIds = deviceIds;
 		return this.saveCommands();
 	}
-	this.addCommandDevice = (commandId,newDeviceId) => {
+	this.addCommandDevice = (commandId, newDeviceId) => {
 		var command = findCommand(commandId);
-		this.removeCommandDevice(commandId,newDeviceId);
+		this.removeCommandDevice(commandId, newDeviceId);
 		command.deviceIds.push(newDeviceId);
 		return this.saveCommands();
 	}
-	this.removeCommandDevice = (commandId,deviceIdToRemove) => {
+	this.removeCommandDevice = (commandId, deviceIdToRemove) => {
 		var command = findCommand(commandId);
-		if(!command){
+		if (!command) {
 			return;
 		}
-		if(!command.deviceIds){
+		if (!command.deviceIds) {
 			command.deviceIds = [];
 		}
-		command.deviceIds = command.deviceIds.filter(deviceId=>deviceId != deviceIdToRemove);
+		command.deviceIds = command.deviceIds.filter(deviceId => deviceId != deviceIdToRemove);
 		return this.saveCommands();
 	}
 	this.removeCommand = newCommand => {
-		commands = commands.filter(command=>command.commandId != newCommand.commandId);
+		commands = commands.filter(command => command.commandId != newCommand.commandId);
 		return this.saveCommands();
-	}	
+	}
 }
 
-var TaskerCommandsUI = function(taskerCommandsTab){	
+var TaskerCommandsUI = function (taskerCommandsTab) {
 	var taskerCommands = new TaskerCommands();
 
-	var divCommands =  document.createElement('div');
-	divCommands.classList.add("taskerCommands");	
+	var divCommands = document.createElement('div');
+	divCommands.classList.add("taskerCommands");
 	var htmlCommand = `
 		<div class="taskerCommandTitle">
 			<div class="taskerCommandIcon"><img id="commandicon" /></div>			
@@ -101,16 +101,16 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 		`
 	var findCommand = event => {
 		var element = findCommandElement(event)
-		if(element){
+		if (element) {
 			return element.command;
 		}
 	}
 	var findCommandElement = event => {
 		var element = event.target;
-		while(element && !element.command){
+		while (element && !element.command) {
 			element = element.parentElement;
 		}
-		if(element){
+		if (element) {
 			return element;
 		}
 	}
@@ -118,43 +118,43 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 		var imageElement = event.currentTarget;
 		var command = findCommand(event);
 		Dialog.showInputDialog({
-		    title:"Command Icon Url",
-		    subtitle:"Set a publicly available URL for this command's icon or a direct <svg> element",
-		    text: command.icon,
-		    placeholder:`Icon url...`
+			title: "Command Icon Url",
+			subtitle: "Set a publicly available URL for this command's icon or a direct <svg> element",
+			text: command.icon,
+			placeholder: `Icon url...`
 		})()
-		.then(newIcon=>{
-			command.icon = newIcon;
-			handleDeviceCommandIcon(command,imageElement);
-			saveDelayed();
-		})
-		.catch(error=>{
-			back.console.error(error);
-		})
+			.then(newIcon => {
+				command.icon = newIcon;
+				handleDeviceCommandIcon(command, imageElement);
+				saveDelayed();
+			})
+			.catch(error => {
+				back.console.error(error);
+			})
 	}
 	this.save = taskerCommands.saveCommands;
-	this.add = ()=>{
-		taskerCommands.addCommand({"commandId":guid(),"label":"","commandText":"","icon":"/icons/commands/tasker.svg"});
+	this.add = () => {
+		taskerCommands.addCommand({ "commandId": guid(), "label": "", "commandText": "", "icon": "/icons/commands/tasker.svg" });
 		this.renderCommands();
 	}
 	var refreshSelectedDevicesString = commandElement => {
 		var command = commandElement.command;
-		if(!command.deviceIds) return;
-		var selectedDevices = command.deviceIds.map(deviceId=>back.devices.first(device=>device.deviceId==deviceId));
-		var deviceNames = selectedDevices.filter(device=>{
-			if(device){
+		if (!command.deviceIds) return;
+		var selectedDevices = command.deviceIds.map(deviceId => UtilsDevices.getDevices().first(device => device.deviceId == deviceId));
+		var deviceNames = selectedDevices.filter(device => {
+			if (device) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
-		}).map(device=>device.deviceName);
+		}).map(device => device.deviceName);
 		commandElement.querySelector(".devicesToApplySelect").querySelector("div").innerHTML = deviceNames.join(", ");
 	}
 	var saveDelayed = this.save;
-	this.renderCommands  = () => {
+	this.renderCommands = () => {
 		divCommands.innerHTML = "";
 		taskerCommandsTab.appendChild(divCommands);
-		for(var command of taskerCommands.getCommands()){
+		for (var command of taskerCommands.getCommands()) {
 			var divCommand = document.createElement('div');
 			divCommands.appendChild(divCommand);
 			divCommand.classList.add("taskerCommand");
@@ -171,17 +171,17 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 			var titleElement = divCommand.querySelector(".taskerCommandTitle");
 			var selectDevicesElement = divCommand.querySelector(".devicesToApplySelect");
 			var favoriteRightClickElement = divCommand.querySelector(".favoriterightclick");
-			
+
 			favoriteRightClickElement.onchange = e => {
-				findCommand(e).isFavoriteRightClick = e.target.checked;				
+				findCommand(e).isFavoriteRightClick = e.target.checked;
 				saveDelayed();
 			}
 			favoriteRightClickElement.checked = command.isFavoriteRightClick;
 
-			if(command.label) {nameElement.setAttribute("value",command.label);}
-			if(command.commandText) textElement.setAttribute("value",command.commandText);
-			if(command.showInContextMenu) showInContextMenuElement.checked = true;
-			if(command.promptText) promptTextElement.value = command.promptText;
+			if (command.label) { nameElement.setAttribute("value", command.label); }
+			if (command.commandText) textElement.setAttribute("value", command.commandText);
+			if (command.showInContextMenu) showInContextMenuElement.checked = true;
+			if (command.promptText) promptTextElement.value = command.promptText;
 			nameElement.onkeyup = e => {
 				var commandElement = findCommandElement(e);
 				//var titleElement = commandElement.querySelector(".taskerCommandTitle");
@@ -206,23 +206,23 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 				var devices = findCommandElement(e).querySelector(".devicesToApply");
 				devices.classList.toggle("hidden");
 			}
-			handleDeviceCommandIcon(command,imageElement);
+			handleDeviceCommandIcon(command, imageElement);
 			deleteElement.onclick = e => {
 				var element = e.target;
-				while(!element.command){
+				while (!element.command) {
 					element = element.parentElement;
 				}
-				taskerCommands.removeCommand(element.command);this.renderCommands()
+				taskerCommands.removeCommand(element.command); this.renderCommands()
 			};
 			var elementDevices = divCommand.querySelector(".devicesToApply");
 			refreshSelectedDevicesString(divCommand);
 			var countSelected = 0;
-			for(var device of back.devices){
-				var label = UtilsDom.createElement(elementDevices,"label", device.deviceId + "=:="+command.commandId,{"class":"selection"});
+			for (var device of UtilsDevices.getDevices()) {
+				var label = UtilsDom.createElement(elementDevices, "label", device.deviceId + "=:=" + command.commandId, { "class": "selection" });
 				var text = document.createTextNode(device.deviceName);
 				label.appendChild(text);
-				var checkbox = UtilsDom.createElement(label,"input", device.deviceId + "=:=" + command.commandId + "enablecommand",{"type":"checkbox","class":"devicecommandstatus hidden"});
-				if(command.deviceIds && command.deviceIds.indexOf(device.deviceId)>=0){
+				var checkbox = UtilsDom.createElement(label, "input", device.deviceId + "=:=" + command.commandId + "enablecommand", { "type": "checkbox", "class": "devicecommandstatus hidden" });
+				if (command.deviceIds && command.deviceIds.indexOf(device.deviceId) >= 0) {
 					checkbox.checked = true;
 					countSelected++;
 				}
@@ -231,11 +231,11 @@ var TaskerCommandsUI = function(taskerCommandsTab){
 					var commandElement = findCommandElement(e);
 					var command = commandElement.command;
 					var checkboxes = commandElement.querySelectorAll(".devicecommandstatus");
-					var deviceIds = Array.prototype.map.call(Array.prototype.filter.call(checkboxes,checkbox=>checkbox.checked),checkbox => checkbox.device.deviceId);
+					var deviceIds = Array.prototype.map.call(Array.prototype.filter.call(checkboxes, checkbox => checkbox.checked), checkbox => checkbox.device.deviceId);
 					taskerCommands.setCommandDevices(command.commandId, deviceIds);
 					refreshSelectedDevicesString(commandElement);
 				}
-				var selectionIndicator = UtilsDom.createElement(label,"div", device.deviceId + "=:="+command.commandId+ "selectionIndicator",{"class":"selection_indicator"});
+				var selectionIndicator = UtilsDom.createElement(label, "div", device.deviceId + "=:=" + command.commandId + "selectionIndicator", { "class": "selection_indicator" });
 			}
 		}
 		return divCommands;

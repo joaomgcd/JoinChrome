@@ -3,7 +3,7 @@
 	"short_name": "Join",
 	"description": "Bring your devices together",
 	"version": "1.8.27",
-    "permissions": [
+	"permissions": [
 		"identity",
 		"identity.email",
 		"background",
@@ -13,28 +13,40 @@
 		"tabs",
 		"clipboardRead",
 		"clipboardWrite",
-		"https://joinjoaomgcd.appspot.com/",
-		"http://localhost:8080/",
-		"https://accounts.google.com/o/oauth2/v2/auth/",
 		"contextMenus",
 		"geolocation",
-		"tts"
+		"tts",
+        "offscreen"
 	],
-	"content_security_policy": "script-src 'self' http://localhost:8080/ 'unsafe-eval'; object-src 'self'",
+	"host_permissions": [
+		"https://joinjoaomgcd.appspot.com/",
+		"http://localhost:8080/",
+		"https://accounts.google.com/o/oauth2/v2/auth/"
+	],
+	"content_security_policy": {
+		"extension_pages": "script-src 'self'; object-src 'self'"
+	},
 	"icons": {
 		"16": "icons/small.png",
 		"48": "icons/medium.png",
 		"128": "icons/big.png"
 	},
-	"browser_action": {
+	"action": {
 		"default_icon": "icons/icon.png",
 		"default_popup": "devices.html"
 	},
 	"web_accessible_resources": [
-		"icons/medium.png"
+		{
+			"resources": [
+				"icons/medium.png"
+			],
+			"matches": [
+				"*://*/*"
+			]
+		}
 	],
 	"background": {
-		"page": "join.html"
+		"service_worker": "service_worker.js"
 	},
 	"options_ui": {
 		"page": "options.html"
@@ -80,5 +92,5 @@
 			"https://www.googleapis.com/auth/drive.file"
 		]
 	},
-	"manifest_version": 2
+	"manifest_version": 3
 }

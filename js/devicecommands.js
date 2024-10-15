@@ -56,13 +56,13 @@ var deviceCommands = [
 				}
 			})
 			.then(()=>{
-				var promise = back.pushFile(deviceId,notify,tab);//isPopup ? back.pushFile(deviceId,notify,tab) : Promise.reject("can't select file if not in popup");
+				var promise = pushFile(deviceId,notify,tab);
 				return promise
 				.catch(error=>{
 					makeDropZoneReady(dropzoneElement)
 					.then(files=>{
 						if(files){
-							back.pushFile(deviceId,null,null,files)
+							pushFile(deviceId,null,null,files)
 						}
 					});
 				});

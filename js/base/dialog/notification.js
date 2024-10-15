@@ -32,14 +32,14 @@ addEventListener("unload", function (event) {
 	back.console.log("Unloading notification dialog...");
 	back.eventBus.unregister(eventHandler);
 });
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
 	var initResult = Dialog.init({
 		showOk:false
 	},function(){
 		return inputElement.value;
 	});	
 	var input = initResult.input;	
-	notification = back.getNotification(input.notificationId);
+	notification = await back.getNotificationRaw(input.notificationId);
 	console.log(notification);
-	writeNotifications(not=>not.id == notification.id);
+	await writeNotifications(not=>not.id == notification.id);
 });

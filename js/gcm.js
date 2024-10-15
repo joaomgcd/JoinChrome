@@ -9,8 +9,8 @@ var SAVE_IMAGE = "SAVE_IMAGE";
 var STORED_LAST_PUSH_DATE = "STORED_LAST_PUSH_DATE";
 var regexNumbers = /[0-9\.]{4,}/g;
 
-var Request = function(){
-	this.getParams = function() {
+var Request = function () {
+	this.getParams = function () {
 		var json = new Object();
 		for (prop in this) {
 			json[prop] = this[prop];
@@ -18,39 +18,39 @@ var Request = function(){
 		return json;
 	}
 }
-var GCM = function(){
-	this.execute = function() {
+var GCM = function () {
+	this.execute = function () {
 		console.log(this);
 	}
-	this.fromJson = function(json) {
+	this.fromJson = function (json) {
 		for (prop in json) {
 			this[prop] = json[prop];
 		}
 	}
-	this.fromJsonString = function(str) {
-		try{
+	this.fromJsonString = function (str) {
+		try {
 			str = decryptString(str);
-		}catch(error){
+		} catch (error) {
 			console.log("Wasn't encrypted: " + str);
 		}
-		if(str.indexOf("{") < 0){
-			showNotification("Decryption Error","Please check that your encryption password matches the one on other devices.")
+		if (str.indexOf("{") < 0) {
+			showNotification("Decryption Error", "Please check that your encryption password matches the one on other devices.")
 			return;
 		}
 		var json = JSON.parse(str);
 		this.fromJson(json);
 
 	}
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCM";
 	}
-	this.send = function(deviceId, callback, callbackError,viaAddress) {
+	this.send = async function (deviceId, callback, callbackError, viaAddress) {
 		var params = this.getParams();
 		params.deviceId = deviceId;
-		var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(back.devices,deviceId);
-		if(devicesForGroup && devicesForGroup.length > 0){
+		var devicesForGroup = joindevices.groups.deviceGroups.getGroupDevices(UtilsDevices.getDevices(), deviceId);
+		if (devicesForGroup && devicesForGroup.length > 0) {
 			params.deviceId = null;
-			params.deviceIds = devicesForGroup.select(function(device){
+			params.deviceIds = devicesForGroup.select(function (device) {
 				return device.deviceId;
 			}).join(",");
 		}
@@ -58,124 +58,101 @@ var GCM = function(){
 		params.id = guid();
 		this.encrypt(params);
 		var gcmParams = {};
-		if(params.clipboard){
+		if (params.clipboard) {
 			gcmParams[GCM_PARAM_TIME_TO_LIVE] = 0;
 		}
 		params.date = new Date().getTime();
-		var gcm = {"push":params};
+		var gcm = { "push": params };
 		gcm.getCommunicationType = this.getCommunicationType;
-        return new DeviceIdsAndDirectDevices(deviceId)
-        .sendPromise({
-            gcm:gcm,
-            gcmParams:gcmParams,
-            sendThroughServer:function(deviceIds,callback,callbackError){
-                params.deviceId = null;
-                params.deviceIds = deviceIds.join();
-                doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
-            },
-            onSendSuccess: device => {
-            	if(!device) return;
-            	if(!UtilsDevices.isChrome(device)) return;
-            	
-            	var googleDriveManager = new GoogleDriveManager();
-            	googleDriveManager.addPushToDevice(device.deviceId, params, true)
-            	.then(result=>console.log("Added successful push to other device's stored pushes"));
-            }
-        })
-        .then(function(result){
-            console.log("Sent push: " + JSON.stringify(result));
-            if(callback){
-                callback(result);
-            }else{
-            	return result;
-            }
-        })
-        .catch(function(error){
-            console.log("Error: " + error);
-            if(callbackError){
-                callbackError(error);
-            }else{
-                return Promise.reject(error);
-            }
-        });
-		/*new DeviceIdsAndDirectDevices(deviceId).send(function(deviceIds,callback,callbackError){
-			params.deviceId = null;
-			params.deviceIds = deviceIds.join();
-			doPostWithAuth(joinserver + "messaging/v1/sendPush/",params,callback,callbackError);
-		},gcm,gcmParams, function(result){
-			  if(!result.success){
-				  console.log("Couldn't send push: " + result.errorMessage);
-				  if(callbackError){
-					callbackError(result.errorMessage);
-				  }
-				  return;
-			  }
-			  console.log("Sent push: " + JSON.stringify(result));
-			  if(callback){
-				callback(result);
-			  }
-			},function(error){
-				console.log("Error: " + error);
-				if(callbackError){
-					callbackError(error);
-				}
-		});*/
+		return new DeviceIdsAndDirectDevices(deviceId)
+			.sendPromise({
+				gcm: gcm,
+				gcmParams: gcmParams,
+				sendThroughServer: function (deviceIds, callback, callbackError) {
+					params.deviceId = null;
+					params.deviceIds = deviceIds.join();
+					doPostWithAuth(joinserver + "messaging/v1/sendPush/", params, callback, callbackError);
+				},
+				onSendSuccess: device => {
+					if (!device) return;
+					if (!UtilsDevices.isChrome(device)) return;
 
+					var googleDriveManager = new GoogleDriveManager();
+					googleDriveManager.addPushToDevice(device.deviceId, params, true)
+						.then(result => console.log("Added successful push to other device's stored pushes"));
+				}
+			})
+			.then(function (result) {
+				console.log("Sent push: " + JSON.stringify(result));
+				if (callback) {
+					callback(result);
+				} else {
+					return result;
+				}
+			})
+			.catch(function (error) {
+				console.log("Error: " + error);
+				if (callbackError) {
+					callbackError(error);
+				} else {
+					return Promise.reject(error);
+				}
+			});
 
 	}
-	this.encrypt = function(params){
+	this.encrypt = function (params) {
 		var password = localStorage.encryptionPassword;
-		if(!password){
+		if (!password) {
 			return;
 		}
-		this.encryptSpecific(params,password);
+		this.encryptSpecific(params, password);
 	}
 
-    this.toGcmRaw = function(){
-    	return {
-            "json": JSON.stringify(this),
-            "type": this.getCommunicationType()
-	    }
-    }
-    this.toGcmRawString = function(){
-    	return JSON.stringify(this.toGcmRaw());
-    }
+	this.toGcmRaw = function () {
+		return {
+			"json": JSON.stringify(this),
+			"type": this.getCommunicationType()
+		}
+	}
+	this.toGcmRawString = function () {
+		return JSON.stringify(this.toGcmRaw());
+	}
 }
 GCM.prototype = new Request();
 
 
 var lastTextPushed = null;
-var getLastReceivedDate = () => UtilsObject.getStoredNumber(STORED_LAST_PUSH_DATE,0);
-var setLastReceivedDate = date => UtilsObject.setStored(STORED_LAST_PUSH_DATE,date);
-var GCMPush = function(){
+var getLastReceivedDate = () => UtilsObject.getStoredNumber(STORED_LAST_PUSH_DATE, 0);
+var setLastReceivedDate = date => UtilsObject.setStored(STORED_LAST_PUSH_DATE, date);
+var GCMPush = function () {
 	var me = this;
-	this.createNotificationFromPush = function(){
+	this.createNotificationFromPush = function () {
 
 		var push = me.push;
 		var title = push.title;
 		var url = push.url;
 		var text = push.text;
-		if(!title){
-			if(url){
+		if (!title) {
+			if (url) {
 				title = text;
 				text = url;
-			}else{
+			} else {
 				title = "Join";
 			}
 		}
 
-		if(!text){
-			if(url){
+		if (!text) {
+			if (url) {
 				text = url;
 			}
 		}
-		if(!text){
+		if (!text) {
 			text = "Join";
 		}
 		var not = {};
 		not.senderId = push.senderId;
 		not.id = push.id;
-		not.title= title;
+		not.title = title;
 		not.text = text;
 		not.appIcon = push.icon;
 		not.image = push.image;
@@ -184,7 +161,7 @@ var GCMPush = function(){
 		not.appName = "Join";
 		not.keepRemote = true;
 		not.gcmDeleteOnCancel = true;
-		if(text && text.match(regexNumbers)){
+		if (text && text.match(regexNumbers)) {
 			not.buttons = [];
 			not.buttons.push({
 				text: "Copy Number",
@@ -192,106 +169,106 @@ var GCMPush = function(){
 			});
 		}
 		var gcmNtification = new GCMNotification();
-		gcmNtification.requestNotification = {notifications:[not], senderId:push.senderId};
+		gcmNtification.requestNotification = { notifications: [not], senderId: push.senderId };
 		gcmNtification.execute();
 	}
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMPush";
 	}
-	this.execute = function() {
+	this.execute = function () {
 		decryptFields(this.push);
-		if(this.push.receiveIfNewer){
-			if(this.push.date && this.push.date - 10000 <= getLastReceivedDate()){
+		if (this.push.receiveIfNewer) {
+			if (this.push.date && this.push.date - 10000 <= getLastReceivedDate()) {
 				return;
 			}
 		}
-		if(!this.push.date){
+		if (!this.push.date) {
 			this.push.date = new Date().getTime();
 		}
 		const numberOfSecondsOldToIgnore = parseInt(getNotificationIgnoreOldPushes());
-		if(numberOfSecondsOldToIgnore){
+		if (numberOfSecondsOldToIgnore) {
 			const numberOfMillisToIgnore = numberOfSecondsOldToIgnore * 1000;
-			if(this.push.date && this.push.date < Date.now() - numberOfMillisToIgnore){
-				console.log("Ignoring old push",this.push);
+			if (this.push.date && this.push.date < Date.now() - numberOfMillisToIgnore) {
+				console.log("Ignoring old push", this.push);
 				return;
 			}
 		}
 		console.log("Received push!!");
 		setLastReceivedDate(this.push.date);
-		if(this.push.text){
+		if (this.push.text) {
 			lastTextPushed = this.push.text;
 			var eventGhostPorts = getEventghostPort();
 			var eventGhostServer = getEventghostServer() || "localhost";
-			
-			if(eventGhostPorts){
+
+			if (eventGhostPorts) {
 				eventGhostPorts = eventGhostPorts.split(",");
-				for(var eventGhostPort of eventGhostPorts){
+				for (var eventGhostPort of eventGhostPorts) {
 					var redirectFullPush = getRedirectFullPush();
-					if(!redirectFullPush){
+					if (!redirectFullPush) {
 						var oReq = new XMLHttpRequest();
-						oReq.addEventListener("load", function(result){
+						oReq.addEventListener("load", function (result) {
 							console.log(result);
 							var response = result.target.responseText;
-							if(response && response == "OK"){
+							if (response && response == "OK") {
 								//showNotification("Redirected to EventGhost",me.push.text,5000);
-							}else{
-								if(!response){
+							} else {
+								if (!response) {
 									response = result.target.statusText;
 								}
-							   // showNotification("Couldn't redirect to EventGhost",response,5000);
+								// showNotification("Couldn't redirect to EventGhost",response,5000);
 							}
-							if(!me.push.title){
+							if (!me.push.title) {
 								//me.createNotificationFromPush();
 							}
 						});
-						oReq.addEventListener("error", function(result){
+						oReq.addEventListener("error", function (result) {
 
-							if(!me.push.title){
+							if (!me.push.title) {
 								//me.createNotificationFromPush();
 							}
 						});
 						oReq.open("GET", `http://${eventGhostServer}:${eventGhostPort}/?message=${encodeURIComponent(this.push.text)}`);
 						oReq.send();
-					}else{
+					} else {
 						var options = {
 							method: 'POST',
-							body: this.toGcmRawString(), 
+							body: this.toGcmRawString(),
 							headers: {
 								'Content-Type': 'application/json'
 							}
 						}
-				    	fetch(`http://${eventGhostServer}:${eventGhostPort}/push`,options)
+						fetch(`http://${eventGhostServer}:${eventGhostPort}/push`, options)
 					}
 				}
-			}else{
-				if(!me.push.title){
+			} else {
+				if (!me.push.title) {
 					me.createNotificationFromPush();
 				}
 			}
-			if(this.push.text == TEST_PUSH_TEXT){
-                back.eventBus.postSticky(new back.Events.TestPush());
+			if (this.push.text == TEST_PUSH_TEXT) {
+				back.eventBus.postSticky(new back.Events.TestPush());
 				/*setTimeout(function(){*///fire(TEST_PUSH_EVENT)//},2000);
 			}
 		}
-		if(this.push.title){
+		if (this.push.title) {
 			me.createNotificationFromPush();
 		}
-		if(this.push.clipboard){
+		if (this.push.clipboard) {
 			directCopy(this.push.clipboard);
 			var notificationText = this.push.clipboard;
-			if(!back.getClipboardNotificationShowContents()){
+			if (!back.getClipboardNotificationShowContents()) {
 				notificationText = "Clipboard content hidden";
 			}
-			showNotification("Clipboard Set",  notificationText,5000);
+			showNotification("Clipboard Set", notificationText, 5000);
 		}
-		if(!this.push.url){
+		if (!this.push.url) {
 			var toCheck = [this.push.clipboard];
-			if(this.push.text && this.push.text.indexOf("=:=")<0){
+			if (this.push.text && this.push.text.indexOf("=:=") < 0) {
 				toCheck.push(this.push.text);
 			}
 			this.push.url = getUrlIfTextMatches(toCheck);
 		}
-		if(this.push.url && !this.push.title){
+		if (this.push.url && !this.push.title) {
 			var url = this.push.url;
 			if (getOpenLinksEnabled()) {
 				openTab(url);
@@ -302,26 +279,26 @@ var GCMPush = function(){
 				}
 			}
 		}
-		if(this.push.files && this.push.files.length > 0){
+		if (this.push.files && this.push.files.length > 0) {
 			for (var i = 0; i < this.push.files.length; i++) {
 				var file = this.push.files[i];
-				if(getDownloadScreenshotsEnabled()){
+				if (getDownloadScreenshotsEnabled()) {
 					var fileId = getDeviceFileIdFromUrl(file);
-					if(fileId){
+					if (fileId) {
 						file = "https://drive.google.com/uc?export=download&id=" + fileId;
 					}
 				}
 				openTab(file);
 			}
-			showNotification("Join", "Received " + this.push.files.length + " file" + (this.push.files.length == 1 ? "" : "s") ,5000);
+			showNotification("Join", "Received " + this.push.files.length + " file" + (this.push.files.length == 1 ? "" : "s"), 5000);
 		}
-		if(this.push.location){
-			if(this.push.senderId){
-				navigator.geolocation.getCurrentPosition(function(location){
+		if (this.push.location) {
+			if (this.push.senderId) {
+				navigator.geolocation.getCurrentPosition(function (location) {
 					var gcmLocation = new GCMLocation();
 					gcmLocation.latitude = location.coords.latitude;
 					gcmLocation.longitude = location.coords.longitude;
-					if(me.push.fromTasker){
+					if (me.push.fromTasker) {
 						gcmLocation.forTasker = true;
 					}
 					gcmLocation.requestId = me.push.requestId;
@@ -329,9 +306,9 @@ var GCMPush = function(){
 				});
 			}
 		}
-		if(this.push.say){
+		if (this.push.say) {
 			var options = {};
-			if(this.push.language){
+			if (this.push.language) {
 				options.lang = this.push.language;
 			}
 			chrome.tts.speak(this.push.say, options);
@@ -339,85 +316,84 @@ var GCMPush = function(){
 		var googleDriveManager = new GoogleDriveManager();
 		googleDriveManager.addPushToMyDevice(this.push);
 	}
-	this.encryptSpecific = function(push, password){
+	this.encryptSpecific = function (push, password) {
 		push.encrypted = true;
-		push.text = encrypt(push.text,password);
-		push.url = encrypt(push.url,password);
-		push.smsnumber = encrypt(push.smsnumber,password);
-		push.smstext = encrypt(push.smstext,password);
-		push.clipboard = encrypt(push.clipboard,password);
-		push.file = encrypt(push.file,password);
-		push.files = encrypt(push.files,password);
-		push.wallpaper = encrypt(push.wallpaper,password);
+		push.text = encrypt(push.text, password);
+		push.url = encrypt(push.url, password);
+		push.smsnumber = encrypt(push.smsnumber, password);
+		push.smstext = encrypt(push.smstext, password);
+		push.clipboard = encrypt(push.clipboard, password);
+		push.file = encrypt(push.file, password);
+		push.files = encrypt(push.files, password);
+		push.wallpaper = encrypt(push.wallpaper, password);
 	}
 }
 GCMPush.prototype = new GCM();
-var GCMPushOther = function(){
+var GCMPushOther = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMPushOther";
 	}
-	this.execute = function() {
+	this.execute = function () {
 		console.log("Push for other");
 	}
 }
 GCMPushOther.prototype = new GCM();
-var handlePendingRequest = function(responseObject, requestId,senderId, fileId){
+var handlePendingRequest = async function (responseObject, requestId, senderId, fileId) {
 	for (var i = 0; i < pendingRequests.length; i++) {
 		var pendingRequest = pendingRequests[i];
-		if(pendingRequest.requestId == requestId){
+		if (pendingRequest.requestId == requestId) {
 			console.log("found pending request");
-			if(pendingRequest.download){
-				downloadFile(fileId,function(fileContents){
-					var fileObject =JSON.parse(fileContents);
-					fileObject.senderId = senderId;
-					pendingRequest.callback(fileObject);
-				});
-			}else{
+			if (pendingRequest.download) {
+				const fileContents = await downloadFile(fileId);
+				var fileObject = JSON.parse(fileContents);
+				fileObject.senderId = senderId;
+				pendingRequest.callback(fileObject);
+			} else {
 				pendingRequest.callback(responseObject);
 			}
-			if(!pendingRequest.keep){
-				pendingRequests.splice(i,1);
+			if (!pendingRequest.keep) {
+				pendingRequests.splice(i, 1);
 			}
 			break;
 		}
 	};
 }
-var GCMRespondFile = function(){
+var GCMRespondFile = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMRespondFile";
 	}
-	this.execute = function() {
+	this.execute = async function () {
 		var me = this;
 		console.log("got file response for requestId: " + this.responseFile.request.requestId);
-		handlePendingRequest(this.responseFile,this.responseFile.request.requestId,me.responseFile.senderId,this.responseFile.fileId);
+		await handlePendingRequest(this.responseFile, this.responseFile.request.requestId, me.responseFile.senderId, this.responseFile.fileId);
 		console.log("got file response");
 		/*var event = new Event('fileresponse',{"fileId":this.responseFile.fileId});
 		event.fileId = this.responseFile.fileId;
 		back.dispatchEvent(event);
-        */
-        back.eventBus.post(new back.Events.FileResponse(this.responseFile.fileId));
+		*/
+		back.eventBus.post(new back.Events.FileResponse(this.responseFile.fileId));
 	}
 }
 GCMRespondFile.prototype = new GCM();
 
-var GCMDeviceRegistered = function(){
+var GCMDeviceRegistered = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMDeviceRegistered";
 	}
-	this.execute = function() {
-		if(!this.device || !devices){
+	this.execute = function () {
+		if (!this.device || !devices) {
 			return;
 		}
 		var funcSameDevice = device => device.deviceId == this.device.deviceId;
 		var existingDevice = devices.first(funcSameDevice);
-		if(!existingDevice){
+		if (!existingDevice) {
 			refreshDevices();
-		}else{
+		} else {
 			devices.removeIf(funcSameDevice);
-			if(!this.deleted){
+			if (!this.deleted) {
 				devices.push(this.device);
 			}
 			setDevices(devices);
@@ -425,31 +401,31 @@ var GCMDeviceRegistered = function(){
 	}
 }
 GCMDeviceRegistered.prototype = new GCM();
-var GCMAutoClipboard = function(){
+var GCMAutoClipboard = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMAutoClipboard";
 	}
-	this.execute = async function() {
+	this.execute = async function () {
 		this.text = decryptString(this.text);
 		const clipboard = await getClipboardAsync();
-		if(this.text == clipboard) return;
+		if (this.text == clipboard) return;
 
-		directCopy(this.text,true);
-		if(getAutoClipboardNotification()){
-			showNotification("Clipboard Automatically Set", this.text ,5000);
+		directCopy(this.text, true);
+		if (getAutoClipboardNotification()) {
+			showNotification("Clipboard Automatically Set", this.text, 5000);
 		}
 	}
 }
 GCMAutoClipboard.prototype = new GCM();
-var GCMGenericPush = function(){
+var GCMGenericPush = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMGenericPush";
 	}
-	this.send = function(deviceIds,viaAddress,viaSocket) {
+	this.send = function (deviceIds, viaAddress, viaSocket) {
 		var params = this.getParams();
-		if(typeof deviceIds == "string"){
+		if (typeof deviceIds == "string") {
 			deviceIds = [deviceIds];
 		}
 		params.deviceIds = deviceIds;
@@ -458,100 +434,100 @@ var GCMGenericPush = function(){
 		params.json = JSON.stringify(params);
 		this.encrypt(params);
 		params.getCommunicationType = this.getCommunicationType;
-		
-		if(viaAddress || viaSocket){			
+
+		if (viaAddress || viaSocket) {
 			var rawGcm = {
 				"json": params.json,
 				"type": params.type
 			}
 			const stringToSend = JSON.stringify(rawGcm);
 			const options = {
-				"method":"POST",
+				"method": "POST",
 				headers: {
-				'Content-Type': 'application/json'
+					'Content-Type': 'application/json'
 				},
 				"body": stringToSend
 			}
-			if(viaAddress){
-				return fetch(viaAddress,options)
-				.then(result=>result.json())
-			}else{
+			if (viaAddress) {
+				return fetch(viaAddress, options)
+					.then(result => result.json())
+			} else {
 				return viaSocket.send(stringToSend);
 			}
 		}
-		new DeviceIdsAndDirectDevices(deviceIds).send(function(deviceIds,callback, callbackError){
+		new DeviceIdsAndDirectDevices(deviceIds).send(function (deviceIds, callback, callbackError) {
 			params.deviceIds = deviceIds;
-			doPostWithAuth(joinserver + "messaging/v1/sendGenericPush/",params,callback, callbackError);
+			doPostWithAuth(joinserver + "messaging/v1/sendGenericPush/", params, callback, callbackError);
 
-		},params,{}, function(result){
-			  console.log("Sent generic push: " + JSON.stringify(result));
-			},function(error){
-				console.log("Error: " + error);
+		}, params, {}, function (result) {
+			console.log("Sent generic push: " + JSON.stringify(result));
+		}, function (error) {
+			console.log("Error: " + error);
 		});
 
 	}
-	this.encryptSpecific = function(gcm, password){
-		gcm.json = encrypt(gcm.json,password);
+	this.encryptSpecific = function (gcm, password) {
+		gcm.json = encrypt(gcm.json, password);
 	}
 }
 GCMGenericPush.prototype = new GCM();
-var GCMLocation = function(){
+var GCMLocation = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMLocation";
 	}
-	this.execute = function() {
-		if(this.latitude && this.longitude){			
+	this.execute = function () {
+		if (this.latitude && this.longitude) {
 			var location = this.latitude + "," + this.longitude;
-			openTab("https://www.google.com/maps?q="+location+"&ll="+location+"&z=17");
+			openTab("https://www.google.com/maps?q=" + location + "&ll=" + location + "&z=17");
 		}
 	}
 }
 GCMLocation.prototype = new GCMGenericPush();
-var GCMSMSHandled = function(){
+var GCMSMSHandled = function () {
 
 	this.text = null;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMSMSHandled";
 	}
-	this.execute = function() {
+	this.execute = function () {
 
 
 	}
 }
 GCMSMSHandled.prototype = new GCMGenericPush();
-var GCMRequestNotifications = function(){
+var GCMRequestNotifications = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMRequestNotifications";
 	}
 }
 GCMRequestNotifications.prototype = new GCMGenericPush();
-var Notifications = function(){
-	this.removeNotificationsWithSameId = function(id){
-		if(!id){
+var Notifications = function () {
+	this.removeNotificationsWithSameId = function (id) {
+		if (!id) {
 			return;
 		}
-		var removed = this.removeIf(function(notification){
+		var removed = this.removeIf(function (notification) {
 			var remove = notification.id == id;
-			if(remove){
-				notification.announceNotificationHandled({"dismissed":true});
+			if (remove) {
+				notification.announceNotificationHandled({ "dismissed": true });
 			}
 			return remove;
 		});
-		chrome.notifications.clear(id, function(){});
+		chrome.notifications.clear(id, function () { });
 		return removed;
 	}
-	this.getSimilarNotification = function(notification){
+	this.getSimilarNotification = function (notification) {
 		var id = notification.id;
 		var title = notification.title;
 		var text = notification.text;
-		return notifications.first(function(notification){
+		return notifications.first(function (notification) {
 			var sameId = notification.id == id;
 			var result = false;
-			if(!title || !text){
+			if (!title || !text) {
 				result = false;
-			}else{
+			} else {
 				result = sameId && notification.title == title && notification.text == text;
 			}
 			return result;
@@ -560,162 +536,162 @@ var Notifications = function(){
 };
 Notifications.prototype = new Array();
 var notifications = new Notifications();
-var updateBadgeText = function(shouldHide){
-	if(!notifications || notifications.length == 0 || back.getHideNotificationCount() || shouldHide === true){
+var updateBadgeText = function (shouldHide) {
+	if (!notifications || notifications.length == 0 || back.getHideNotificationCount() || shouldHide === true) {
 		UtilsBadge.setBadge("");
-	}else{
+	} else {
 		UtilsBadge.setBadge(notifications.length);
 		back.localStorage.areNotificationsUnread = true;
 	}
 }
-var GCMNotification = function(notification, senderId){
+var GCMNotification = function (notification, senderId) {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMNotification";
 	}
-	this.decryptNotification = function(not){
+	this.decryptNotification = function (not) {
 		var key = getStoredKey();
-		not.text = decryptString(not.text,key);
-		not.title = decryptString(not.title,key);
-		not.appName = decryptString(not.appName,key);
-		not.appPackage = decryptString(not.appPackage,key);
-		not.subText = decryptString(not.subText,key);
-		not.lines = decryptArray(not.lines,key);
-		not.iconData = decryptString(not.iconData,key);
-		not.group = decryptString(not.group,key);
-		not.id = decryptString(not.id,key);
-		not.color = decryptString(not.color,key);
-		if(not.buttons && not.buttons.length > 0){
+		not.text = decryptString(not.text, key);
+		not.title = decryptString(not.title, key);
+		not.appName = decryptString(not.appName, key);
+		not.appPackage = decryptString(not.appPackage, key);
+		not.subText = decryptString(not.subText, key);
+		not.lines = decryptArray(not.lines, key);
+		not.iconData = decryptString(not.iconData, key);
+		not.group = decryptString(not.group, key);
+		not.id = decryptString(not.id, key);
+		not.color = decryptString(not.color, key);
+		if (not.buttons && not.buttons.length > 0) {
 			for (var i = 0; i < not.buttons.length; i++) {
 				var button = not.buttons[i];
-				button.text = decryptString(button.text,key);
+				button.text = decryptString(button.text, key);
 			};
 		}
-		if(not.appPackage && not.appPackage.indexOf("=:=")>=0){
+		if (not.appPackage && not.appPackage.indexOf("=:=") >= 0) {
 			not.text = "Seems like you forgot to set the encryption password on this device or it is different from the device that sent this. Go to the extension options to set it.";
 			not.iconData = null;
-			not.appName ="";
+			not.appName = "";
 		}
 	}
-	
-	this.execute = function() {
+
+	this.execute = async function () {
 
 		var me = this;
 		for (var i = 0; i < this.requestNotification.notifications.length; i++) {
 			var not = this.requestNotification.notifications[i];
 			this.decryptNotification(not);
 			not.senderId = me.requestNotification.senderId;
-			not.isSmsNotification = function(actionId){
+			not.isSmsNotification = function (actionId) {
 				return actionId && actionId == SMS_ACTION_ID;
 			}
-			not.cancel = function(localOnly){
-				if(not.isSmsNotification(not.actionId)){
-					back.dispatch(EVENT_SMS_HANDLED,{"text":not.smstext,"address":not.smsnumber,"deviceId":not.senderId});
+			not.cancel = function (localOnly) {
+				if (not.isSmsNotification(not.actionId)) {
+					back.dispatch(EVENT_SMS_HANDLED, { "text": not.smstext, "address": not.smsnumber, "deviceId": not.senderId });
 				}
 				notifications.removeNotificationsWithSameId(this.id);
-				if(!localOnly && this.gcmDeleteOnCancel){
-					var deviceIdsToDelete = back.devices.where(device=>device.regId2?true:false).select(device=>device.deviceId);
+				if (!localOnly && this.gcmDeleteOnCancel) {
+					var deviceIdsToDelete = UtilsDevices.getDevices().where(device => device.regId2 ? true : false).select(device => device.deviceId);
 					var gcmPushDelete = new GCMDeleteNotification();
 					gcmPushDelete.notificationId = not.id;
 					gcmPushDelete.send(deviceIdsToDelete);
 				}
-				if(!this.keepRemote && !localOnly){
+				if (!this.keepRemote && !localOnly) {
 					var gcmNotificationClear = new GCMNotificationClear();
-					gcmNotificationClear.send(this,me.requestNotification.senderId);
-				}else{
+					gcmNotificationClear.send(this, me.requestNotification.senderId);
+				} else {
 					console.log("keeping remote");
 				}
 				deleteIcon(this.notificationIcon);
 				updateBadgeText();
 				refreshNotificationsPopup();
 			}
-			not.announceNotificationHandled = function(info){
+			not.announceNotificationHandled = function (info) {
 				info.notificationId = not.id;
 				back.eventBus.post(new back.Events.NotificationHandled(info));
 			}
-			not.doAction = function(actionId, text, isReply){
+			not.doAction = function (actionId, text, isReply) {
 				var notification = this;
-				
-				if(actionId == Constants.ACTION_DIALOG_NOTIFICATION){
+
+				if (actionId == Constants.ACTION_DIALOG_NOTIFICATION) {
 					back.console.log("Showing notification in dialog");
-					chrome.notifications.clear(notification.id, function(){});
+					chrome.notifications.clear(notification.id, function () { });
 					Dialog.showNotificationDialog({
-					    notificationId:notification.id
-					},{
-					    shouldShow:true
+						notificationId: notification.id
+					}, {
+						shouldShow: true
 					})();
 
 					return;
 				}
-				if(actionId == REPLY_ACTION){
+				if (actionId == REPLY_ACTION) {
 					var shouldPrompt = !notification.noPrompt;
 					Promise.resolve()
-					.then(Dialog.showNotificationReplyDialog(notification, shouldPrompt))
-					.catch(UtilsObject.ignoreError).then(function(input){
-						not.announceNotificationHandled({"replied":true});
-						notification.doAction(notification.replyId, input, true);
-					});
+						.then(Dialog.showNotificationReplyDialog(notification, shouldPrompt))
+						.catch(UtilsObject.ignoreError).then(function (input) {
+							not.announceNotificationHandled({ "replied": true });
+							notification.doAction(notification.replyId, input, true);
+						});
 					return;
 				}
-				if(actionId == LOCAL_DISMISS){
+				if (actionId == LOCAL_DISMISS) {
 					notification.cancel(false);
 					return;
 				}
-				if(actionId == SAVE_IMAGE){
+				if (actionId == SAVE_IMAGE) {
 					let file = notification.image;
-					if(file){
+					if (file) {
 						file = "https://drive.google.com/uc?export=download&id=" + file;
 						openTab(file);
 					}
 					return;
 				}
-				if(actionId == COPY_NUMBER){
+				if (actionId == COPY_NUMBER) {
 					var matches = notification.text.match(regexNumbers);
-					if(matches){
+					if (matches) {
 						Promise.resolve()
-						.then(()=>{
-							var removeLastDot = match => match.lastIndexOf(".") == match.length-1 ? match.substring(0,match.length-1) : match;
-							if(matches.length == 1){
-								return removeLastDot(matches[0]);
-							}else{
-								var items = matches.select(match => ( {"id":removeLastDot(match),"text":removeLastDot(match)}));
-								return Dialog.showMultiChoiceDialog({
-								    items:items,
-								    title:"Which Number?"
-								})();
-							}
-						})
-						.then(result=>{
-							if(result.id){
-								return result.id;
-							}else{
-								return result;
-							}
-						})
-						.then(number=>{
-							directCopy(number);
-							showNotification("Clipboard Set To Number", number,5000);
-						});
-					}else{
-						showNotification("Couldn't copy number", notification.text,5000);
+							.then(() => {
+								var removeLastDot = match => match.lastIndexOf(".") == match.length - 1 ? match.substring(0, match.length - 1) : match;
+								if (matches.length == 1) {
+									return removeLastDot(matches[0]);
+								} else {
+									var items = matches.select(match => ({ "id": removeLastDot(match), "text": removeLastDot(match) }));
+									return Dialog.showMultiChoiceDialog({
+										items: items,
+										title: "Which Number?"
+									})();
+								}
+							})
+							.then(result => {
+								if (result.id) {
+									return result.id;
+								} else {
+									return result;
+								}
+							})
+							.then(number => {
+								directCopy(number);
+								showNotification("Clipboard Set To Number", number, 5000);
+							});
+					} else {
+						showNotification("Couldn't copy number", notification.text, 5000);
 					}
 					return;
 				}
-				if(notification.isSmsNotification(actionId)){
-					if(text){
-						var push = new back.GCMPush();
+				if (notification.isSmsNotification(actionId)) {
+					if (text) {
+						var push = new GCMPush();
 						push.smsnumber = notification.smsnumber;
 						push.smstext = text;
 						push.send(me.requestNotification.senderId)
-						.then(result=>showNotification("Join",`Replied to ${notification.smsname}: ${text}`));						
-					}else{					
+							.then(result => showNotification("Join", `Replied to ${notification.smsname}: ${text}`));
+					} else {
 						var number = notification.smsnumber;
-						showSmsPopup(me.requestNotification.senderId,number,notification.smsname,isReply,notification.smstext);
+						showSmsPopup(me.requestNotification.senderId, number, notification.smsname, isReply, notification.smstext);
 						notification.cancel();
 					}
-					return;	
+					return;
 				}
-				if(!actionId || (!text && isReply)){
+				if (!actionId || (!text && isReply)) {
 					return;
 				}
 				var gcmParams = {};
@@ -726,33 +702,33 @@ var GCMNotification = function(notification, senderId){
 				params.actionId = actionId;
 				params.appPackage = notification.appPackage;
 				params.text = text;
-				var gcm = {"requestNotification":params,"getCommunicationType":function(){return "GCMNotificationAction"}};
-				new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
+				var gcm = { "requestNotification": params, "getCommunicationType": function () { return "GCMNotificationAction" } };
+				new DeviceIdsAndDirectDevices(params.deviceIds).send(function (deviceIdsServer, callback, callbackError) {
 					params.deviceId = deviceIdsServer[0];
-					doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",params,callback, callbackError);
-				},gcm,gcmParams, function(result){
-				  	if(result.success){
+					doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/", params, callback, callbackError);
+				}, gcm, gcmParams, function (result) {
+					if (result.success) {
 						console.log("Sent notification action: " + notification.id);
 						var message = notification.actionDescription;
-						if(!message){
-							if(text && isReply){
+						if (!message) {
+							if (text && isReply) {
 								message = `Replied to ${notification.title}: ${text}`;
-							}else{
+							} else {
 								message = "Performed action remotely.";
 							}
 						}
-						if(back.getShowInfoNotifications()){
-							showNotification("Join",message);
+						if (back.getShowInfoNotifications()) {
+							showNotification("Join", message);
 						}
-				  	}else{
+					} else {
 						console.log("Sent notification action error: " + result.errorMessage);
-						showNotification("Join","Error performing action: " + result.errorMessage);
-				  	}
-				  	if(notification.cancelOnAction){
+						showNotification("Join", "Error performing action: " + result.errorMessage);
+					}
+					if (notification.cancelOnAction) {
 						notification.cancel();
-				  	}
-				},function(error){
-					showNotification("Join","Couldn't perform action: " + error);
+					}
+				}, function (error) {
+					showNotification("Join", "Couldn't perform action: " + error);
 					console.log("Error: " + error);
 				});
 				/*doPostWithAuth(joinserver + "messaging/v1/doNotificationAction/",{"actionId":actionId,"text":text,"deviceId":me.requestNotification.senderId,"appPackage":notification.appPackage}, function(result){
@@ -776,116 +752,116 @@ var GCMNotification = function(notification, senderId){
 					console.log("Error: " + error);
 				});*/
 			}
-			if(!not.buttons){
+			if (!not.buttons) {
 				not.buttons = [];
 			}
-			var actionTexts = not.buttons.select(button=>button.text).join(", ");
-			if(not.replyId){
-				not.buttons.splice(0,0,{"text":Constants.REPLY_DIRECTLY,"icon":"/icons/reply.png","actionId":REPLY_ACTION});
-				if(back.getAddDismissEverywhereButton()){
-					actionTexts = "Reply" + (actionTexts.length>0 ? ", ": "") + actionTexts ;	
+			var actionTexts = not.buttons.select(button => button.text).join(", ");
+			if (not.replyId) {
+				not.buttons.splice(0, 0, { "text": Constants.REPLY_DIRECTLY, "icon": "/icons/reply.png", "actionId": REPLY_ACTION });
+				if (await back.getAddDismissEverywhereButton()) {
+					actionTexts = "Reply" + (actionTexts.length > 0 ? ", " : "") + actionTexts;
 				}
 			}
-			if(back.getAddDismissEverywhereButton()){
-				not.buttons.splice(0,0,{"text":"Dismiss Everywhere","icon":"/icons/close.png","actionId":LOCAL_DISMISS});
+			if (await back.getAddDismissEverywhereButton()) {
+				not.buttons.splice(0, 0, { "text": "Dismiss Everywhere", "icon": "/icons/close.png", "actionId": LOCAL_DISMISS });
 			}
 			/*if(not.image){
 				not.buttons.push({"text":"Save Image","icon":"/icons/save.png","actionId":SAVE_IMAGE});
 			}*/
-			if(not.buttons.length>2){
-				not.buttons.splice(0,0,{"text":actionTexts + "...","icon":"/icons/actions.png","actionId":Constants.ACTION_DIALOG_NOTIFICATION});
+			if (not.buttons.length > 2) {
+				not.buttons.splice(0, 0, { "text": actionTexts + "...", "icon": "/icons/actions.png", "actionId": Constants.ACTION_DIALOG_NOTIFICATION });
 			}
 			var chromeNotification = new ChromeNotification(not);
 			var similar = notifications.getSimilarNotification(not);
 			var removed = notifications.removeNotificationsWithSameId(not.id);
 			var shouldNotify = false;
-			if(similar){
+			if (similar) {
 				console.log("Similar notification present");
 				console.log(similar);
-				if(not.replyId){
+				if (not.replyId) {
 					notifications.removeNotificationsWithSameId(similar.id);
 					shouldNotify = true;
 				}
-				if(!getNeverShowSimilarNotifications()){
-					if(not.date - similar.date < 5000){
+				if (!getNeverShowSimilarNotifications()) {
+					if (not.date - similar.date < 5000) {
 						console.log("Similar notification too recent. Showing anyway.");
 						shouldNotify = true;
-					}	
+					}
 				}
-			}else{
+			} else {
 				//if(removed == 0){
-					shouldNotify = true;
+				shouldNotify = true;
 				//}
 			}
-			if(not.priority >= 2){
+			if (not.priority >= 2) {
 				shouldNotify = true;
 			}
-			if(!not.date){
+			if (!not.date) {
 				not.date = Date.now();
 			}
 			var notificationNoPopupPackages = back.getNotificationNoPopupPackages().split("\n");
-			if(notificationNoPopupPackages.indexOf(not.appPackage) >= 0){
+			if (notificationNoPopupPackages.indexOf(not.appPackage) >= 0) {
 				shouldNotify = false;
 			}
-			if(shouldNotify){
+			if (shouldNotify) {
 				chromeNotification.notify();
 			}
 			notifications.push(not);
-			if(not.replyId && back.getVoiceEnabled()){
+			if (not.replyId && back.getVoiceEnabled()) {
 				back.UtilsVoice.isMicAvailable()
-				.then(()=>true)
-				.catch(()=>false)
-				.then(micAvailable=>{
-					if(micAvailable){
-						if(back.getVoiceContinuous() && back.getVoiceWakeup()){						
-							UtilsObject.doOnce("replywithvoicee",()=>showNotification("Reply With Voice",showNotification("Reply With Voice",`Say "${back.getVoiceWakeup()} reply with hello" for example to reply to this notification with your voice`,30000)));	
+					.then(() => true)
+					.catch(() => false)
+					.then(micAvailable => {
+						if (micAvailable) {
+							if (back.getVoiceContinuous() && back.getVoiceWakeup()) {
+								UtilsObject.doOnce("replywithvoicee", () => showNotification("Reply With Voice", showNotification("Reply With Voice", `Say "${back.getVoiceWakeup()} reply with hello" for example to reply to this notification with your voice`, 30000)));
+							}
+							if (!back.getVoiceContinuous()) {
+								back.UtilsVoice.doVoiceCommand(devices)
+									.catch(error => back.console.log("Error with reply voice command: " + error));
+							}
+						} else {
+							UtilsObject.doOnce("replywithvoicenomiccc", () => {
+								var chromeNotification = new ChromeNotification({
+									"id": "replyvoice",
+									"title": "Did you know?",
+									"text": "You can reply to notifications with your voice. Click here to allow Join to access your microphone",
+									"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
+								});
+								chromeNotification.notify();
+							})
 						}
-						if(!back.getVoiceContinuous()){
-							back.UtilsVoice.doVoiceCommand(devices)
-							.catch(error=>back.console.log("Error with reply voice command: " + error));									
-						}
-					}else{
-						UtilsObject.doOnce("replywithvoicenomiccc",()=>{
-							var chromeNotification = new ChromeNotification({
-								"id":"replyvoice",
-								"title":"Did you know?",
-								"text":"You can reply to notifications with your voice. Click here to allow Join to access your microphone",
-								"url": "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html"
-							});
-							chromeNotification.notify();
-						})
-					}
-				});
-				
+					});
+
 			}
-			notifications.sort(function(left,right){
+			notifications.sort(function (left, right) {
 				var leftPriority = left.priority;
 				var rightPriority = right.priority;
-				if(!leftPriority){
+				if (!leftPriority) {
 					leftPriority = 0;
 				}
-				if(!rightPriority){
+				if (!rightPriority) {
 					rightPriority = 0;
 				}
-				if(leftPriority || leftPriority == 0){
+				if (leftPriority || leftPriority == 0) {
 					leftPriority += 5;
 				}
-				if(rightPriority || rightPriority == 0){
+				if (rightPriority || rightPriority == 0) {
 					rightPriority += 5;
 				}
-				if(leftPriority && rightPriority){
-					if(leftPriority > rightPriority){
+				if (leftPriority && rightPriority) {
+					if (leftPriority > rightPriority) {
 						return -1;
-					}else if(rightPriority > leftPriority){
+					} else if (rightPriority > leftPriority) {
 						return 1;
-					}else{
+					} else {
 						return right.date - left.date;
 					}
 				}
-				if(leftPriority){
+				if (leftPriority) {
 					return -1;
 				}
-				if(rightPriority){
+				if (rightPriority) {
 					return 1;
 				}
 				return 0;
@@ -894,68 +870,68 @@ var GCMNotification = function(notification, senderId){
 			//showNotificationsPopup();
 		}
 		var requestId = this.requestNotification.requestId;
-		if(requestId){
-			handlePendingRequest(this,requestId);
+		if (requestId) {
+			await handlePendingRequest(this, requestId);
 		}
 
 	}
-	if(notification && senderId){
-		this.requestNotification = {notifications:[notification], senderId:senderId};
+	if (notification && senderId) {
+		this.requestNotification = { notifications: [notification], senderId: senderId };
 	}
 }
 GCMNotification.prototype = new GCM();
-var deleteIcon = function(iconFileId){
-	if(!iconFileId){
+var deleteIcon = function (iconFileId) {
+	if (!iconFileId) {
 		return;
 	}
-	if(iconFileId.indexOf("http")>=0){
+	if (iconFileId.indexOf("http") >= 0) {
 		return;
 	}
-	doDeleteWithAuth(baseDriveUrlFiles + iconFileId,null,function(){
+	doDeleteWithAuth(baseDriveUrlFiles + iconFileId, null, function () {
 		console.log("deleted icon from drive: " + iconFileId);
 	});
 }
-var GCMNotificationClear = function(){
+var GCMNotificationClear = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMNotificationClear";
 	}
-	this.execute = function() {
+	this.execute = function () {
 		var requestNotification = this.requestNotification;
 		notifications.removeNotificationsWithSameId(requestNotification.requestId);
 		refreshNotificationsPopup();
 	}
-	this.send = function(notification, deviceId) {
+	this.send = function (notification, deviceId) {
 		var params = {};
 		params.deviceIds = [deviceId];
 		params.senderId = localStorage.deviceId;
 		params.requestId = notification.id;
-		var gcm = {"requestNotification":params,"getCommunicationType":this.getCommunicationType};
+		var gcm = { "requestNotification": params, "getCommunicationType": this.getCommunicationType };
 
-		new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
+		new DeviceIdsAndDirectDevices(params.deviceIds).send(function (deviceIdsServer, callback, callbackError) {
 			params.deviceIds = deviceIdsServer;
-			doPostWithAuth(joinserver + "messaging/v1/clearNotification/",params,callback, callbackError);
-		},gcm,{}, function(result){
-			  console.log("Sent notification cancel: " + notification.id);
-			},function(error){
-				console.log("Error: " + error);
+			doPostWithAuth(joinserver + "messaging/v1/clearNotification/", params, callback, callbackError);
+		}, gcm, {}, function (result) {
+			console.log("Sent notification cancel: " + notification.id);
+		}, function (error) {
+			console.log("Error: " + error);
 		});
 
 	}
-	this.clearAll = function() {
+	this.clearAll = function () {
 		var params = {};
-		params.deviceIds = devices.select(function(device){return device.deviceId});
+		params.deviceIds = UtilsDevices.getDevices().select(function (device) { return device.deviceId });
 		params.senderId = localStorage.deviceId;
-		params.notificationIds = notifications.select(function(notification){return notification.id});
-		var gcm = {"requestNotification":params,"getCommunicationType":this.getCommunicationType};
+		params.notificationIds = notifications.select(function (notification) { return notification.id });
+		var gcm = { "requestNotification": params, "getCommunicationType": this.getCommunicationType };
 
-		new DeviceIdsAndDirectDevices(params.deviceIds).send(function(deviceIdsServer,callback, callbackError){
+		new DeviceIdsAndDirectDevices(params.deviceIds).send(function (deviceIdsServer, callback, callbackError) {
 			params.deviceIds = deviceIdsServer;
-			doPostWithAuth(joinserver + "messaging/v1/clearNotification/",params,callback, callbackError);
-		},gcm,{}, function(result){
-			  console.log("Sent notification cancel for all", params.notificationIds);
-			},function(error){
-				console.log("Error", error);
+			doPostWithAuth(joinserver + "messaging/v1/clearNotification/", params, callback, callbackError);
+		}, gcm, {}, function (result) {
+			console.log("Sent notification cancel for all", params.notificationIds);
+		}, function (error) {
+			console.log("Error", error);
 		});
 		/*doPostWithAuth(joinserver + "messaging/v1/clearNotification/",params, function(result){
 		  console.log("Sent notification cancel: " + params.notificationIds);
@@ -967,15 +943,15 @@ var GCMNotificationClear = function(){
 }
 GCMNotificationClear.prototype = new GCM();
 
-var GCMNewSmsReceived = function(){
+var GCMNewSmsReceived = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMNewSmsReceived";
 	}
 	this.execute = UtilsObject.async(function* () {
-		
+
 		var SMSorMMS = "SMS";
-		if(me.subject || me.attachmentPartId || me.number.indexOf(",")>-1 || me.urgent){
+		if (me.subject || me.attachmentPartId || me.number.indexOf(",") > -1 || me.urgent) {
 			SMSorMMS = "MMS";
 		}
 		var title = `New ${SMSorMMS} from ${me.name}`;
@@ -992,7 +968,7 @@ var GCMNewSmsReceived = function(){
 
 		var not = {};
 		not.id = back.UtilsSMS.getNotificationId(me.senderId, me.number);
-		not.title= title;
+		not.title = title;
 		not.text = me.text;
 		not.priority = 2;
 		not.appName = "Join";
@@ -1007,86 +983,86 @@ var GCMNewSmsReceived = function(){
 		not.buttons = [];
 		not.appIcon = me.photo || "/icons/contact.svg";
 		not.gcmDeleteOnCancel = true;
-		if(me.attachmentPartId){
+		if (me.attachmentPartId) {
 			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));
 			not.image = yield doGetBase64ImagePromise(imageUrl);
-			back.UtilsSMS.setCachedAttachment(me.attachmentPartId,not.image);
+			back.UtilsSMS.setCachedAttachment(me.attachmentPartId, not.image);
 		}
-		if(me.text && me.text.match(regexNumbers)){
+		if (me.text && me.text.match(regexNumbers)) {
 			not.buttons.push({
 				text: "Copy Number",
 				actionId: COPY_NUMBER
 			});
 		}
 		var gcmNtification = new GCMNotification();
-		gcmNtification.requestNotification = {notifications:[not], senderId:me.senderId};
+		gcmNtification.requestNotification = { notifications: [not], senderId: me.senderId };
 		gcmNtification.execute();
 		var sms = {
-			"number":me.number,
-			"sender":me.name,
-			"text":me.text,
-			"date":me.date,
-			"received":true,
-			"subject":me.subject,
-			"urgent":me.urgent,
-			"attachmentPartId":me.attachmentPartId, 
-			"attachment":not.image
+			"number": me.number,
+			"sender": me.name,
+			"text": me.text,
+			"date": me.date,
+			"received": true,
+			"subject": me.subject,
+			"urgent": me.urgent,
+			"attachmentPartId": me.attachmentPartId,
+			"attachment": not.image
 		};
 		console.log(`Received ${SMSorMMS}`);
 		console.log(sms);
-		dispatch('smsreceived',{"sms":sms,"deviceId":me.senderId});
+		dispatch('smsreceived', { "sms": sms, "deviceId": me.senderId });
 
-		back.eventBus.post(new back.Events.SMSReceived(sms,me.senderId));
-				
-		
+		back.eventBus.post(new back.Events.SMSReceived(sms, me.senderId));
+
+
 	});
 }
 GCMNewSmsReceived.prototype = new GCM();
-var GCMSmsSentResult = function(){
+var GCMSmsSentResult = function () {
 
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMSmsSentResult";
 	}
-	this.execute = function() {
-		if(this.success){
+	this.execute = function () {
+		if (this.success) {
 			console.log("SMS pushed");
 			//showNotification("Join","SMS pushed. Waiting for response...");
-		}else{
+		} else {
 			var error = "Error pushing SMS: " + this.errorMessage;
 			console.log(error);
 			//showNotification("Join",error);
 		}
-		dispatch("smssent",{"success":this.success,"errorMessage":this.errorMessage,"requestId":this.requestId});
+		dispatch("smssent", { "success": this.success, "errorMessage": this.errorMessage, "requestId": this.requestId });
 		//handlePendingRequest(this,this.requestId);
 
 	}
 }
 GCMSmsSentResult.prototype = new GCM();
-var GCMPhoneCall = function(){
-    var PHONE_CALL_STATE_INCOMING_RECEIVED = 0;
-    var PHONE_CALL_STATE_INCOMING_ANSWERED = 1;
-    var PHONE_CALL_STATE_INCOMING_ENDED = 2;
-    var PHONE_CALL_STATE_OUTGOING_STARTED = 3;
-    var PHONE_CALL_STATE_OUTGOING_ENDED = 4;
-    var PHONE_CALL_STATE_MISSED = 5;
-	this.getCommunicationType = function() {
+var GCMPhoneCall = function () {
+	var PHONE_CALL_STATE_INCOMING_RECEIVED = 0;
+	var PHONE_CALL_STATE_INCOMING_ANSWERED = 1;
+	var PHONE_CALL_STATE_INCOMING_ENDED = 2;
+	var PHONE_CALL_STATE_OUTGOING_STARTED = 3;
+	var PHONE_CALL_STATE_OUTGOING_ENDED = 4;
+	var PHONE_CALL_STATE_MISSED = 5;
+	this.getCommunicationType = function () {
 		return "GCMPhoneCall";
 	}
-	this.execute = function() {	
-		if(!this.name){
+	this.execute = function () {
+		if (!this.name) {
 			this.name = this.number;
 		}
 		var buttons = [];
 		var title = null;
 		var icon = null;
-		if(this.state == PHONE_CALL_STATE_INCOMING_RECEIVED){
+		if (this.state == PHONE_CALL_STATE_INCOMING_RECEIVED) {
 			title = "Incoming Call";
 			buttons.push({
 				text: "Hang Up",
 				actionId: HANG_UP
 			});
 			icon = "icons/phone_incoming.png";
-		}else if(this.state == PHONE_CALL_STATE_MISSED){
+		} else if (this.state == PHONE_CALL_STATE_MISSED) {
 			title = "Missed Call";
 			buttons.push({
 				text: "Call Back",
@@ -1094,7 +1070,7 @@ var GCMPhoneCall = function(){
 			});
 			icon = "icons/phone_missed.png";
 		}
-		if(title){
+		if (title) {
 			var not = {};
 			not.senderId = this.senderId;
 			not.id = this.senderId + this.number + "PHONE_CALL";
@@ -1105,28 +1081,28 @@ var GCMPhoneCall = function(){
 			not.appName = "Join";
 			not.keepRemote = true;
 			not.buttons = buttons;
-			not.cancelOnAction = false;			
-			var gcmNotification = new GCMNotification(not,this.senderId);			
+			not.cancelOnAction = false;
+			var gcmNotification = new GCMNotification(not, this.senderId);
 			gcmNotification.execute();
 		}
-		
+
 	}
 }
 GCMPhoneCall.prototype = new GCM();
-var GCMRequestFile = function(){
-	this.getCommunicationType = function() {
+var GCMRequestFile = function () {
+	this.getCommunicationType = function () {
 		return "GCMRequestFile";
 	}
 }
 GCMRequestFile.prototype = new GCM();
 
-var GCMStatus = function(){
+var GCMStatus = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMStatus";
 	}
-	this.execute = function() {
-		if(me.request || !me.deviceId || !me.status){
+	this.execute = function () {
+		if (me.request || !me.deviceId || !me.status) {
 			return
 		}
 		console.log("New Status response");
@@ -1137,171 +1113,171 @@ var GCMStatus = function(){
 	}
 }
 GCMStatus.prototype = new GCMGenericPush();
-var GCMChangeSetting = function(){
+var GCMChangeSetting = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMChangeSetting";
 	}
-	this.execute = function() {	
+	this.execute = function () {
 		console.log("Can't change settings in Chrome yet...");
 	}
 }
 GCMChangeSetting.prototype = new GCMGenericPush();
-var GCMDeleteNotification = function(){
+var GCMDeleteNotification = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMDeleteNotification";
 	}
-	this.execute = function() {	
-		if(!this.notificationId){
+	this.execute = function () {
+		if (!this.notificationId) {
 			return;
 		}
-		var notificationToCancel = notifications.first(n=>n.id==this.notificationId);
-		if(!notificationToCancel){
+		var notificationToCancel = notifications.first(n => n.id == this.notificationId);
+		if (!notificationToCancel) {
 			return;
 		}
 		notificationToCancel.cancel();
 	}
 }
 GCMDeleteNotification.prototype = new GCMGenericPush();
-var GCMLocalNetworkRequest = function(){
+var GCMLocalNetworkRequest = function () {
 	var me = this;
 	var socket = null;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMLocalNetworkRequest";
 	}
-	this.execute = async () =>{
+	this.execute = async () => {
 		var serverAddress = me.serverAddress;
 		var senderId = me.senderId;
-		if(!serverAddress) return;
+		if (!serverAddress) return;
 
 		const token = await back.getAuthTokenPromise();
 		serverAddress += `gcm?token=${token}`;
 		const gcmTest = new GCMLocalNetworkTest();
 		gcmTest.senderId = localStorage.deviceId;
-		try{
-			const response = await gcmTest.send(null,serverAddress);
-			console.log(response);				
-			if(response.success){
-				UtilsDevices.setCanContactViaLocalNetwork(senderId,me.serverAddress);
-				
-				var webSocketServerAddress = me.webSocketServerAddress;
-				if(!webSocketServerAddress) return;
+		try {
+			const response = await gcmTest.send(null, serverAddress);
+			console.log(response);
+			if (response.success) {
+				UtilsDevices.setCanContactViaLocalNetwork(senderId, me.serverAddress);
 
-				if(socket && socket.readyState == socket.OPEN) return;
-				
+				var webSocketServerAddress = me.webSocketServerAddress;
+				if (!webSocketServerAddress) return;
+
+				if (socket && socket.readyState == socket.OPEN) return;
+
 				socket = new WebSocket(webSocketServerAddress);
-				const socketDisconnected = () => {					
-					UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
+				const socketDisconnected = () => {
+					UtilsDevices.setCanContactViaLocalNetwork(senderId, false);
 					me.execute();
 				}
-				socket.onopen = e =>{
-					console.log("Socket open",e);
+				socket.onopen = e => {
+					console.log("Socket open", e);
 					const gcmSocketTest = new GCMWebSocketRequest();
 					gcmSocketTest.senderId = localStorage.deviceId;
-					gcmSocketTest.send(null,null,socket);
+					gcmSocketTest.send(null, null, socket);
 				}
-				socket.onmessage = e =>{			
-					console.log("Socket message",e);
+				socket.onmessage = e => {
+					console.log("Socket message", e);
 					const gcmRaw = JSON.parse(e.data);
 					back.handlePushMessage({
-						"data":gcmRaw
+						"data": gcmRaw
 					});
 				}
 				socket.onclose = e => {
-					console.log("Socket closed",e);
+					console.log("Socket closed", e);
 					//socketDisconnected();
 				}
 				socket.onerror = e => {
-					console.log("Socket error",e);
+					console.log("Socket error", e);
 				}
-			}else{
-				UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
+			} else {
+				UtilsDevices.setCanContactViaLocalNetwork(senderId, false);
 			}
-		}catch{
-			UtilsDevices.setCanContactViaLocalNetwork(senderId,false);
+		} catch {
+			UtilsDevices.setCanContactViaLocalNetwork(senderId, false);
 		}
-		
+
 	}
 }
 GCMLocalNetworkRequest.prototype = new GCMGenericPush();
 
-var GCMDeviceNotOnLocalNetwork = function(){
+var GCMDeviceNotOnLocalNetwork = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMDeviceNotOnLocalNetwork";
 	}
-	this.execute = async () =>{		
-		UtilsDevices.setCanContactViaLocalNetwork(me.senderId,false);
+	this.execute = async () => {
+		UtilsDevices.setCanContactViaLocalNetwork(me.senderId, false);
 	}
 }
 GCMDeviceNotOnLocalNetwork.prototype = new GCMGenericPush();
 
-var GCMLocalNetworkTest = function(){
+var GCMLocalNetworkTest = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMLocalNetworkTest";
-	}	
+	}
 }
 GCMLocalNetworkTest.prototype = new GCMGenericPush();
 
-var GCMWebSocketRequest = function(){
+var GCMWebSocketRequest = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMWebSocketRequest";
-	}	
+	}
 }
 GCMWebSocketRequest.prototype = new GCMGenericPush();
 
-var GCMLocalNetworkTestRequest = function(){
+var GCMLocalNetworkTestRequest = function () {
 	var me = this;
-	this.getCommunicationType = function() {
+	this.getCommunicationType = function () {
 		return "GCMLocalNetworkTestRequest";
 	}
 	this.sendToCompatibleDevices = () => {
-		const androids = joindevices.groups.deviceGroups.getGroupDevices(back.devices,DEVICE_GROUP_ANDROID.id);
-		this.send(androids.map(android=>android.deviceId));
-	}	
+		const androids = joindevices.groups.deviceGroups.getGroupDevices(UtilsDevices.getDevices(), DEVICE_GROUP_ANDROID.id);
+		this.send(androids.map(android => android.deviceId));
+	}
 }
 GCMLocalNetworkTestRequest.prototype = new GCMGenericPush();
-class GCMV2 extends GCMGenericPush{
+class GCMV2 extends GCMGenericPush {
 	getCommunicationType() {
 		return this.constructor.name;
 	}
-	async execute(){	
-		if(!back.v2Stuff.EventBus.post) return;
-			
+	async execute() {
+		if (!back.v2Stuff.EventBus.post) return;
+
 		await back.v2Stuff.EventBus.post(this);
 	}
 }
-class GCMMediaInfo extends GCMV2{}
+class GCMMediaInfo extends GCMV2 { }
 
-chrome.notifications.onClicked.addListener(function(id){
-	if(id.indexOf("clipboardlasttext")==0){
+chrome.notifications.onClicked.addListener(function (id) {
+	if (id.indexOf("clipboardlasttext") == 0) {
 		directCopy(lastTextPushed);
 		showNotification("Join", "Copied text to clipboard");
 		return;
 	}
-	if(id.indexOf("sms=:=")<0){
+	if (id.indexOf("sms=:=") < 0) {
 		return;
 	}
-	chrome.notifications.clear(id, function(){});
+	chrome.notifications.clear(id, function () { });
 	var split = id.split("=:=");
 	var senderId = split[1];
 	var number = split[2];
-	showSmsPopup(senderId,number);
+	showSmsPopup(senderId, number);
 });
-chrome.notifications.onButtonClicked.addListener(function(id,index){
-	if(id.indexOf("sms=:=")<0){
+chrome.notifications.onButtonClicked.addListener(function (id, index) {
+	if (id.indexOf("sms=:=") < 0) {
 		return;
 	}
-	chrome.notifications.clear(id, function(){});
+	chrome.notifications.clear(id, function () { });
 	var split = id.split("=:=");
 	var senderId = split[1];
 	var number = split[2];
 	var text = split[3];
 	var reply = prompt(text);
-	if(!reply){
+	if (!reply) {
 		return;
 	}
 	var requestId = guid();
@@ -1310,22 +1286,24 @@ chrome.notifications.onButtonClicked.addListener(function(id,index){
 	push.smstext = reply;
 	push.requestId = requestId;
 	push.responseType = RESPONSE_TYPE_PUSH;
-	pendingRequests.push({"requestId":requestId,"callback":function(result){
-		if(result.success){
-			showNotification("Join","SMS sent!");
-		}else{
-			showNotification("Join","SMS not sent: " + result.errorMessage);
+	pendingRequests.push({
+		"requestId": requestId, "callback": function (result) {
+			if (result.success) {
+				showNotification("Join", "SMS sent!");
+			} else {
+				showNotification("Join", "SMS not sent: " + result.errorMessage);
+			}
+			console.log(result);
 		}
-		console.log(result);
-	}});
-	push.send(senderId,function(result){
-		if(result.success){
+	});
+	push.send(senderId, function (result) {
+		if (result.success) {
 			console.log("SMS pushed");
-			showNotification("Join","SMS pushed. Waiting for response...");
-		}else{
+			showNotification("Join", "SMS pushed. Waiting for response...");
+		} else {
 			var error = "Error pushing SMS: " + result.errorMessage;
 			console.log(error);
-			showNotification("Join",error);
+			showNotification("Join", error);
 		}
 	});
 

@@ -3,10 +3,10 @@ var UtilsBadge = {
 		if(!color){
 			color = "#FF9800";
 		}
-	  	chrome.browserAction.setBadgeBackgroundColor({"color":color});
+	  	chrome.action.setBadgeBackgroundColor({"color":color});
 	},
 	"setBadge": function(text, color){
-		chrome.browserAction.setBadgeText({"text": text +""});
+		chrome.action.setBadgeText({"text": text +""});
 	  	UtilsBadge.setColor(color);
 	}
 }

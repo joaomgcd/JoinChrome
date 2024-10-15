@@ -138,7 +138,7 @@ var DeviceUIEventHandlerDeviceInfo = function(){
 
 		show("refresh");
 		document.querySelector("#refresh").onclick = e => {			
-			var gcmStatus = new back.GCMStatus();
+			var gcmStatus = new GCMStatus();
 			gcmStatus.request = true;
 			gcmStatus.deviceId = localStorage.deviceId;
 			gcmStatus.send(device.deviceId);
@@ -167,8 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		return inputElement.value;
 	});	
 	var input = initResult.input;
-	device = back.devices.first(device=>device.deviceId == input.deviceId);
-	var gcmStatus = new back.GCMStatus();
+	device = UtilsDevices.getDevices().first(device=>device.deviceId == input.deviceId);
+	var gcmStatus = new GCMStatus();
 	gcmStatus.request = true;
 	gcmStatus.deviceId = localStorage.deviceId;
 	gcmStatus.send(device.deviceId);
