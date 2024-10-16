@@ -9,9 +9,9 @@ var TaskerCommand = function () {
 }
 var TaskerCommands = function () {
 	var commands = localStorage.taskerCommands ? JSON.parse(localStorage.taskerCommands) : [];
-	var saveCommandsImmediate = () => {
+	var saveCommandsImmediate = async () => {
 		localStorage.taskerCommands = JSON.stringify(commands);
-		back.updateContextMenu();
+		await back.updateContextMenu();
 		return this.getCommands();
 	}
 	this.saveCommands = debounce(saveCommandsImmediate, 1000);

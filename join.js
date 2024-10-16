@@ -257,9 +257,9 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 			callback(localStorage.accessToken);
 		}
 	} else {
-		var focusOnAuthTabId = function () {
+		var focusOnAuthTabId = async function () {
 			if (authTabId) {
-				chrome.tabs.update(authTabId, { "active": true });
+				await chrome.tabs.update(authTabId, { "active": true });
 				if (!localStorage.warnedLogin) {
 					localStorage.warnedLogin = true;
 					alert("Please login to use Join");
@@ -278,28 +278,28 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 					url += "&login_hint=" + userinfo.email;
 				}
 			}
-			var closeListener = function (tabId, removeInfo) {
+			var closeListener = async function (tabId, removeInfo) {
 				if (authTabId && tabId == authTabId) {
-					finisher(tabId);
+					await finisher(tabId);
 				}
 			}
 			var authListener = async function (tabId, changeInfo, tab) {
 				if (tab?.url && tab.url.indexOf(await getCliendId()) > 0) {
 					authTabId = tabId;
-					focusOnAuthTabId();
+					await focusOnAuthTabId();
 				}
 				if (tab && tab.url && tab.url.indexOf(AUTH_CALLBACK_URL) == 0) {
 					var redirect_url = tab.url;
 					var token = getAuthTokenFromUrl(redirect_url);
-					finisher(tabId, token, redirect_url);
+					await finisher(tabId, token, redirect_url);
 				}
 			}
-			var finisher = function (tabId, token, redirect_url) {
+			var finisher = async function (tabId, token, redirect_url) {
 				authTabId = null;
-				chrome.tabs.onUpdated.removeListener(authListener);
-				chrome.tabs.onRemoved.removeListener(closeListener);
+				await chrome.tabs.onUpdated.removeListener(authListener);
+				await chrome.tabs.onRemoved.removeListener(closeListener);
 				console.log("Auth token found from tab: " + token);
-				chrome.tabs.remove(tabId);
+				await chrome.tabs.remove(tabId);
 				var finshCallback = function (token) {
 					if (callback) {
 						callback(token);
@@ -323,8 +323,8 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 				}
 
 			}
-			chrome.tabs.onUpdated.addListener(authListener);
-			chrome.tabs.onRemoved.addListener(closeListener)
+			await chrome.tabs.onUpdated.addListener(authListener);
+			await chrome.tabs.onRemoved.addListener(closeListener)
 			openTab(url, { selected: false, active: false }, function (tab) {
 				console.log("Tab auth created");
 				console.log(tab);
@@ -332,7 +332,7 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 		} else {
 			if (callback) {
 				waitingForAuthCallbacks.push(callback);
-				focusOnAuthTabId();
+				await focusOnAuthTabId();
 			}
 		}
 	}
@@ -871,14 +871,14 @@ var removeCachedAuthToken = async function (callback) {
 // 	}
 // }
 
-var updateContextMenu = () => contextMenu.update(devices, getHideContextMenu());
-var updateContextMenuDevices = async (devices) => contextMenu.update(devices);
+var updateContextMenu = async () => await contextMenu.update(devices, getHideContextMenu());
+var updateContextMenuDevices = async (devices) => await contextMenu.update(devices);
 async function getContextMenuContexts() {
 	return contextMenu.contexts;
 }
-var onchromenotificationssave = function (option, value) {
+var onchromenotificationssave = async function (option, value) {
 	console.log("Changed chrome notification popup setting: " + value);
-	updateContextMenu();
+	await updateContextMenu();
 }
 var onshowbetafeaturessave = function (option, value) {
 	if (!option) {
@@ -1267,7 +1267,7 @@ var renameDevice = function (deviceId, notify) {
 		}))
 		.then(function (confirm) {
 			if (confirm) {
-				doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId=" + deviceId + "&newName=" + encodeURIComponent(confirm), { "deviceId": deviceId, "newName": confirm }, function (result) {
+				doPostWithAuth(joinserver + "registration/v1/renameDevice/?deviceId=" + deviceId + "&newName=" + encodeURIComponent(confirm), { "deviceId": deviceId, "newName": confirm }, async function (result) {
 					console.log(result);
 
 					var device = devices.first(function (device) {
@@ -1278,7 +1278,7 @@ var renameDevice = function (deviceId, notify) {
 						return;
 					}
 					device.deviceName = confirm;
-					setDevices(devices);
+					await setDevices(devices);
 					refreshDevicesPopup();
 					if (showNotification) {
 						showNotification("Renamed", oldName + " renamed to " + confirm);
@@ -1297,12 +1297,12 @@ var deleteDevice = function (deviceId, notify) {
 	}
 	var confirm = window.confirm("Are you sure you want to delete " + device.deviceName + "?");
 	if (confirm) {
-		doPostWithAuth(joinserver + "registration/v1/unregisterDevice/?deviceId=" + deviceId, { "deviceId": deviceId }, function (result) {
+		doPostWithAuth(joinserver + "registration/v1/unregisterDevice/?deviceId=" + deviceId, { "deviceId": deviceId }, async function (result) {
 			console.log(result);
 			devices.removeIf(function (device) {
 				return device.deviceId == deviceId;
 			});
-			setDevices(devices);
+			await setDevices(devices);
 			refreshDevicesPopup();
 			if (showNotification) {
 				showNotification("Deleted", device.deviceName + " deleted.");
@@ -1705,7 +1705,7 @@ var refreshDevices = async function (callback) {
 		const result = await doGetWithAuth(joinserver + "registration/v1/listDevices/");
 		console.log(result);
 
-		setDevices(result.records);
+		await setDevices(result.records);
 		new GCMLocalNetworkTestRequest().sendToCompatibleDevices();
 		if (callback != null) {
 			callback(result.records);
@@ -1853,7 +1853,7 @@ var getDeviceById = function (deviceId) {
 		}
 	}
 }
-var setDevices = function (devicesToSet) {
+var setDevices = async function (devicesToSet) {
 	UtilsVoice.resetDeviceEntities();
 	devices = [];
 	if (devicesToSet) {
@@ -1926,7 +1926,7 @@ var setDevices = function (devicesToSet) {
 		UtilsObject.sort(devices, true, device => device.deviceId != localStorage.deviceId, device => device.deviceId.indexOf("group") >= 0, device => device.deviceId.indexOf("share") >= 0, device => device.deviceType, device => device.deviceName);
 		localStorage["devices"] = JSON.stringify(devices);
 	}
-	updateContextMenu();
+	await updateContextMenu();
 	refreshDevicesPopup();
 }
 function directCopy(str, setLastClipboard) {

@@ -6,7 +6,7 @@ var VoiceRecognizer = function (continuous, wakeUp) {
 	var timeoutWakeup = null;
 	var defaultSessionId = localStorage.apiaiSessionId;
 	if (!defaultSessionId) {
-		defaultSessionId = back.UtilsObject.guid();
+		defaultSessionId = UtilsObject.guid();
 		localStorage.apiaiSessionId = defaultSessionId;
 	}
 	var stopped = true;
@@ -53,7 +53,7 @@ var VoiceRecognizer = function (continuous, wakeUp) {
 						}
 					]
 				};
-				await back.UtilsVoice.doUserEntitiesRequest(entities);
+				await UtilsVoice.doUserEntitiesRequest(entities);
 			}
 		}
 		var content = {
@@ -70,7 +70,7 @@ var VoiceRecognizer = function (continuous, wakeUp) {
 		if (input.contexts) {
 			content.contexts.push(...input.contexts);
 		}
-		var response = await back.UtilsVoice.doVoiceRequest(content);
+		var response = await UtilsVoice.doVoiceRequest(content);
 		back.console.log("Voice Response!");
 		back.console.log(response);
 		var result = response.result;
@@ -120,7 +120,7 @@ var VoiceRecognizer = function (continuous, wakeUp) {
 	}
 	var getWakeUp = function () {
 		var wakeUpFinal = null;
-		if (back.UtilsObject.isFunction(wakeUp)) {
+		if (UtilsObject.isFunction(wakeUp)) {
 			wakeUpFinal = wakeUp();
 		}
 		wakeUpFinal = wakeUpFinal ? wakeUpFinal.toLowerCase() : null;

@@ -130,7 +130,7 @@ class CrossContext {
             await sendResponse(output);
         } catch (e) {
             const errorResponse = {};
-            errorResponse[CrossContext.RESULT_ERROR] = { message: e.toString(), stack: e.stack };
+            errorResponse[CrossContext.RESULT_ERROR] = { message: e.toString(), stack: e.stack, info: JSON.stringify(e) };
             await sendResponse(errorResponse);
         }
     }
@@ -140,6 +140,7 @@ class CrossContext {
             const result = await chrome.runtime.sendMessage({ call, type: CrossContext.TYPE_CALLER, input: intputWithoutFunctions, target });
             const possibleError = result && result[CrossContext.RESULT_ERROR];
             if (possibleError) {
+                console.log("Error from cross context call", possibleError);
                 throw possibleError;
             }
             const lastArg = input[input.length - 1];

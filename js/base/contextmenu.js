@@ -206,251 +206,258 @@ var ContextMenu = function () {
 	var callNumberLink = function (device, info, tab) {
 		callNumber(device, info.linkUrl);
 	}
+	const semaphore = new Semaphore(1);
 	this.update = async function (devices, blockMenu) {
-		chrome.contextMenus.removeAll();
-		if (blockMenu) return;
+		await semaphore.acquire();
+		try {
 
-		var contexts = {};
-		contexts[CONTEXT_PAGE] = [
-			new ContextMenuItem(CONTEXT_PAGE, OPEN, openPage)/*.setFavorite()*/,
-			new ContextMenuItem(CONTEXT_PAGE, PASTE, pastePage),
-			new ContextMenuItem(CONTEXT_PAGE, CREATE_NOTIFICATION, notificationPage, WITH),
-			new ContextMenuItem(CONTEXT_PAGE, SEND_TASKER_COMMAND, sendTaskerCommandPage, WITH),
-		];
-		contexts[CONTEXT_SELECTION] = [
-			new ContextMenuItem(CONTEXT_SELECTION, OPEN, openSelection),
-			new ContextMenuItem(CONTEXT_SELECTION, PASTE, pasteSelection)/*.setFavorite()*/,
-			new ContextMenuItem(CONTEXT_SELECTION, CREATE_NOTIFICATION, notificationSelection, WITH),
-			new ContextMenuItem(CONTEXT_SELECTION, SEND_TASKER_COMMAND, sendTaskerCommandSelection, WITH),
-			new ContextMenuItem(CONTEXT_SELECTION, CALL, callNumberSelection),
-		];
-		contexts[CONTEXT_LINK] = [
-			new ContextMenuItem(CONTEXT_LINK, OPEN, openLink)/*.setFavorite()*/,
-			new ContextMenuItem(CONTEXT_LINK, PASTE, pasteLink),
-			new ContextMenuItem(CONTEXT_LINK, CREATE_NOTIFICATION, notificationLink, WITH),
-			new ContextMenuItem(CONTEXT_LINK, DOWNLOAD, downloadLink),
-			new ContextMenuItem(CONTEXT_LINK, SEND_TASKER_COMMAND, sendTaskerCommandLink, WITH),
-			new ContextMenuItem(CONTEXT_LINK, CALL, callNumberLink),
-		];
-		contexts[CONTEXT_EDITABLE] = [];
-		contexts[CONTEXT_IMAGE] = [
-			new ContextMenuItem(CONTEXT_IMAGE, SET_AS_WALLPAPER, setWallpaperSourceUrl),
-			new ContextMenuItem(CONTEXT_IMAGE, SET_AS_LOCK_WALLPAPER, setLockWallpaperSourceUrl, null, null, device => device.apiLevel >= 24),
-			new ContextMenuItem(CONTEXT_IMAGE, PASTE, pasteSourceUrl),
-			new ContextMenuItem(CONTEXT_IMAGE, CREATE_NOTIFICATION, notificationImage, WITH),
-			new ContextMenuItem(CONTEXT_IMAGE, DOWNLOAD, downloadSourceUrl)/*.setFavorite()*/,
-			new ContextMenuItem(CONTEXT_IMAGE, SEND_TASKER_COMMAND, sendTaskerCommandSourceUrl, WITH),
-		];
-		contexts[CONTEXT_VIDEO] = [
-			new ContextMenuItem(CONTEXT_VIDEO, PASTE, pasteSourceUrl),
-			new ContextMenuItem(CONTEXT_VIDEO, DOWNLOAD, downloadSourceUrl)/*.setFavorite()*/,
-			new ContextMenuItem(CONTEXT_VIDEO, SEND_TASKER_COMMAND, sendTaskerCommandSourceUrl, WITH),
-		];
-		contexts[CONTEXT_AUDIO] = [
-			new ContextMenuItem(CONTEXT_AUDIO, PASTE, pasteSourceUrl),
-			new ContextMenuItem(CONTEXT_AUDIO, DOWNLOAD, downloadSourceUrl)/*.setFavorite()*/,
-			new ContextMenuItem(CONTEXT_AUDIO, SEND_TASKER_COMMAND, sendTaskerCommandSourceUrl, WITH),
-		];
-		me.contexts = contexts;
-		chrome.contextMenus.create({
-			"id": "mute_notifications",
-			"type": "checkbox",
-			"checked": !getShowChromeNotifications(),
-			"title": "Mute Notifications",
-			"contexts": ["browser_action"],
-			"onclick": function (info, tab) {
-				var shouldMute = true;
-				return Promise.resolve()
-					.then(Dialog.showMultiChoiceDialog({
-						items: [
-							{ id: 15, text: "15 Minutes" },
-							{ id: 30, text: "30 Minutes" },
-							{ id: 60, text: "1 Hour" },
-							{ id: 180, text: "3 Hours" },
-							{ id: 360, text: "6 Hours" },
-						],
-						title: "Mute Notifications For"
-					}, {
-						shouldShow: info.checked
-					}))
-					.catch(function () {
-						console.log("Mute cancelled")
-					})
-					.then(function (item) {
-						if (!item) {
-							shouldMute = false;
-						}
-						back.setShowChromeNotifications(!shouldMute);
-						if (shouldMute) {
-							var minutesToWait = item.id;
-							var timeToWait = minutesToWait * 1000 * 60;
-							showNotification("Join", "Notifications Muted for " + minutesToWait + " minutes");
-							console.log("Muted");
-							return timeToWait;
-						}
-					})
-					.then(function (timeToWait) {
-						return UtilsObject.wait(timeToWait, function (to) {
-							timeOut = to;
+			chrome.contextMenus.removeAll();
+			if (blockMenu) return;
+
+			var contexts = {};
+			contexts[CONTEXT_PAGE] = [
+				new ContextMenuItem(CONTEXT_PAGE, OPEN, openPage)/*.setFavorite()*/,
+				new ContextMenuItem(CONTEXT_PAGE, PASTE, pastePage),
+				new ContextMenuItem(CONTEXT_PAGE, CREATE_NOTIFICATION, notificationPage, WITH),
+				new ContextMenuItem(CONTEXT_PAGE, SEND_TASKER_COMMAND, sendTaskerCommandPage, WITH),
+			];
+			contexts[CONTEXT_SELECTION] = [
+				new ContextMenuItem(CONTEXT_SELECTION, OPEN, openSelection),
+				new ContextMenuItem(CONTEXT_SELECTION, PASTE, pasteSelection)/*.setFavorite()*/,
+				new ContextMenuItem(CONTEXT_SELECTION, CREATE_NOTIFICATION, notificationSelection, WITH),
+				new ContextMenuItem(CONTEXT_SELECTION, SEND_TASKER_COMMAND, sendTaskerCommandSelection, WITH),
+				new ContextMenuItem(CONTEXT_SELECTION, CALL, callNumberSelection),
+			];
+			contexts[CONTEXT_LINK] = [
+				new ContextMenuItem(CONTEXT_LINK, OPEN, openLink)/*.setFavorite()*/,
+				new ContextMenuItem(CONTEXT_LINK, PASTE, pasteLink),
+				new ContextMenuItem(CONTEXT_LINK, CREATE_NOTIFICATION, notificationLink, WITH),
+				new ContextMenuItem(CONTEXT_LINK, DOWNLOAD, downloadLink),
+				new ContextMenuItem(CONTEXT_LINK, SEND_TASKER_COMMAND, sendTaskerCommandLink, WITH),
+				new ContextMenuItem(CONTEXT_LINK, CALL, callNumberLink),
+			];
+			contexts[CONTEXT_EDITABLE] = [];
+			contexts[CONTEXT_IMAGE] = [
+				new ContextMenuItem(CONTEXT_IMAGE, SET_AS_WALLPAPER, setWallpaperSourceUrl),
+				new ContextMenuItem(CONTEXT_IMAGE, SET_AS_LOCK_WALLPAPER, setLockWallpaperSourceUrl, null, null, device => device.apiLevel >= 24),
+				new ContextMenuItem(CONTEXT_IMAGE, PASTE, pasteSourceUrl),
+				new ContextMenuItem(CONTEXT_IMAGE, CREATE_NOTIFICATION, notificationImage, WITH),
+				new ContextMenuItem(CONTEXT_IMAGE, DOWNLOAD, downloadSourceUrl)/*.setFavorite()*/,
+				new ContextMenuItem(CONTEXT_IMAGE, SEND_TASKER_COMMAND, sendTaskerCommandSourceUrl, WITH),
+			];
+			contexts[CONTEXT_VIDEO] = [
+				new ContextMenuItem(CONTEXT_VIDEO, PASTE, pasteSourceUrl),
+				new ContextMenuItem(CONTEXT_VIDEO, DOWNLOAD, downloadSourceUrl)/*.setFavorite()*/,
+				new ContextMenuItem(CONTEXT_VIDEO, SEND_TASKER_COMMAND, sendTaskerCommandSourceUrl, WITH),
+			];
+			contexts[CONTEXT_AUDIO] = [
+				new ContextMenuItem(CONTEXT_AUDIO, PASTE, pasteSourceUrl),
+				new ContextMenuItem(CONTEXT_AUDIO, DOWNLOAD, downloadSourceUrl)/*.setFavorite()*/,
+				new ContextMenuItem(CONTEXT_AUDIO, SEND_TASKER_COMMAND, sendTaskerCommandSourceUrl, WITH),
+			];
+			me.contexts = contexts;
+			chrome.contextMenus.create({
+				"id": "mute_notifications",
+				"type": "checkbox",
+				"checked": !getShowChromeNotifications(),
+				"title": "Mute Notifications",
+				"contexts": ["browser_action"],
+				"onclick": function (info, tab) {
+					var shouldMute = true;
+					return Promise.resolve()
+						.then(Dialog.showMultiChoiceDialog({
+							items: [
+								{ id: 15, text: "15 Minutes" },
+								{ id: 30, text: "30 Minutes" },
+								{ id: 60, text: "1 Hour" },
+								{ id: 180, text: "3 Hours" },
+								{ id: 360, text: "6 Hours" },
+							],
+							title: "Mute Notifications For"
+						}, {
+							shouldShow: info.checked
+						}))
+						.catch(function () {
+							console.log("Mute cancelled")
+						})
+						.then(function (item) {
+							if (!item) {
+								shouldMute = false;
+							}
+							back.setShowChromeNotifications(!shouldMute);
+							if (shouldMute) {
+								var minutesToWait = item.id;
+								var timeToWait = minutesToWait * 1000 * 60;
+								showNotification("Join", "Notifications Muted for " + minutesToWait + " minutes");
+								console.log("Muted");
+								return timeToWait;
+							}
+						})
+						.then(function (timeToWait) {
+							return UtilsObject.wait(timeToWait, function (to) {
+								timeOut = to;
+							});
+						})
+						.then(function () {
+							if (shouldMute) {
+								showNotification("Join", "Notifications Unmuted");
+								console.log("Mute ended");
+							}
+							setShowChromeNotifications(true);
+							if (timeOut) {
+								clearTimeout(timeOut);
+								timeOut = null;
+								console.log("Cleared timeout");
+							}
 						});
-					})
-					.then(function () {
-						if (shouldMute) {
-							showNotification("Join", "Notifications Unmuted");
-							console.log("Mute ended");
-						}
-						setShowChromeNotifications(true);
-						if (timeOut) {
-							clearTimeout(timeOut);
-							timeOut = null;
-							console.log("Cleared timeout");
-						}
-					});
-			}
-		});
-		/*chrome.contextMenus.create({
-			"type":"normal",
-			"title":"Test Server",
-			"contexts":["browser_action"],
-			"onclick":async ()=>{
-				const result = await fetch("http://192.168.0.50:1821/");
-				const text = await result.text();
-				back.console.log(text);
-			}
-		});*/
-		if (!devices) {
-			return;
-		}
-		var contextNames = [];
-		for (var contextName in contexts) {
-			contextNames.push(contextName);
-		}
-		var deviceCommands = back.getDeviceCommands();
-		var getContextName = contextId => contextId.substring(0, 1).toUpperCase() + contextId.substring(1);
-		var getContextMenuItemsFromCustomCommands = function (customCommandsForDevice, contextId) {
-			var result = [];
-			for (var customCommand of customCommandsForDevice) {
-				var contextMenuItem = new ContextMenuItem(contextId, customCommand.label, sendAction);
-				if (customCommand.isFavoriteRightClick) {
-					contextMenuItem.setFavorite();
 				}
-				if (!customCommand.promptText) {
-					contextMenuItem.customTitle = customCommand.label;
+			});
+			/*chrome.contextMenus.create({
+				"type":"normal",
+				"title":"Test Server",
+				"contexts":["browser_action"],
+				"onclick":async ()=>{
+					const result = await fetch("http://192.168.0.50:1821/");
+					const text = await result.text();
+					back.console.log(text);
 				}
-				contextMenuItem.action = customCommand;
-				result.push(contextMenuItem);
-			}
-			return result;
-		}
-		var getCustomDeviceCommandsFilter = function (device, withPromptText) {
-			return command =>/*command.showInContextMenu &&*/((withPromptText && command.promptText) || (!withPromptText && !command.promptText)) && command.deviceIds && command.deviceIds.indexOf(device.deviceId) >= 0
-		}
-		for (var contextId in contexts) {
-			const eligibleDevices = await devices.whereAsync(
-				async (device) =>
-					await UtilsDevices.isNotHidden(device)
-					&& UtilsDevices.isNotDeviceGroup(device)
-					&& UtilsDevices.isNotDeviceShare(device)
-			);
-			eligibleDevices.doForAll(device => {
-				var context = contexts[contextId];
-				var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, false))
-				customCommandsForDevice = customCommandsForDevice.concat(deviceCommands.filter(getCustomDeviceCommandsFilter(device, true)))
-				var contextWithCustomCommands = Array.from(context);
-				if (customCommandsForDevice.length > 0) {
-					contextWithCustomCommands = contextWithCustomCommands.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice, contextId));
-				}
-				contextWithCustomCommands.doForAll(contextMenuItem => {
-					if (contextMenuItem.isFavorite()) {
-						// var contextForDevice = contextId + device.deviceId + contextMenuItem.title;
-
-						// const relevantInfo = {
-						// 	deviceId: device.deviceId,
-						// 	contextId,
-						// 	contextTitle: contextMenuItem.title
-						// }
-						var options = {
-							"id": contextMenuItem.getRelevantInfoForId({ device, distinctInfo: "favorites" }),
-							"contexts": [contextId],
-							"onclick": function (info, tab) {
-								contextMenuItem.handler(device, info, tab, contextMenuItem);
-							},
-							"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName
-						};
-						if (contextMenuItem.patterns) {
-							options.targetUrlPatterns = contextMenuItem.patterns;
-						}
-						chrome.contextMenus.create(options);
-					}
-				});
-			})
-		}
-		devices.doForAll(async function (device) {
-			if (await UtilsDevices.isHidden(device)) {
+			});*/
+			if (!devices) {
 				return;
 			}
-			chrome.contextMenus.create({
-				"id": device.deviceId,
-				"title": device.deviceName,
-				"contexts": contextNames
-			});
-			var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, true));
-
-			for (var contextId in contexts) {
-				var context = contexts[contextId];
-				context = context.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice, contextId));
-				if (!UtilsObject.isArray(context)) {
-					continue;
-				}
-				if (context.length > 0) {
-					var contextForDevice = contextId + device.deviceId;
-					var contextName = contextId.substring(0, 1).toUpperCase() + contextId.substring(1);
-
-					var multipleFuncsForContext = context.length > 1;
-					if (multipleFuncsForContext) {
-						chrome.contextMenus.create({
-							"id": contextForDevice,
-							"parentId": device.deviceId,
-							"contexts": [contextId],
-							"title": contextName
-						});
-					} else {
-						contextForDevice = device.deviceId;
-					}
-
-					context.doForAll(function (contextMenuItem) {
-						var actionTitle = contextMenuItem.title;
-						if (!multipleFuncsForContext) {
-							actionTitle = contextMenuItem.getActionTitle(contextName);
-						}
-						if (contextMenuItem.conditionFunc) {
-							if (!contextMenuItem.conditionFunc(device)) {
-								return;
-							}
-						}
-						// const relevantInfo = {
-						// 	deviceId: device.deviceId,
-						// 	contextId,
-						// 	contextTitle: contextMenuItem.title
-						// }
-						// const idForContext = contextForDevice + contextId + contextMenuItem.title;
-						var options = {
-							"id": contextMenuItem.getRelevantInfoForId({ device, distinctInfo: "tree" }),
-							"parentId": contextForDevice,
-							"contexts": [contextId],
-							"onclick": function (info, tab) {
-								contextMenuItem.handler(device, info, tab, contextMenuItem);
-							},
-							"title": actionTitle
-						};
-						if (contextMenuItem.patterns) {
-							options.targetUrlPatterns = contextMenuItem.patterns;
-						}
-						chrome.contextMenus.create(options);
-					});
-				}
+			var contextNames = [];
+			for (var contextName in contexts) {
+				contextNames.push(contextName);
 			}
-		});
+			var deviceCommands = back.getDeviceCommands();
+			var getContextName = contextId => contextId.substring(0, 1).toUpperCase() + contextId.substring(1);
+			var getContextMenuItemsFromCustomCommands = function (customCommandsForDevice, contextId) {
+				var result = [];
+				for (var customCommand of customCommandsForDevice) {
+					var contextMenuItem = new ContextMenuItem(contextId, customCommand.label, sendAction);
+					if (customCommand.isFavoriteRightClick) {
+						contextMenuItem.setFavorite();
+					}
+					if (!customCommand.promptText) {
+						contextMenuItem.customTitle = customCommand.label;
+					}
+					contextMenuItem.action = customCommand;
+					result.push(contextMenuItem);
+				}
+				return result;
+			}
+			var getCustomDeviceCommandsFilter = function (device, withPromptText) {
+				return command =>/*command.showInContextMenu &&*/((withPromptText && command.promptText) || (!withPromptText && !command.promptText)) && command.deviceIds && command.deviceIds.indexOf(device.deviceId) >= 0
+			}
+			for (var contextId in contexts) {
+				const eligibleDevices = await devices.whereAsync(
+					async (device) =>
+						await UtilsDevices.isNotHidden(device)
+						&& UtilsDevices.isNotDeviceGroup(device)
+						&& UtilsDevices.isNotDeviceShare(device)
+				);
+				eligibleDevices.doForAll(device => {
+					var context = contexts[contextId];
+					var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, false))
+					customCommandsForDevice = customCommandsForDevice.concat(deviceCommands.filter(getCustomDeviceCommandsFilter(device, true)))
+					var contextWithCustomCommands = Array.from(context);
+					if (customCommandsForDevice.length > 0) {
+						contextWithCustomCommands = contextWithCustomCommands.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice, contextId));
+					}
+					contextWithCustomCommands.doForAll(contextMenuItem => {
+						if (contextMenuItem.isFavorite()) {
+							// var contextForDevice = contextId + device.deviceId + contextMenuItem.title;
+
+							// const relevantInfo = {
+							// 	deviceId: device.deviceId,
+							// 	contextId,
+							// 	contextTitle: contextMenuItem.title
+							// }
+							var options = {
+								"id": contextMenuItem.getRelevantInfoForId({ device, distinctInfo: "favorites" }),
+								"contexts": [contextId],
+								"onclick": function (info, tab) {
+									contextMenuItem.handler(device, info, tab, contextMenuItem);
+								},
+								"title": contextMenuItem.getActionTitle(getContextName(contextId)) + " on " + device.deviceName
+							};
+							if (contextMenuItem.patterns) {
+								options.targetUrlPatterns = contextMenuItem.patterns;
+							}
+							chrome.contextMenus.create(options);
+						}
+					});
+				})
+			}
+			devices.doForAll(async function (device) {
+				if (await UtilsDevices.isHidden(device)) {
+					return;
+				}
+				chrome.contextMenus.create({
+					"id": device.deviceId,
+					"title": device.deviceName,
+					"contexts": contextNames
+				});
+				var customCommandsForDevice = deviceCommands.filter(getCustomDeviceCommandsFilter(device, true));
+
+				for (var contextId in contexts) {
+					var context = contexts[contextId];
+					context = context.concat(getContextMenuItemsFromCustomCommands(customCommandsForDevice, contextId));
+					if (!UtilsObject.isArray(context)) {
+						continue;
+					}
+					if (context.length > 0) {
+						var contextForDevice = contextId + device.deviceId;
+						var contextName = contextId.substring(0, 1).toUpperCase() + contextId.substring(1);
+
+						var multipleFuncsForContext = context.length > 1;
+						if (multipleFuncsForContext) {
+							chrome.contextMenus.create({
+								"id": contextForDevice,
+								"parentId": device.deviceId,
+								"contexts": [contextId],
+								"title": contextName
+							});
+						} else {
+							contextForDevice = device.deviceId;
+						}
+
+						context.doForAll(function (contextMenuItem) {
+							var actionTitle = contextMenuItem.title;
+							if (!multipleFuncsForContext) {
+								actionTitle = contextMenuItem.getActionTitle(contextName);
+							}
+							if (contextMenuItem.conditionFunc) {
+								if (!contextMenuItem.conditionFunc(device)) {
+									return;
+								}
+							}
+							// const relevantInfo = {
+							// 	deviceId: device.deviceId,
+							// 	contextId,
+							// 	contextTitle: contextMenuItem.title
+							// }
+							// const idForContext = contextForDevice + contextId + contextMenuItem.title;
+							var options = {
+								"id": contextMenuItem.getRelevantInfoForId({ device, distinctInfo: "tree" }),
+								"parentId": contextForDevice,
+								"contexts": [contextId],
+								"onclick": function (info, tab) {
+									contextMenuItem.handler(device, info, tab, contextMenuItem);
+								},
+								"title": actionTitle
+							};
+							if (contextMenuItem.patterns) {
+								options.targetUrlPatterns = contextMenuItem.patterns;
+							}
+							chrome.contextMenus.create(options);
+						});
+					}
+				}
+			});
+		} finally {
+			semaphore.release();
+		}
 	}
 	var ContextMenuItem = function (context, title, handler, joiner, patterns, conditionFunc) {
 		this.context = context;

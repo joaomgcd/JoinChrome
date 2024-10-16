@@ -1077,8 +1077,8 @@ var SmsApp = function () {
 
 var smsApp = new SmsApp();
 //smsApp.contact = localStorage.smsDeviceContact ? JSON.parse(localStorage.smsDeviceContact) : null;
-var refreshSms = function () {
-	smsApp.refresh();
+var refreshSms = async function () {
+	await smsApp.refresh();
 }
 var sendSms = function (event) {
 	var sms = event.sms;

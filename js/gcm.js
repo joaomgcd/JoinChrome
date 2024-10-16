@@ -383,7 +383,7 @@ var GCMDeviceRegistered = function () {
 	this.getCommunicationType = function () {
 		return "GCMDeviceRegistered";
 	}
-	this.execute = function () {
+	this.execute = async function () {
 		if (!this.device || !devices) {
 			return;
 		}
@@ -396,7 +396,7 @@ var GCMDeviceRegistered = function () {
 			if (!this.deleted) {
 				devices.push(this.device);
 			}
-			setDevices(devices);
+			await setDevices(devices);
 		}
 	}
 }
