@@ -6,8 +6,8 @@ var UtilsSMS = {
   		return "mmsattachment=:=" + attachmentId;
 	},
 	"getCachedAttachment": function(attachmentId){
-		return back.UtilsDB.getMmsImage(attachmentId);
-		/*var cached = localStorage[back.UtilsSMS.getAttachmentString(attachmentId)];
+		return UtilsDB.getMmsImage(attachmentId);
+		/*var cached = localStorage[UtilsSMS.getAttachmentString(attachmentId)];
 		if(!cached || cached == "null"){
 			return null;
 		}
@@ -17,9 +17,9 @@ var UtilsSMS = {
 		if(!attachmentId || !attachment){
 			return Promise.resolve();
 		}
-		return back.UtilsDB.setMmsImage(attachmentId,attachment);
+		return UtilsDB.setMmsImage(attachmentId,attachment);
 		/*try{
-			localStorage[back.UtilsSMS.getAttachmentString(attachmentId)] = attachment;
+			localStorage[UtilsSMS.getAttachmentString(attachmentId)] = attachment;
 		}catch(error){
 			back.console.log("Couldn't set MMS image cache:");
 			back.console.log(error);

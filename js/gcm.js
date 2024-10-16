@@ -967,7 +967,7 @@ var GCMNewSmsReceived = function () {
 		chromeNotification.notify(); */
 
 		var not = {};
-		not.id = back.UtilsSMS.getNotificationId(me.senderId, me.number);
+		not.id = UtilsSMS.getNotificationId(me.senderId, me.number);
 		not.title = title;
 		not.text = me.text;
 		not.priority = 2;
@@ -984,9 +984,9 @@ var GCMNewSmsReceived = function () {
 		not.appIcon = me.photo || "/icons/contact.svg";
 		not.gcmDeleteOnCancel = true;
 		if (me.attachmentPartId) {
-			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(back.UtilsSMS.getAttachmentString(me.attachmentPartId));
+			var imageUrl = yield GoogleDriveManager.getDownloadUrlFromFileName(UtilsSMS.getAttachmentString(me.attachmentPartId));
 			not.image = yield doGetBase64ImagePromise(imageUrl);
-			back.UtilsSMS.setCachedAttachment(me.attachmentPartId, not.image);
+			UtilsSMS.setCachedAttachment(me.attachmentPartId, not.image);
 		}
 		if (me.text && me.text.match(regexNumbers)) {
 			not.buttons.push({

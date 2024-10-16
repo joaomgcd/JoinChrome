@@ -19,6 +19,36 @@ async function pickFile() {
 	console.log(file);
 	return file;
 }
+var makeDropZoneReady = function (dropzoneElement, optionalText) {
+	return new Promise(function (resolve, reject) {
+		dropzoneElement.classList.remove("hidden");
+		var dropzoneTextElement = dropzoneElement.querySelector("div");
+		var selectedDevice = UtilsDevices.getDevices().first(device => device.deviceId == localStorage.lastHoveredDeviceId);
+		if (!optionalText) {
+			optionalText = "Drop files here to send to " + selectedDevice.deviceName;
+		}
+		dropzoneTextElement.innerHTML = optionalText + ". <a href='#'>Cancel</a>";
+		dropzoneElement.querySelector("a").onclick = e => {
+			dropzoneElement.classList.add("hidden");
+			reject("File Drop Zone Cancelled");
+		}
+		dropzoneElement.ondragover = e => {
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'copy';
+		}
+		dropzoneElement.ondrop = e => {
+			if (e.dataTransfer.getData("index")) {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			dropzoneElement.classList.add("hidden");
+			console.log(e.dataTransfer.files);
+			resolve(e.dataTransfer.files);
+		}
+	})
+		.catch(UtilsObject.ignoreError);
+}
 const pushFile = async function (deviceId, notify, tab, files) {
 	try {
 		var initialAction = files ? Promise.resolve(files) : pickFile();
@@ -265,7 +295,7 @@ const doIt = (async () => {
 	} else {
 		var tabToShow = null;
 		/*for(var notification of notifications){
-			if(notification.id==back.UtilsSMS.getNotificationId())
+			if(notification.id==UtilsSMS.getNotificationId())
 		}*/
 		if (!tabToShow) {
 			var defaultTab = await back.getDefaultTab();
@@ -322,36 +352,7 @@ const doIt = (async () => {
 		back.removeEventListener("devicesupdated", devicesUpdated, false);
 	}, true);
 
-	var makeDropZoneReady = function (dropzoneElement, optionalText) {
-		return new Promise(function (resolve, reject) {
-			dropzoneElement.classList.remove("hidden");
-			var dropzoneTextElement = dropzoneElement.querySelector("div");
-			var selectedDevice = UtilsDevices.getDevices().first(device => device.deviceId == localStorage.lastHoveredDeviceId);
-			if (!optionalText) {
-				optionalText = "Drop files here to send to " + selectedDevice.deviceName;
-			}
-			dropzoneTextElement.innerHTML = optionalText + ". <a href='#'>Cancel</a>";
-			dropzoneElement.querySelector("a").onclick = e => {
-				dropzoneElement.classList.add("hidden");
-				reject("File Drop Zone Cancelled");
-			}
-			dropzoneElement.ondragover = e => {
-				e.preventDefault();
-				e.dataTransfer.dropEffect = 'copy';
-			}
-			dropzoneElement.ondrop = e => {
-				if (e.dataTransfer.getData("index")) {
-					return;
-				}
-				e.preventDefault();
-				e.stopPropagation();
-				dropzoneElement.classList.add("hidden");
-				console.log(e.dataTransfer.files);
-				resolve(e.dataTransfer.files);
-			}
-		})
-			.catch(back.UtilsObject.ignoreError);
-	}
+
 	var DevicesEventHandler = function () {
 		this.onThemeChanged = async function (themeChanged) {
 			await UtilsDom.setTheme(themeChanged.theme);

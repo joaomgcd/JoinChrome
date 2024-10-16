@@ -721,11 +721,11 @@ var SmsApp = function () {
 	}
 	var revealMmsAttachment = function (smsAttachmentElement, askForFileRemotely) {
 		var attachmentId = smsAttachmentElement.sms.attachmentPartId;
-		var imageElementId = back.UtilsSMS.getAttachmentString(attachmentId);
+		var imageElementId = UtilsSMS.getAttachmentString(attachmentId);
 		smsAttachmentElement.innerHTML = ``;
 		var imageElement = UtilsDom.createElement(smsAttachmentElement, "img", imageElementId, { "src": "icons/loading.gif", "class": "loading", "title": "Click to hide" });
 		var start = null;
-		return back.UtilsSMS.getCachedAttachment(attachmentId)
+		return UtilsSMS.getCachedAttachment(attachmentId)
 			.then(attachment => {
 				if (attachment) {
 					imageElement.src = attachment.data;
@@ -835,19 +835,19 @@ var SmsApp = function () {
 					smsSenderElement.classList.add("hidden");
 				}
 				if (sms.attachmentPartId) {
-					var imageElementId = back.UtilsSMS.getAttachmentString(sms.attachmentPartId);
+					var imageElementId = UtilsSMS.getAttachmentString(sms.attachmentPartId);
 					if (!sms.attachment) {
 						smsAttachmentElement.sms = sms;
 						createLinkToRevealMmsAttachment(smsAttachmentElement, imageElementId);
 						/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 						linkToReveal.innerHTML = "See Image";
 						linkToReveal.onclick = e => revealMmsAttachment(e.target.parentElement);*/
-						back.UtilsSMS.getCachedAttachment(sms.attachmentPartId)
+						UtilsSMS.getCachedAttachment(sms.attachmentPartId)
 							.then(attachment => {
 								if (attachment) {
 									back.console.log("revealing attachment")
 									back.console.log(attachment)
-									revealMmsAttachment(document.getElementById(back.UtilsSMS.getAttachmentString(attachment.id)).parentElement)
+									revealMmsAttachment(document.getElementById(UtilsSMS.getAttachmentString(attachment.id)).parentElement)
 										.then(() => me.scrollSmsListToBottom());
 								}
 							});
