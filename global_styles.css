@@ -18,7 +18,7 @@ body {
 	-webkit-font-smoothing: antialiased; /*For Mac OS / OSX*/
 	overflow: hidden;	
 	height: calc(var(--vh, 1vh) * 100);
-	min-height: 600px;
+	min-height: 500px;
 }
 svg{
 	fill: var(--theme-accent-color-lowlight);
