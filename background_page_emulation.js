@@ -69,7 +69,8 @@ const backgroundPage = (() => {
         createPushClipboardWindow: call("createPushClipboardWindow"),
         doNotificationAction: call("doNotificationAction"),
         getNotifications: call("getNotifications"),
-        getNotificationRaw: call("getNotificationRaw")
+        getNotificationRaw: call("getNotificationRaw"),
+        handleAutoClipboard: call("handleAutoClipboard")
     }
     return backgroundPage;
 })()
