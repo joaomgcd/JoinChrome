@@ -1,4 +1,15 @@
 
+function waitFor(conditionFn, interval = 1000) {
+    return new Promise(resolve => {
+        const checkCondition = setInterval(() => {
+            if (conditionFn()) {
+                clearInterval(checkCondition);
+                resolve();
+            }
+        }, interval);
+    });
+};
+
 class CrossContext {
     static TYPE_LISTENER = "listener"
     static TYPE_CALLER = "caller"
@@ -180,6 +191,7 @@ chrome.runtime.onMessage.addListener(({ call, type, input, target, replyTo, addE
     }
 });
 if (!isServiceWorker) {
+
     const originalChromeRuntime = chrome.runtime;
     chrome.commands = {
         onCommand: {
@@ -292,5 +304,26 @@ if (isServiceWorker) {
         console.log("getGCMToken using new request")
         gcmTokenGetter = originalGetToken(...input);
         return await getFromPending();
+    }
+
+    const joinGcmListeners = [];
+    // I need to replace the original addListener with my own because sometimes gcms will arrive before a background page registers its listeners and those pushes wouldn't be delivered. Wait for the listeners to be available and the push it.
+    chrome.gcm.onMessage.addListener(async payload => {
+        console.log("Received gcm in service worker", payload)
+        //if no joinGcmListeners are present, wait until there are some and then send the message
+        if (joinGcmListeners.length === 0) {
+            console.log("No listeners, waiting for listeners to be added")
+            await waitFor(() => joinGcmListeners.length > 0, 100);
+        }
+
+        joinGcmListeners.forEach(listener => listener(payload));
+    });
+    chrome.gcm.onMessage.addListener = async (listener) => {
+        console.log("service worker gcm onMessage addListener");
+        joinGcmListeners.push(listener);
+    }
+    chrome.gcm.onMessage.removeListener = async (listener) => {
+        console.log("service worker gcm onMessage addListener");
+        joinGcmListeners.push(listener);
     }
 }

@@ -1159,38 +1159,38 @@ var GCMLocalNetworkRequest = function () {
 			const response = await gcmTest.send(null, serverAddress);
 			console.log(response);
 			if (response.success) {
-				UtilsDevices.setCanContactViaLocalNetwork(senderId, me.serverAddress);
+				// UtilsDevices.setCanContactViaLocalNetwork(senderId, me.serverAddress);
 
-				var webSocketServerAddress = me.webSocketServerAddress;
-				if (!webSocketServerAddress) return;
+				// var webSocketServerAddress = me.webSocketServerAddress;
+				// if (!webSocketServerAddress) return;
 
-				if (socket && socket.readyState == socket.OPEN) return;
+				// if (socket && socket.readyState == socket.OPEN) return;
 
-				socket = new WebSocket(webSocketServerAddress);
-				const socketDisconnected = () => {
-					UtilsDevices.setCanContactViaLocalNetwork(senderId, false);
-					me.execute();
-				}
-				socket.onopen = e => {
-					console.log("Socket open", e);
-					const gcmSocketTest = new GCMWebSocketRequest();
-					gcmSocketTest.senderId = localStorage.deviceId;
-					gcmSocketTest.send(null, null, socket);
-				}
-				socket.onmessage = e => {
-					console.log("Socket message", e);
-					const gcmRaw = JSON.parse(e.data);
-					back.handlePushMessage({
-						"data": gcmRaw
-					});
-				}
-				socket.onclose = e => {
-					console.log("Socket closed", e);
-					//socketDisconnected();
-				}
-				socket.onerror = e => {
-					console.log("Socket error", e);
-				}
+				// socket = new WebSocket(webSocketServerAddress);
+				// const socketDisconnected = () => {
+				// 	UtilsDevices.setCanContactViaLocalNetwork(senderId, false);
+				// 	me.execute();
+				// }
+				// socket.onopen = e => {
+				// 	console.log("Socket open", e);
+				// 	const gcmSocketTest = new GCMWebSocketRequest();
+				// 	gcmSocketTest.senderId = localStorage.deviceId;
+				// 	gcmSocketTest.send(null, null, socket);
+				// }
+				// socket.onmessage = e => {
+				// 	console.log("Socket message", e);
+				// 	const gcmRaw = JSON.parse(e.data);
+				// 	back.handlePushMessage({
+				// 		"data": gcmRaw
+				// 	});
+				// }
+				// socket.onclose = e => {
+				// 	console.log("Socket closed", e);
+				// 	//socketDisconnected();
+				// }
+				// socket.onerror = e => {
+				// 	console.log("Socket error", e);
+				// }
 			} else {
 				UtilsDevices.setCanContactViaLocalNetwork(senderId, false);
 			}

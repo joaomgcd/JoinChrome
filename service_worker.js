@@ -18,9 +18,6 @@ importScripts("./cross_context.js");
     }
 })();
 
-chrome.gcm.onMessage.addListener(payload => {
-    console.log("Received gcm in service worker", payload)
-});
 chrome.notifications.onClicked.addListener(id => {
     console.log("Notification clicked", id)
 })
