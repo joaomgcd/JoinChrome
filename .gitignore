@@ -48,3 +48,8 @@ Temporary Items
 
 # extension zip for extension store
 *.zip
+
+# AI
+.claude/
+.devcontainer/
+CLAUDE.md

@@ -10,6 +10,10 @@ function waitFor(conditionFn, interval = 1000) {
     });
 };
 
+function wait(millis) {
+    return new Promise(resolve => setTimeout(resolve, millis));
+};
+
 class CrossContext {
     static TYPE_LISTENER = "listener"
     static TYPE_CALLER = "caller"
@@ -19,6 +23,7 @@ class CrossContext {
     static TARGET_FOREGROUND = "target_foreground"
     static TARGET_SERVICE_WORKER = "target_service_worker"
     static RESULT_ERROR = "thesuperdupererrormotherhahaa"
+    static RESULT_OK = "__crossContextResultOK"
     static LISTENER_ID_DEFAULT = "MyListener"
     static #listeners = {}
     static addForegroundListener({ call, listener, target, addEventListenerType, replyTo }) {
@@ -133,12 +138,15 @@ class CrossContext {
 
     static async callBackgroundFunction({ call, input, sendResponse, target }) {
         const fun = CrossContext.#getBackgroundFunctionFromCall(call);
-        if (fun == null) return
+        if (fun == null) {
+            await sendResponse({ [CrossContext.RESULT_OK]: false });
+            return;
+        }
 
         // console.log("Calling background function", self, call, target, fun)
         try {
             const output = await fun(...input);
-            await sendResponse(output);
+            await sendResponse({ [CrossContext.RESULT_OK]: true, value: output });
         } catch (e) {
             const errorResponse = {};
             errorResponse[CrossContext.RESULT_ERROR] = { message: e.toString(), stack: e.stack, info: JSON.stringify(e) };
@@ -148,17 +156,32 @@ class CrossContext {
     static call(call, target = CrossContext.TARGET_SERVICE_WORKER) {
         return (async (...input) => {
             const intputWithoutFunctions = input.filter(i => typeof i !== "function");
-            const result = await chrome.runtime.sendMessage({ call, type: CrossContext.TYPE_CALLER, input: intputWithoutFunctions, target });
-            const possibleError = result && result[CrossContext.RESULT_ERROR];
-            if (possibleError) {
-                console.log("Error from cross context call", possibleError);
-                throw possibleError;
+            const maxAttempts = 30;
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                const result = await chrome.runtime.sendMessage({ call, type: CrossContext.TYPE_CALLER, input: intputWithoutFunctions, target });
+                const possibleError = result && result[CrossContext.RESULT_ERROR];
+                if (possibleError) {
+                    console.log("Error from cross context call", possibleError);
+                    throw possibleError;
+                }
+                if (result != null && CrossContext.RESULT_OK in result) {
+                    if (result[CrossContext.RESULT_OK]) {
+                        const value = result.value;
+                        const lastArg = input[input.length - 1];
+                        if (typeof lastArg === 'function') {
+                            lastArg(value);
+                        }
+                        return value;
+                    }
+                    // RESULT_OK is false: handler reached but function not available yet
+                }
+                // No response (undefined) or not ready — target context not loaded yet, retry
+                if (attempt < maxAttempts - 1) {
+                    await wait(100);
+                }
             }
-            const lastArg = input[input.length - 1];
-            if (typeof lastArg === 'function') {
-                lastArg(result);
-            }
-            return result;
+            console.warn(`CrossContext call "${call}" to ${target} failed: target not ready after ${maxAttempts} attempts`);
+            return undefined;
         });
     }
 }
