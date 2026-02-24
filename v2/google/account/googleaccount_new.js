@@ -6,15 +6,24 @@ export class GoogleAccount {
 		this.scopesString = scopes.join(" ");	
 	}
 	initAuth2(){
-		try{
-			return gapi.auth2.init({
+		// try{
+		return new Promise((resolve, reject) => {
+			google.accounts.id.initialize({
+				client_id: this.clientId,
+				cookiepolicy: 'single_host_origin',
+				scope: this.scopesString,
+				callback: resolve
+			});
+			google.accounts.id.prompt();
+		});
+			return google.accounts.id.initialize({
 				client_id: this.clientId,
 				cookiepolicy: 'single_host_origin',
 				scope: this.scopesString
 			});
-		}catch{
-			return gapi.auth2.getAuthInstance();
-		}
+		// }catch{
+		// 	return gapi.auth2.getAuthInstance();
+		// }
 	}
 	loadAuth2(){
 		return new Promise((resolve, reject) => {
@@ -53,9 +62,9 @@ export class GoogleAccount {
 		await this.getCurrentUser();
 		return gapi;
 	};
-	getCurrentUser(){
+	async getCurrentUser(){
 		const result = { isSignedIn: false };
-		const googleAuth = this.initAuth2();
+		const googleAuth = await this.initAuth2();
 		if (!googleAuth) return result;
 
 		const userFromGapi = googleAuth.currentUser.get();
@@ -103,7 +112,10 @@ export class GoogleAccount {
 			"prompt": "select_account",
 			"ux_mode": "redirect"
 		};
-		gapi.auth2.getAuthInstance().attachClickHandler(element, options, onSuccess, onFailure); //will attach the click handler to the element
+		// gapi.auth2.getAuthInstance().attachClickHandler(element, options, onSuccess, onFailure);
+		element.onclick = () => {
+			google.accounts.id.prompt();
+		}
 	};
 }
 

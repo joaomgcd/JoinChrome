@@ -1,7 +1,7 @@
-import * as gapijs from 'https://apis.google.com/js/client.js';
+// import * as gapijs from 'https://apis.google.com/js/client.js';
 
 const SCOPES = ["https://www.googleapis.com/auth/userinfo.email","https://www.googleapis.com/auth/drive.appfolder"];
-//this is the old way of stuff
+
 var webRoot = 'https://localhost:8080/';
 if(typeof window !== 'undefined'){
     webRoot = 'https://' + window.location.host + '/';

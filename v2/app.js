@@ -270,6 +270,7 @@ export class App{
             await this.apiLoader.load();
             return true;
         }catch(error){
+            console.error("Error loading gapi",error);
             const {ControlDialogOk} = await import("./dialog/controldialog.js");
             await ControlDialogOk.showAndWait({title:"Third Part Cookies Error",text:`You need to enable third-party cookies on your browser to be able to sign-in with Google.<br/><br/>Please enable them and then refresh the page to try again.<br/><br/>Error details: ${JSON.stringify(error)}`});
             return false;

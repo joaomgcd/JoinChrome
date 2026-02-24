@@ -250,6 +250,7 @@ if (!isServiceWorker) {
         query: CrossContext.call("chrome.tabs.query"),
         update: CrossContext.call("chrome.tabs.update"),
         remove: CrossContext.call("chrome.tabs.remove"),
+        highlight: CrossContext.call("chrome.tabs.highlight"),
         onUpdated: {
             addListener: CrossContext.listen("chrome.tabs.onUpdated.addListener"),
             removeListener: CrossContext.call("chrome.tabs.onUpdated.removeListener")
@@ -306,24 +307,71 @@ if (isServiceWorker) {
         return await getFromPending();
     }
 
-    const joinGcmListeners = [];
+    
     // I need to replace the original addListener with my own because sometimes gcms will arrive before a background page registers its listeners and those pushes wouldn't be delivered. Wait for the listeners to be available and the push it.
-    chrome.gcm.onMessage.addListener(async payload => {
-        console.log("Received gcm in service worker", payload)
-        //if no joinGcmListeners are present, wait until there are some and then send the message
-        if (joinGcmListeners.length === 0) {
-            console.log("No listeners, waiting for listeners to be added")
-            await waitFor(() => joinGcmListeners.length > 0, 100);
+    const replaceListenerThatWakesUpServiceWorker = (addListenerOnThis, tag) => {
+        const joinListeners = [];
+        addListenerOnThis.addListener(async payload => {
+            console.log(`Received ${tag} in service worker`, payload)
+            //if no joinListeners are present, wait until there are some and then send the message
+            if (joinListeners.length === 0) {
+                console.log(`No listeners for ${tag}, waiting for listeners to be added`)
+                await waitFor(() => joinListeners.length > 0, 100);
+            }
+    
+            joinListeners.forEach(listener => listener(payload));
+        });
+        addListenerOnThis.addListener = async (listener) => {
+            console.log(`service worker ${tag} onMessage addListener`);
+            joinListeners.push(listener);
         }
+        addListenerOnThis.removeListener = async (listener) => {
+            console.log(`service worker ${tag} onMessage removeListener`);
+            const index = joinListeners.indexOf(listener);
+            if (index == -1) return;
+            
+            joinListeners.splice(index, 1);
+        }
+    }
+    replaceListenerThatWakesUpServiceWorker(chrome.contextMenus.onClicked, "context menu click");
+    replaceListenerThatWakesUpServiceWorker(chrome.gcm.onMessage, "gcm");
+    // const joinGcmListeners = [];
+    // const joinContextMenuListeners = [];
+    // chrome.gcm.onMessage.addListener(async payload => {
+    //     console.log("Received gcm in service worker", payload)
+    //     //if no joinGcmListeners are present, wait until there are some and then send the message
+    //     if (joinGcmListeners.length === 0) {
+    //         console.log("No listeners, waiting for listeners to be added")
+    //         await waitFor(() => joinGcmListeners.length > 0, 100);
+    //     }
 
-        joinGcmListeners.forEach(listener => listener(payload));
-    });
-    chrome.gcm.onMessage.addListener = async (listener) => {
-        console.log("service worker gcm onMessage addListener");
-        joinGcmListeners.push(listener);
-    }
-    chrome.gcm.onMessage.removeListener = async (listener) => {
-        console.log("service worker gcm onMessage addListener");
-        joinGcmListeners.push(listener);
-    }
+    //     joinGcmListeners.forEach(listener => listener(payload));
+    // });
+    // chrome.contextMenus.onClicked.addListener(async payload => {
+    //     console.log("Received context menu click in service worker", payload)
+    //     //if no joinContextMenuListeners are present, wait until there are some and then send the message
+    //     if (joinContextMenuListeners.length === 0) {
+    //         console.log("No listeners for context menu, waiting for listeners to be added")
+    //         await waitFor(() => joinContextMenuListeners.length > 0, 100);
+    //     }
+
+    //     joinContextMenuListeners.forEach(listener => listener(payload));
+    // });
+    // chrome.gcm.onMessage.addListener = async (listener) => {
+    //     console.log("service worker gcm onMessage addListener");
+    //     joinGcmListeners.push(listener);
+    // }
+    // chrome.gcm.onMessage.removeListener = async (listener) => {
+    //     console.log("service worker gcm onMessage removeListener");
+    //     joinGcmListeners.push(listener);
+    // }
+    // chrome.contextMenus.onClicked.addListener = async (listener) => {
+    //     console.log("service worker contextMenus onClicked addListener");
+    //     joinContextMenuListeners.push(listener);
+    // }
+    // chrome.contextMenus.onClicked.removeListener = async (listener) => {
+    //     console.log("service worker contextMenus onClicked removeListener");
+    //     joinContextMenuListeners.push(listener);
+    // }
+    
 }

@@ -129,6 +129,7 @@ var UtilsDom = {
 	"setCurrentTheme": async function () {
 		var theme = await back.getTheme();
 
+		console.log("Setting theme: " + theme,back, back.getTheme);
 		await UtilsDom.setTheme(theme);
 	},
 	"setTheme": async function (themeToSet) {

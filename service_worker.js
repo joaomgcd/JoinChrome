@@ -1,6 +1,7 @@
 importScripts("./cross_context.js");
 (async () => {
     try {
+        // await new Promise(resolve => setTimeout(resolve, 3000));
         await chrome.offscreen.closeDocument()
         console.log("existing offscreen document closed");
     } catch (error) {
@@ -24,3 +25,6 @@ chrome.notifications.onClicked.addListener(id => {
 chrome.notifications.onButtonClicked.addListener((id, index) => {
     console.log("Notification button clicked", id, index)
 })
+// chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+//     console.log("Context menu clicked", info, tab);
+// });
