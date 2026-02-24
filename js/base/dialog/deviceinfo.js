@@ -155,6 +155,7 @@ var DeviceUIEventHandlerDeviceInfo = function(){
 
 }
 var eventHandler = new DeviceUIEventHandlerDeviceInfo();
+back.eventBus = EventBusCrossContext.get();
 back.eventBus.register(eventHandler);
 addEventListener("unload", function (event) {
 	back.console.log("Unloading device info...");

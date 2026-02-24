@@ -90,7 +90,7 @@ var UtilsDevices = {
 	"isNotHidden": async function (device) {
 		return !(await UtilsDevices.isHidden(device));
 	},
-	"getDeviceImage": async function (device) {
+	"getDeviceImage": function (device) {
 		var func = deviceImages["" + device.deviceType];
 		var icon = "/icons/" + func(device);
 		return icon;
