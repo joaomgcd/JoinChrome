@@ -235,6 +235,8 @@ var getAuthTokenBackground = async function (callback, selectAccount) {
 	});
 }
 var authTabId = null;
+var lastAuthFailTime = 0;
+var AUTH_COOLDOWN_MS = 5000;
 var isLocalAccessTokenValid = function () {
 	return localStorage.accessToken && localStorage.authExpires && new Date(new Number(localStorage.authExpires)) > new Date();
 }
@@ -246,6 +248,12 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 
 	if (getDontPromptUserLogin()) {
 		callback(localStorage.accessToken);
+		return;
+	}
+	if (!selectAccount && (Date.now() - lastAuthFailTime) < AUTH_COOLDOWN_MS) {
+		if (callback) {
+			callback(null);
+		}
 		return;
 	}
 	if (selectAccount) {
@@ -294,13 +302,19 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 					await finisher(tabId, token, redirect_url);
 				}
 			}
+			var finisherCalled = false;
 			var finisher = async function (tabId, token, redirect_url) {
+				if (finisherCalled) return;
+				finisherCalled = true;
 				authTabId = null;
-				await chrome.tabs.onUpdated.removeListener(authListener);
-				await chrome.tabs.onRemoved.removeListener(closeListener);
+				chrome.tabs.onUpdated.removeListener(authListener);
+				chrome.tabs.onRemoved.removeListener(closeListener);
 				console.log("Auth token found from tab: " + token);
 				await chrome.tabs.remove(tabId);
+				var finishCalled = false;
 				var finshCallback = function (token) {
+					if (finishCalled) return;
+					finishCalled = true;
 					if (callback) {
 						callback(token);
 					}
@@ -318,13 +332,20 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 						console.log("Logged in with: " + userInfoFromStorage.email);
 						finshCallback(token);
 					}, true, token);
+					setTimeout(function () {
+						if (!finishCalled) {
+							console.log("getUserInfo timed out, proceeding with token");
+							finshCallback(token);
+						}
+					}, 10000);
 				} else {
+					lastAuthFailTime = Date.now();
 					finshCallback(null);
 				}
 
 			}
-			await chrome.tabs.onUpdated.addListener(authListener);
-			await chrome.tabs.onRemoved.addListener(closeListener)
+			chrome.tabs.onUpdated.addListener(authListener);
+			chrome.tabs.onRemoved.addListener(closeListener)
 			openTab(url, { selected: false, active: false }, function (tab) {
 				console.log("Tab auth created");
 				console.log(tab);
@@ -368,9 +389,15 @@ var getAuthToken = function (callback, selectAccount, token) {
 			getAuthTokenFromTab(callback, selectAccount);
 			return;
 		}
-		chrome.identity.getAuthToken({ 'interactive': true }, function (token) {
+		chrome.identity.getAuthToken({ 'interactive': true }, function (tokenResult) {
+			if (chrome.runtime.lastError || !tokenResult?.token) {
+				console.log("chrome.identity.getAuthToken failed: " + chrome.runtime.lastError?.message);
+				getAuthTokenFromTab(callback, selectAccount);
+				return;
+			}
+			setLocalAccessToken(tokenResult.token, 3600);
 			if (callback) {
-				callback(token.token);
+				callback(tokenResult.token);
 			}
 		});
 
@@ -1788,11 +1815,15 @@ const initPushTokens = async () => {
 	setLocalDeviceNameFromDeviceList();
 	if (devices && resultRegId1.sameRegId && resultRegId2.sameRegId && localStorage.deviceId) return;
 
-	const result = await registerDevice();
-	if (!result.sameDeviceId) {
-		refreshDevices();
-	} else {
-		setLocalDeviceNameFromDeviceList();
+	try {
+		const result = await registerDevice();
+		if (!result?.sameDeviceId) {
+			refreshDevices();
+		} else {
+			setLocalDeviceNameFromDeviceList();
+		}
+	} catch (error) {
+		console.log("initPushTokens registration failed: " + error);
 	}
 };
 initPushTokens();
