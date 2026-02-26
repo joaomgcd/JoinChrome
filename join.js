@@ -1657,7 +1657,7 @@ var registerDevice = function (callback, callbackError) {
 			return result;
 		})
 		.catch(function (error) {
-			console.error("Error: " + error);
+			console.log("registerDevice error: " + error);
 			if (callbackError) {
 				callbackError(error);
 			}
