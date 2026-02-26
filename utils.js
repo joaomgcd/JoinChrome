@@ -870,7 +870,7 @@ var getUserInfo = function(callback,force,token){
 		callback(JSON.parse(localStorage.userinfo));
 		return;
 	}
-	back.doGetWithAuth("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", function(result){
+	doGetWithAuth("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", function(result){
 	  localStorage.userinfo = JSON.stringify(result);
 	  callback(result);
 	},function(error){
