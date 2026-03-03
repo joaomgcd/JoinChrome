@@ -1,6 +1,10 @@
 
 var OPTIONS_URL = "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/options.html?tab=1";
 var isPopup = getURLParameter("popup");
+if (typeof joinDiagLog != "function") {
+	var joinDiagLog = function () {
+	}
+}
 var refreshElement = document.getElementById("topBarRefresh");
 var setRefreshing = function (refreshing) {
 	if (refreshing) {
@@ -12,6 +16,7 @@ var setRefreshing = function (refreshing) {
 const tests = (async () => {
 	const token = await back.getToken();
 	console.log("Token", token);
+	joinDiagLog("devices:tests:getToken", { hasToken: !!token, isPopup: !!isPopup });
 });
 tests();
 async function pickFile() {
@@ -85,13 +90,16 @@ var getDevices = function () {
 // var doGetWithAuthPromise = back.doGetWithAuthPromise;
 // var doPutWithAuthPromise = back.doPutWithAuthPromise;
 var refreshDevices = async function (callback) {
+	joinDiagLog("devices:refreshDevices:start", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 	await chrome.extension.getBackgroundPage().refreshDevices();
 	await writeDevices();
+	joinDiagLog("devices:refreshDevices:done", { storedDevicesCount: UtilsDevices.getDevices() ? UtilsDevices.getDevices().length : 0, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 	if (callback) {
 		callback();
 	}
 }
 const doIt = (async () => {
+	joinDiagLog("devices:doIt:start", { isPopup: !!isPopup, closeAfterCommand: getURLParameter("closeAfterCommand"), localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 
 	if (!isPopup) {
 		chrome.extension.getBackgroundPage().popupWindow = window;

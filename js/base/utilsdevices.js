@@ -106,8 +106,10 @@ var UtilsDevices = {
 		}
 	},
 	"getDevices": () => {
+		var diagLogger = typeof joinDiagLog == "function" ? joinDiagLog : function () { };
 		var devicesJson = localStorage["devices"];
 		if (!devicesJson || devicesJson == "undefined") {
+			diagLogger("utilsdevices:getDevices:emptyStorage", { devicesJson: devicesJson, localDeviceId: localStorage.deviceId });
 			return [];
 		}
 		try {
@@ -115,6 +117,7 @@ var UtilsDevices = {
 		} catch (error) {
 			console.log("Error parsing stored devices");
 			console.log(error);
+			diagLogger("utilsdevices:getDevices:parseError", { error: error && error.toString ? error.toString() : error, devicesJsonType: typeof devicesJson });
 			return [];
 		}
 	},

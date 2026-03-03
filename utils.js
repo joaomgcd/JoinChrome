@@ -18,6 +18,78 @@ var CHROME_EXTENSION_URL = "chrome-extension://flejfacjooompmliegamfbpjjdlhokhj/
 var DEVICES_POPUP_URL = CHROME_EXTENSION_URL + "devices.html?tab=devices";
 var AUTH_CALLBACK_URL = "https://joinjoaomgcd.appspot.com/authorize.html";
 //var AUTH_CALLBACK_URL = "https://"+chrome.runtime.id+".chromiumapp.org/chrome-extension"
+var JOIN_DIAG_LOG_TAG = "[JOIN_DIAG_REGAUTH]";
+var JOIN_DIAG_LOG_STORAGE_KEY = "joinDiagLogsEnabled";
+var isJoinDiagLogEnabled = function () {
+	try {
+		if (!localStorage) {
+			return true;
+		}
+		var enabledValue = localStorage[JOIN_DIAG_LOG_STORAGE_KEY];
+		if (enabledValue == null) {
+			return true;
+		}
+		return enabledValue == "true";
+	} catch (error) {
+		return true;
+	}
+}
+var setJoinDiagLogEnabled = function (enabled) {
+	try {
+		localStorage[JOIN_DIAG_LOG_STORAGE_KEY] = enabled ? "true" : "false";
+	} catch (error) {
+	}
+}
+var joinDiagSerializeArg = function (arg) {
+	if (arg === undefined) {
+		return "undefined";
+	}
+	if (arg === null) {
+		return "null";
+	}
+	if (typeof arg == "string") {
+		return arg;
+	}
+	if (typeof arg == "number" || typeof arg == "boolean" || typeof arg == "bigint") {
+		return String(arg);
+	}
+	if (arg instanceof Error) {
+		return JSON.stringify({ name: arg.name, message: arg.message, stack: arg.stack });
+	}
+	var seen = [];
+	try {
+		return JSON.stringify(arg, function (key, value) {
+			if (typeof value == "object" && value != null) {
+				if (seen.indexOf(value) >= 0) {
+					return "[Circular]";
+				}
+				seen.push(value);
+			}
+			if (value instanceof Error) {
+				return { name: value.name, message: value.message, stack: value.stack };
+			}
+			if (typeof value == "function") {
+				return "[Function]";
+			}
+			if (value === undefined) {
+				return "[Undefined]";
+			}
+			return value;
+		});
+	} catch (error) {
+		return String(arg);
+	}
+}
+var joinDiagLog = function () {
+	if (!isJoinDiagLogEnabled()) {
+		return;
+	}
+	var args = [JOIN_DIAG_LOG_TAG];
+	for (var i = 0; i < arguments.length; i++) {
+		args.push(joinDiagSerializeArg(arguments[i]));
+	}
+	console.log(args.join(" | "));
+}
 
 var REQUEST_TYPE_SCREENSHOT = 1;
 var REQUEST_TYPE_VIDEO = 2;

@@ -38,6 +38,10 @@ async function registerInEventBus(callback) {
 	eventBus.register(callback);
 }
 var eventBus = new EventBusCrossContext();
+if (typeof joinDiagLog != "function") {
+	var joinDiagLog = function () {
+	}
+}
 var repeatLastCommand = function () {
 	if (localStorage["lastpush"]) {
 		var deviceId = localStorage["lastpush"];
@@ -100,7 +104,9 @@ var createPushClipboardWindow = function (tab, params, paramsIfClosed, closeAfte
 			addParams(paramsIfClosed);
 		}
 	}
+	joinDiagLog("createPushClipboardWindow", { tab: tab, devicesCount: devices ? devices.length : null, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 	if (!devices || devices.length == 0) {
+		joinDiagLog("createPushClipboardWindow:noDevices", { tab: tab, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName, hasAccessToken: !!localStorage.accessToken });
 		alert("Join doesn't have any other devices available to send stuff to. Please log in on the same account on other devices to make them appear here.");
 		return;
 	}
@@ -144,7 +150,9 @@ var clearClipboardWindows = function () {
 	clipboardWindows = [];
 }
 var getToken = async function (callback, token) {
+	joinDiagLog("getToken:start", { hasExplicitToken: !!token, hasLocalAccessToken: !!localStorage.accessToken, authExpires: localStorage.authExpires, isDoingAuth: isDoingAuth });
 	const tokenAwaited = token ? token : await getAuthTokenPromise(false, token);
+	joinDiagLog("getToken:done", { hasToken: !!tokenAwaited });
 	if (callback) {
 		callback(tokenAwaited);
 	}
@@ -245,22 +253,27 @@ var setLocalAccessToken = function (token, expiresIn) {
 	localStorage.accessToken = token;
 }
 var getAuthTokenFromTab = async function (callback, selectAccount) {
+	joinDiagLog("getAuthTokenFromTab:start", { selectAccount: !!selectAccount, isDoingAuth: isDoingAuth, hasLocalAccessToken: !!localStorage.accessToken, authTabId: authTabId });
 
 	if (getDontPromptUserLogin()) {
+		joinDiagLog("getAuthTokenFromTab:skipDontPrompt");
 		callback(localStorage.accessToken);
 		return;
 	}
 	if (!selectAccount && (Date.now() - lastAuthFailTime) < AUTH_COOLDOWN_MS) {
+		joinDiagLog("getAuthTokenFromTab:cooldown", { cooldownMs: AUTH_COOLDOWN_MS });
 		if (callback) {
 			callback(null);
 		}
 		return;
 	}
 	if (selectAccount) {
+		joinDiagLog("getAuthTokenFromTab:selectAccountRemovingToken");
 		removeAuthToken();
 	}
 	//removeAuthToken();
 	if (isLocalAccessTokenValid()) {
+		joinDiagLog("getAuthTokenFromTab:usingLocalAccessToken");
 		if (callback) {
 			callback(localStorage.accessToken);
 		}
@@ -279,24 +292,29 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 		if (!isDoingAuth) {
 			isDoingAuth = true;
 			var url = await getAuthUrl(selectAccount);
+			joinDiagLog("getAuthTokenFromTab:launchAuthTab", { selectAccount: !!selectAccount });
 
 			if (localStorage.userinfo) {
 				var userinfo = JSON.parse(localStorage.userinfo);
 				if (userinfo.email) {
 					url += "&login_hint=" + userinfo.email;
+					joinDiagLog("getAuthTokenFromTab:usingLoginHint", { email: userinfo.email });
 				}
 			}
 			var closeListener = async function (tabId, removeInfo) {
 				if (authTabId && tabId == authTabId) {
+					joinDiagLog("getAuthTokenFromTab:authTabClosed", { tabId: tabId });
 					await finisher(tabId, null, null, true);
 				}
 			}
 			var authListener = async function (tabId, changeInfo, tab) {
 				if (tab?.url && tab.url.indexOf(await getCliendId()) > 0) {
 					authTabId = tabId;
+					joinDiagLog("getAuthTokenFromTab:detectedAuthTab", { tabId: tabId });
 					await focusOnAuthTabId();
 				}
 				if (tab && tab.url && tab.url.indexOf(AUTH_CALLBACK_URL) == 0) {
+					joinDiagLog("getAuthTokenFromTab:callbackUrlDetected", { tabId: tabId });
 					var redirect_url = tab.url;
 					var token = getAuthTokenFromUrl(redirect_url);
 					await finisher(tabId, token, redirect_url);
@@ -307,6 +325,7 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 				if (finisherCalled) return;
 				finisherCalled = true;
 				authTabId = null;
+				joinDiagLog("getAuthTokenFromTab:finisher", { tabId: tabId, hasToken: !!token, tabAlreadyClosed: !!tabAlreadyClosed });
 				chrome.tabs.onUpdated.removeListener(authListener);
 				chrome.tabs.onRemoved.removeListener(closeListener);
 				console.log("Auth token found from tab: " + token);
@@ -334,6 +353,7 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 				if (token && redirect_url) {
 					var expiresIn = new Number(getURLParameter(redirect_url, "expires_in"));
 					setLocalAccessToken(token, expiresIn);
+					joinDiagLog("getAuthTokenFromTab:tokenFromTab", { expiresIn: expiresIn });
 					console.log("Token expires in " + expiresIn + " seconds");
 					getUserInfo(function (userInfoFromStorage) {
 						console.log("Logged in with: " + userInfoFromStorage.email);
@@ -347,6 +367,7 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 					}, 10000);
 				} else {
 					lastAuthFailTime = Date.now();
+					joinDiagLog("getAuthTokenFromTab:noTokenFromTab");
 					finshCallback(null);
 				}
 
@@ -356,10 +377,12 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 			openTab(url, { selected: false, active: false }, function (tab) {
 				console.log("Tab auth created");
 				console.log(tab);
+				joinDiagLog("getAuthTokenFromTab:authTabCreated", { tabId: tab ? tab.id : null });
 			});
 		} else {
 			if (callback) {
 				waitingForAuthCallbacks.push(callback);
+				joinDiagLog("getAuthTokenFromTab:alreadyDoingAuth", { waitingCallbacks: waitingForAuthCallbacks.length, authTabId: authTabId });
 				await focusOnAuthTabId();
 			}
 		}
@@ -374,35 +397,43 @@ var getAuthTokenPromise = function (selectAccount, token) {
 	});
 }
 var getAuthToken = function (callback, selectAccount, token) {
+	joinDiagLog("getAuthToken:start", { selectAccount: !!selectAccount, hasProvidedToken: !!token });
 	if (token) {
+		joinDiagLog("getAuthToken:usingProvidedToken");
 		if (callback) {
 			callback(token);
 		}
 		return;
 	}
 	if (selectAccount) {
+		joinDiagLog("getAuthToken:selectAccount");
 		getAuthTokenFromTab(callback, selectAccount);
 		return;
 	}
 	chrome.identity.getProfileUserInfo(function (userInfoFromChrome) {
+		joinDiagLog("getAuthToken:profileInfo", { chromeEmail: userInfoFromChrome ? userInfoFromChrome.email : null });
 		if (localStorage.userinfo) {
 			var userInfoFromStorage = JSON.parse(localStorage.userinfo);
 			if (userInfoFromStorage.email && userInfoFromStorage.email != userInfoFromChrome.email) {
+				joinDiagLog("getAuthToken:emailMismatchUseBackground", { storageEmail: userInfoFromStorage.email, chromeEmail: userInfoFromChrome.email });
 				getAuthTokenBackground(callback, selectAccount);
 				return;
 			}
 		}
 		if (!userInfoFromChrome.email) {
+			joinDiagLog("getAuthToken:noChromeEmailFallbackTab");
 			getAuthTokenFromTab(callback, selectAccount);
 			return;
 		}
 		chrome.identity.getAuthToken({ 'interactive': true }, function (tokenResult) {
 			if (chrome.runtime.lastError || !tokenResult?.token) {
 				console.log("chrome.identity.getAuthToken failed: " + chrome.runtime.lastError?.message);
+				joinDiagLog("getAuthToken:identityFailed", { lastError: chrome.runtime.lastError?.message });
 				getAuthTokenFromTab(callback, selectAccount);
 				return;
 			}
 			setLocalAccessToken(tokenResult.token, 3600);
+			joinDiagLog("getAuthToken:identitySuccess");
 			if (callback) {
 				callback(tokenResult.token);
 			}
@@ -1651,6 +1682,7 @@ var registerDevice = function (callback, callbackError) {
 	}
 
 	var myName = "Chrome";
+	joinDiagLog("registerDevice:start", { currentDeviceId: localStorage.deviceId, hasRegId1: !!registrationId, hasRegId2: !!registrationId2, deviceName: myName });
 	return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/", { "deviceId": localStorage.deviceId, "regId": registrationId, "regId2": registrationId2, "deviceName": myName, "deviceType": 3 })
 		.then(function (result) {
 			if (!result || !result.deviceId) {
@@ -1662,6 +1694,7 @@ var registerDevice = function (callback, callbackError) {
 			}
 			localStorage.deviceId = result.deviceId;
 			localStorage.regIdServer = result.regId;
+			joinDiagLog("registerDevice:success", { newDeviceId: result.deviceId, sameDeviceId: !!result.sameDeviceId, hasRegIdServer: !!result.regId });
 			if (callback) {
 				callback(result);
 			}
@@ -1669,6 +1702,7 @@ var registerDevice = function (callback, callbackError) {
 		})
 		.catch(function (error) {
 			console.log("registerDevice error: " + error);
+			joinDiagLog("registerDevice:error", { error: error && error.toString ? error.toString() : error });
 			if (callbackError) {
 				callbackError(error);
 			}
@@ -1739,11 +1773,14 @@ var executeGcm = function (type, json) {
 
 var refreshDevices = async function (callback) {
 	console.log("Refreshing devices...");
+	joinDiagLog("refreshDevices:start", { currentDeviceId: localStorage.deviceId });
 	try {
 		const result = await doGetWithAuth(joinserver + "registration/v1/listDevices/");
 		console.log(result);
+		joinDiagLog("refreshDevices:response", { hasResult: !!result, recordsCount: result && result.records ? result.records.length : null });
 
 		await setDevices(result.records);
+		joinDiagLog("refreshDevices:setDevicesDone", { devicesCount: devices ? devices.length : null, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 		new GCMLocalNetworkTestRequest().sendToCompatibleDevices();
 		if (callback != null) {
 			callback(result.records);
@@ -1751,17 +1788,21 @@ var refreshDevices = async function (callback) {
 		return result.records;
 	} catch (error) {
 		console.log("Error: " + error);
+		joinDiagLog("refreshDevices:error", { error: error && error.toString ? error.toString() : error });
 		if (callback != null) {
 			callback(null);
 		}
 	}
 }
 if (!localStorage.firstRunDone) {
+	joinDiagLog("startup:firstRun", { hasAccessToken: !!localStorage.accessToken, deviceId: localStorage.deviceId });
 	localStorage.firstRunDone = true;
 	if (!localStorage.accessToken) {
+		joinDiagLog("startup:firstRun:requestSelectAccount");
 		getAuthToken(null, true);
 	}
 } else {
+	joinDiagLog("startup:notFirstRun:getToken", { hasAccessToken: !!localStorage.accessToken, deviceId: localStorage.deviceId });
 	getToken();
 }
 var handleRegIdRegistration = function (registrationId, regIdLocalKey) {
@@ -1787,16 +1828,20 @@ var handleRegIdRegistration = function (registrationId, regIdLocalKey) {
 }
 var setLocalDeviceNameFromDeviceList = function () {
 	if (!devices) {
+		joinDiagLog("setLocalDeviceNameFromDeviceList:skipNoDevices");
 		return;
 	}
 	if (!localStorage.deviceId) {
+		joinDiagLog("setLocalDeviceNameFromDeviceList:skipNoDeviceId");
 		return;
 	}
 	var myDevice = devices.find(device => device.deviceId == localStorage.deviceId);
 	if (!myDevice) {
+		joinDiagLog("setLocalDeviceNameFromDeviceList:deviceNotFound", { localDeviceId: localStorage.deviceId, devicesCount: devices.length });
 		return;
 	}
 	localStorage.deviceName = myDevice.deviceName;
+	joinDiagLog("setLocalDeviceNameFromDeviceList:success", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 }
 const getInstanceIdToken = senderId => {
 	return new Promise((resolve, reject) => {
@@ -1813,31 +1858,42 @@ const getInstanceIdToken = senderId => {
 	handlePushMessage(payload);
 });*/
 const initPushTokens = async () => {
+	joinDiagLog("initPushTokens:start", { localDeviceId: localStorage.deviceId, hasDeviceName: !!localStorage.deviceName });
 	const registrationId1 = await getInstanceIdToken("596310809542");
 	//const registrationId2 = await fcmClient.getToken("737484412860");
 	const registrationId2 = await getInstanceIdToken("737484412860");
+	joinDiagLog("initPushTokens:gotInstanceIds", { hasRegId1: !!registrationId1, hasRegId2: !!registrationId2 });
 
 	var resultRegId1 = handleRegIdRegistration(registrationId1, "regIdLocal");
 	if (!resultRegId1.success) return;
+	joinDiagLog("initPushTokens:regId1Handled", { sameRegId1: !!resultRegId1.sameRegId });
 
 	var resultRegId2 = handleRegIdRegistration(registrationId2, "regIdLocal2");
 	if (!resultRegId2.success) return;
+	joinDiagLog("initPushTokens:regId2Handled", { sameRegId2: !!resultRegId2.sameRegId });
 
 	setLocalDeviceNameFromDeviceList();
-	if (devices && resultRegId1.sameRegId && resultRegId2.sameRegId && localStorage.deviceId) return;
+	if (devices && resultRegId1.sameRegId && resultRegId2.sameRegId && localStorage.deviceId) {
+		joinDiagLog("initPushTokens:skipRegisterDevice", { devicesCount: devices.length, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
+		return;
+	}
 
 	try {
 		const result = await registerDevice();
+		joinDiagLog("initPushTokens:registerDeviceResult", { sameDeviceId: !!result?.sameDeviceId, localDeviceId: localStorage.deviceId });
 		if (!result?.sameDeviceId) {
 			await refreshDevices();
 		}
 		setLocalDeviceNameFromDeviceList();
 		if (!localStorage.deviceName && localStorage.deviceId) {
+			joinDiagLog("initPushTokens:retryRefreshForDeviceName", { localDeviceId: localStorage.deviceId });
 			await refreshDevices();
 			setLocalDeviceNameFromDeviceList();
 		}
+		joinDiagLog("initPushTokens:done", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName, devicesCount: devices ? devices.length : null });
 	} catch (error) {
 		console.log("initPushTokens registration failed: " + error);
+		joinDiagLog("initPushTokens:error", { error: error && error.toString ? error.toString() : error });
 	}
 };
 initPushTokens();
@@ -1888,10 +1944,14 @@ var devices = [];
 if (devicesJson && devicesJson != "undefined") {
 	try {
 		devices = JSON.parse(devicesJson);
+		joinDiagLog("devicesBootstrap:parsed", { devicesCount: devices ? devices.length : null, localDeviceId: localStorage.deviceId });
 	} catch (error) {
 		console.log("Error parsing stored devices in join.js");
 		console.log(error);
+		joinDiagLog("devicesBootstrap:parseError", { error: error && error.toString ? error.toString() : error, devicesJsonType: typeof devicesJson });
 	}
+} else {
+	joinDiagLog("devicesBootstrap:emptyStorageDevices", { devicesJson: devicesJson });
 }
 
 
