@@ -288,7 +288,7 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 			}
 			var closeListener = async function (tabId, removeInfo) {
 				if (authTabId && tabId == authTabId) {
-					await finisher(tabId);
+					await finisher(tabId, null, null, true);
 				}
 			}
 			var authListener = async function (tabId, changeInfo, tab) {
@@ -303,14 +303,21 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 				}
 			}
 			var finisherCalled = false;
-			var finisher = async function (tabId, token, redirect_url) {
+			var finisher = async function (tabId, token, redirect_url, tabAlreadyClosed) {
 				if (finisherCalled) return;
 				finisherCalled = true;
 				authTabId = null;
 				chrome.tabs.onUpdated.removeListener(authListener);
 				chrome.tabs.onRemoved.removeListener(closeListener);
 				console.log("Auth token found from tab: " + token);
-				await chrome.tabs.remove(tabId);
+				if (!tabAlreadyClosed) {
+					try {
+						await chrome.tabs.remove(tabId);
+					} catch (error) {
+						console.log("Error closing auth tab");
+						console.log(error);
+					}
+				}
 				var finishCalled = false;
 				var finshCallback = function (token) {
 					if (finishCalled) return;

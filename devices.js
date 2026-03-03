@@ -334,10 +334,22 @@ const doIt = (async () => {
 	});
 	refreshElement.addEventListener("click", async function (event) {
 		var tab = localStorage.selectedTab;
+		if (!tab) {
+			return;
+		}
 		var func = "refresh" + tab.substring(0, 1).toUpperCase() + tab.substring(1);
+		var refreshFunc = window[func];
+		if (!refreshFunc) {
+			return;
+		}
 		setRefreshing(true);
-		await window[func]();
-		setRefreshing(false);
+		try {
+			await refreshFunc();
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setRefreshing(false);
+		}
 	});
 
 	//back.fileInput = document.getElementById("uploadfile");

@@ -105,7 +105,19 @@ var UtilsDevices = {
 			}
 		}
 	},
-	"getDevices": () => JSON.parse(localStorage["devices"]),
+	"getDevices": () => {
+		var devicesJson = localStorage["devices"];
+		if (!devicesJson || devicesJson == "undefined") {
+			return [];
+		}
+		try {
+			return JSON.parse(devicesJson);
+		} catch (error) {
+			console.log("Error parsing stored devices");
+			console.log(error);
+			return [];
+		}
+	},
 	"getDeviceFromId": (deviceId) => {
 		const devices = UtilsDevices.getDevices();
 		return devices.first(device => device.deviceId == deviceId);
