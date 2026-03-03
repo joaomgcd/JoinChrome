@@ -277,6 +277,25 @@ const load = async () => {
 		}
 		passwordStatus.innerHTML = text;
 	}
+	var ensureLocalDeviceName = async function () {
+		if (localStorage.deviceName) {
+			return localStorage.deviceName;
+		}
+		await back.refreshDevices();
+		await back.setLocalDeviceNameFromDeviceList();
+		if (localStorage.deviceName) {
+			return localStorage.deviceName;
+		}
+		try {
+			await back.registerDevice();
+			await back.refreshDevices();
+			await back.setLocalDeviceNameFromDeviceList();
+		} catch (error) {
+			console.log("Error ensuring local device registration");
+			console.log(error);
+		}
+		return localStorage.deviceName;
+	}
 	var generateHideCommandsOptions = async function () {
 		var hideCommandsElement = document.querySelector("#hidecommands");
 		for (var deviceCommand of deviceCommands) {
@@ -357,7 +376,7 @@ const load = async () => {
 		}));
 
 		document.getElementById("appiconandname").onclick = function () { openTab("http://joaoapps.com/join"); };
-		document.getElementById("deviceName").innerHTML = localStorage.deviceName;
+		document.getElementById("deviceName").innerHTML = (await ensureLocalDeviceName()) || "";
 		var optionTabSelectors = document.querySelectorAll("[showtab]");
 		for (var i = 0; i < optionTabSelectors.length; i++) {
 			var optionTabSelector = optionTabSelectors[i];

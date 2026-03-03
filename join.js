@@ -1653,6 +1653,10 @@ var registerDevice = function (callback, callbackError) {
 	var myName = "Chrome";
 	return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/", { "deviceId": localStorage.deviceId, "regId": registrationId, "regId2": registrationId2, "deviceName": myName, "deviceType": 3 })
 		.then(function (result) {
+			if (!result || !result.deviceId) {
+				var errorMessage = (result && result.errorMessage) ? result.errorMessage : JSON.stringify(result);
+				throw new Error("Invalid registerDevice response: " + errorMessage);
+			}
 			if (localStorage.deviceId == result.deviceId) {
 				result.sameDeviceId = true;
 			}
@@ -1825,8 +1829,11 @@ const initPushTokens = async () => {
 	try {
 		const result = await registerDevice();
 		if (!result?.sameDeviceId) {
-			refreshDevices();
-		} else {
+			await refreshDevices();
+		}
+		setLocalDeviceNameFromDeviceList();
+		if (!localStorage.deviceName && localStorage.deviceId) {
+			await refreshDevices();
 			setLocalDeviceNameFromDeviceList();
 		}
 	} catch (error) {
@@ -1877,9 +1884,14 @@ initPushTokens();
 
 var devicesJson = localStorage["devices"];
 
-var devices = null;
-if (devicesJson) {
-	devices = JSON.parse(devicesJson);
+var devices = [];
+if (devicesJson && devicesJson != "undefined") {
+	try {
+		devices = JSON.parse(devicesJson);
+	} catch (error) {
+		console.log("Error parsing stored devices in join.js");
+		console.log(error);
+	}
 }
 
 
