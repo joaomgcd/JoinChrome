@@ -252,6 +252,50 @@ var setLocalAccessToken = function (token, expiresIn) {
 	localStorage.authExpires = new Date().getTime() + ((expiresIn - 120) * 1000);
 	localStorage.accessToken = token;
 }
+var getUrlParamKeys = function (paramsString) {
+	if (!paramsString) {
+		return [];
+	}
+	try {
+		var params = new URLSearchParams(paramsString);
+		var keys = [];
+		params.forEach(function (value, key) {
+			if (keys.indexOf(key) >= 0) {
+				return;
+			}
+			keys.push(key);
+		});
+		keys.sort();
+		return keys;
+	} catch (error) {
+		return [];
+	}
+}
+var getAuthUrlDebugInfo = function (url, changeInfo) {
+	var info = {
+		status: changeInfo ? changeInfo.status : null,
+		hasUrl: !!url
+	};
+	if (!url) {
+		return info;
+	}
+	info.urlStartsAuthCallback = url.indexOf(AUTH_CALLBACK_URL) == 0;
+	info.hasAccessTokenText = url.indexOf("access_token=") >= 0;
+	info.hasErrorText = url.indexOf("error=") >= 0;
+	info.hasCodeText = url.indexOf("code=") >= 0;
+	try {
+		var parsedUrl = new URL(url);
+		info.origin = parsedUrl.origin;
+		info.pathname = parsedUrl.pathname;
+		info.searchKeys = getUrlParamKeys(parsedUrl.search ? parsedUrl.search.replace(/^\?/, "") : "");
+		var hash = parsedUrl.hash ? parsedUrl.hash.replace(/^#/, "") : "";
+		info.hashKeys = getUrlParamKeys(hash);
+		info.hashLength = hash.length;
+	} catch (error) {
+		info.parseError = error.toString();
+	}
+	return info;
+}
 var getAuthTokenFromTab = async function (callback, selectAccount) {
 	joinDiagLog("getAuthTokenFromTab:start", { selectAccount: !!selectAccount, isDoingAuth: isDoingAuth, hasLocalAccessToken: !!localStorage.accessToken, authTabId: authTabId });
 
@@ -289,10 +333,10 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 				//alert("Something went wrong. Please reload the Join extension.");
 			}
 		}
-		if (!isDoingAuth) {
-			isDoingAuth = true;
-			var url = await getAuthUrl(selectAccount);
-			joinDiagLog("getAuthTokenFromTab:launchAuthTab", { selectAccount: !!selectAccount });
+			if (!isDoingAuth) {
+				isDoingAuth = true;
+				var url = await getAuthUrl(selectAccount);
+				joinDiagLog("getAuthTokenFromTab:launchAuthTab", { selectAccount: !!selectAccount });
 
 			if (localStorage.userinfo) {
 				var userinfo = JSON.parse(localStorage.userinfo);
@@ -301,34 +345,48 @@ var getAuthTokenFromTab = async function (callback, selectAccount) {
 					joinDiagLog("getAuthTokenFromTab:usingLoginHint", { email: userinfo.email });
 				}
 			}
-			var closeListener = async function (tabId, removeInfo) {
-				if (authTabId && tabId == authTabId) {
-					joinDiagLog("getAuthTokenFromTab:authTabClosed", { tabId: tabId });
-					await finisher(tabId, null, null, true);
+				var closeListener = async function (tabId, removeInfo) {
+					if (authTabId && tabId == authTabId) {
+						joinDiagLog("getAuthTokenFromTab:authTabClosed", { tabId: tabId });
+						await finisher(tabId, null, null, true, "tab_closed");
+					}
 				}
-			}
-			var authListener = async function (tabId, changeInfo, tab) {
-				if (tab?.url && tab.url.indexOf(await getCliendId()) > 0) {
-					authTabId = tabId;
-					joinDiagLog("getAuthTokenFromTab:detectedAuthTab", { tabId: tabId });
-					await focusOnAuthTabId();
+				var authListenerUpdateCount = 0;
+				var authListener = async function (tabId, changeInfo, tab) {
+						authListenerUpdateCount++;
+						if (tab?.url && (tabId == authTabId || tab.url.indexOf(AUTH_CALLBACK_URL) == 0 || (changeInfo?.status == "complete" && tab.url.indexOf("accounts.google.com") >= 0))) {
+							joinDiagLog("getAuthTokenFromTab:authListenerUpdate", { updateIndex: authListenerUpdateCount, tabId: tabId, authTabId: authTabId, urlInfo: getAuthUrlDebugInfo(tab.url, changeInfo) });
+						}
+						if (tab?.url && tab.url.indexOf(await getCliendId()) > 0) {
+							authTabId = tabId;
+							joinDiagLog("getAuthTokenFromTab:detectedAuthTab", { tabId: tabId });
+							await focusOnAuthTabId();
+						}
+						if (tab && tab.url && tab.url.indexOf(AUTH_CALLBACK_URL) == 0) {
+							joinDiagLog("getAuthTokenFromTab:callbackUrlDetected", { tabId: tabId, urlInfo: getAuthUrlDebugInfo(tab.url, changeInfo) });
+							var redirect_url = tab.url;
+							var token = getAuthTokenFromUrl(redirect_url);
+							if (token) {
+								await finisher(tabId, token, redirect_url, false, "token_found");
+								return;
+							}
+							if (redirect_url.indexOf("error=") >= 0) {
+								joinDiagLog("getAuthTokenFromTab:callbackOAuthError", { tabId: tabId });
+								await finisher(tabId, null, redirect_url, false, "oauth_error");
+								return;
+							}
+							joinDiagLog("getAuthTokenFromTab:callbackNoTokenYet", { tabId: tabId, urlInfo: getAuthUrlDebugInfo(redirect_url, changeInfo) });
+						}
 				}
-				if (tab && tab.url && tab.url.indexOf(AUTH_CALLBACK_URL) == 0) {
-					joinDiagLog("getAuthTokenFromTab:callbackUrlDetected", { tabId: tabId });
-					var redirect_url = tab.url;
-					var token = getAuthTokenFromUrl(redirect_url);
-					await finisher(tabId, token, redirect_url);
-				}
-			}
-			var finisherCalled = false;
-			var finisher = async function (tabId, token, redirect_url, tabAlreadyClosed) {
-				if (finisherCalled) return;
-				finisherCalled = true;
-				authTabId = null;
-				joinDiagLog("getAuthTokenFromTab:finisher", { tabId: tabId, hasToken: !!token, tabAlreadyClosed: !!tabAlreadyClosed });
-				chrome.tabs.onUpdated.removeListener(authListener);
-				chrome.tabs.onRemoved.removeListener(closeListener);
-				console.log("Auth token found from tab: " + token);
+				var finisherCalled = false;
+				var finisher = async function (tabId, token, redirect_url, tabAlreadyClosed, reason) {
+					if (finisherCalled) return;
+					finisherCalled = true;
+					authTabId = null;
+					joinDiagLog("getAuthTokenFromTab:finisher", { tabId: tabId, hasToken: !!token, tabAlreadyClosed: !!tabAlreadyClosed, reason: reason, urlInfo: getAuthUrlDebugInfo(redirect_url, null) });
+					chrome.tabs.onUpdated.removeListener(authListener);
+					chrome.tabs.onRemoved.removeListener(closeListener);
+					console.log("Auth token found from tab: " + token);
 				if (!tabAlreadyClosed) {
 					try {
 						await chrome.tabs.remove(tabId);
@@ -443,9 +501,36 @@ var getAuthToken = function (callback, selectAccount, token) {
 
 }
 var getAuthTokenFromUrl = function (url) {
-	if (url.indexOf("#access_token=") > 0) {
-		return url.substring(url.indexOf("#") + "#access_token=".length, url.indexOf("&"));
+	if (!url) {
+		return null;
 	}
+	var tokenSource = null;
+	try {
+		var parsedUrl = new URL(url);
+		var hash = parsedUrl.hash ? parsedUrl.hash.replace(/^#/, "") : "";
+		var hashParams = new URLSearchParams(hash);
+		var tokenFromHash = hashParams.get("access_token");
+		if (tokenFromHash) {
+			tokenSource = "hash";
+			joinDiagLog("getAuthTokenFromUrl:tokenParsed", { source: tokenSource, urlInfo: getAuthUrlDebugInfo(url, null) });
+			return tokenFromHash;
+		}
+		var tokenFromQuery = parsedUrl.searchParams.get("access_token");
+		if (tokenFromQuery) {
+			tokenSource = "query";
+			joinDiagLog("getAuthTokenFromUrl:tokenParsed", { source: tokenSource, urlInfo: getAuthUrlDebugInfo(url, null) });
+			return tokenFromQuery;
+		}
+	} catch (error) {
+	}
+	var tokenMatch = url.match(/(?:[#?&])access_token=([^&]+)/);
+	if (tokenMatch && tokenMatch[1]) {
+		tokenSource = "regex";
+		joinDiagLog("getAuthTokenFromUrl:tokenParsed", { source: tokenSource, urlInfo: getAuthUrlDebugInfo(url, null) });
+		return decodeURIComponent(tokenMatch[1]);
+	}
+	joinDiagLog("getAuthTokenFromUrl:noToken", { urlInfo: getAuthUrlDebugInfo(url, null) });
+	return null;
 }
 var removeAuthToken = function (callback) {
 	delete localStorage.accessToken;
