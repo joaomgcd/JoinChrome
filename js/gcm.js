@@ -1159,7 +1159,7 @@ var GCMLocalNetworkRequest = function () {
 			const response = await gcmTest.send(null, serverAddress);
 			console.log(response);
 			if (response.success) {
-				// UtilsDevices.setCanContactViaLocalNetwork(senderId, me.serverAddress);
+				UtilsDevices.setCanContactViaLocalNetwork(senderId, me.serverAddress);
 
 				// var webSocketServerAddress = me.webSocketServerAddress;
 				// if (!webSocketServerAddress) return;

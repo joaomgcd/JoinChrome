@@ -175,8 +175,8 @@ var PushHistory = function(deviceId){
 			resetTargetElement();
 			var notifications = [];
 
-			const pushItemHtml = await importComponent('./components/push-item.js','#pushitem'); //document.querySelector('link[href="push-item.html"]').import.querySelector('#pushitem');
-			const pushItemFileHtml = await importComponent('./components/push-item-file.js','#pushitemfile'); //document.querySelector('link[href="push-item-file.html"]').import.querySelector('#pushitemfile');
+			const pushItemHtml = await importComponent('/components/push-item.js','#pushitem'); //document.querySelector('link[href="push-item.html"]').import.querySelector('#pushitem');
+			const pushItemFileHtml = await importComponent('/components/push-item-file.js','#pushitemfile'); //document.querySelector('link[href="push-item-file.html"]').import.querySelector('#pushitemfile');
 			for (var i = 0; i < history.pushes.length; i++) {
 				var pushItem = history.pushes[i];
 				var notification = {
