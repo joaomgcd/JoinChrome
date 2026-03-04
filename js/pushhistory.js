@@ -75,50 +75,61 @@ var PushHistory = function(deviceId){
 	}
 	var savedFilter = "";
 	var cachedHistory = {};
-	var contactInfo = null;
-	this.render = async function(targetElement,forceDownload,history){
-		var resetTargetElement = function(){
-			targetElement.innerHTML = "";
-			var filterElement = UtilsDom.createElement(targetElement,"input","filter",{"type":"text","placeholder":"Filter Pushes","value":savedFilter});
-			filterElement.onkeyup = function(event){
-				var filterText = event.target.value;
-				if(filterText == savedFilter){
-					return;
-				}
-				savedFilter = filterText;
-				if(cachedHistory && cachedHistory.pushes && cachedHistory.pushes.length > 0){
-					var filteredPushes = [];
-					for (var i = 0; i < cachedHistory.pushes.length; i++) {
-						var push = cachedHistory.pushes[i];
-						var addedPush = false;
-						for(var prop in push){
-							if(prop.toLowerCase().indexOf(filterText.toLowerCase())>=0){
-								filteredPushes.push(push);
-								break;
+		var contactInfo = null;
+		this.render = async function(targetElement,forceDownload,history){
+			var getOrCreateFilterElement = function(){
+				var filterElement = document.getElementById("filter");
+				if (!filterElement) {
+					var filterParentElement = document.getElementById("topbar") || targetElement;
+					filterElement = UtilsDom.createElement(filterParentElement,"input","filter",{"type":"text","placeholder":"Filter Pushes","value":savedFilter});
+					filterElement.onkeyup = function(event){
+						var filterText = event.target.value;
+						if(filterText == savedFilter){
+							return;
+						}
+						savedFilter = filterText;
+						if(cachedHistory && cachedHistory.pushes && cachedHistory.pushes.length > 0){
+							var filteredPushes = [];
+							for (var i = 0; i < cachedHistory.pushes.length; i++) {
+								var push = cachedHistory.pushes[i];
+								var addedPush = false;
+								for(var prop in push){
+									if(prop.toLowerCase().indexOf(filterText.toLowerCase())>=0){
+										filteredPushes.push(push);
+										break;
+									}
+									var value = push[prop];
+									if(!value || !UtilsObject.isString(value)){
+										continue;
+									}
+									if(value.toLowerCase().indexOf(filterText.toLowerCase())>=0){
+										filteredPushes.push(push);
+										break;
+									}
+								}
 							}
-							var value = push[prop];
-							if(!value || !UtilsObject.isString(value)){
-								continue;
-							}
-							if(value.toLowerCase().indexOf(filterText.toLowerCase())>=0){
-								filteredPushes.push(push);
-								break;
-							}
+							me.render(targetElement,forceDownload,{pushes:filteredPushes})
+							.then(function(){
+								var filterElement = document.getElementById("filter");
+								filterElement.focus();
+								var position = filterElement.value.length;
+	                			filterElement.setSelectionRange(position, position);
+							});
 						}
 					}
-					me.render(targetElement,forceDownload,{pushes:filteredPushes})
-					.then(function(){
-						var filterElement = document.getElementById("filter");
-						filterElement.focus();
-						var position = filterElement.value.length;
-                		filterElement.setSelectionRange(position, position);
-					});
 				}
+				if (filterElement.value != savedFilter) {
+					filterElement.value = savedFilter;
+				}
+				return filterElement;
 			}
-		}
-		resetTargetElement();
-		UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"50px","height":"50px"});
-		return Promise.resolve()
+			var resetTargetElement = function(){
+				targetElement.innerHTML = "";
+				getOrCreateFilterElement();
+			}
+			resetTargetElement();
+			UtilsDom.createElement(targetElement,"img","loadinganimation",{"src":"../icons/loading.gif","width":"50px","height":"50px"});
+			return Promise.resolve()
 		.then(function(){
 			if(!history){
 				return me.get(forceDownload)

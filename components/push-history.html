@@ -15,110 +15,301 @@
     <script src="../js/pushhistory.js"></script>
     <script src="../js/pushhistoryloader.js"></script>
     <link type="text/css" rel="stylesheet" href="../materialize/css/materialize.min.css" media="screen,projection" />
+    <link themesheet rel="stylesheet" href="../base_styles.css">
     <link themesheet rel="stylesheet" href="../options_styles.css">
 </head>
 <style type="text/css">
-#topbar {
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: var(--theme-accent-color);
-    padding: 18px 12px 0 12px;
-    box-shadow: 0 -1px 4px black;
+    overflow: hidden;
+    background: var(--theme-background-color-panel);
+    color: var(--theme-text-color);
 }
 
-body, #clipboard {
-    color: #757575;
+#topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, var(--theme-accent-color), var(--theme-accent-color-dark));
+    padding: 16px 20px;
+    box-shadow: 0 10px 24px -18px rgba(0, 0, 0, 0.75);
+    gap: 12px;
 }
 
-a {
-    color: #FF9800;
+#appinfo {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+}
+
+#appiconandname {
+    gap: 12px;
+}
+
+#appicon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px;
+}
+
+#appname {
+    font-size: 1.9rem;
+    letter-spacing: 0.02em;
+}
+
+.history-wrap {
+    display: flex;
+    justify-content: center;
+    flex: 1 1 auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    width: 100%;
+    padding: 18px 0 30px;
+}
+
+#pushhistory {
+    width: calc(100% - 28px);
+    max-width: 920px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 #filter {
-    width: 25%;
-    background-color: var(--theme-accent-color);
+    width: calc(100% - 28px);
+    max-width: 920px;
+    border: 0 !important;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--theme-accent-color), var(--theme-accent-color-dark));
     color: white !important;
     -webkit-text-fill-color: white !important;
     caret-color: white;
-    position: fixed;
-    transition: all 0.3s ease;
-    z-index: 80;
-    font-size: large;
-    right: 30px;
-    padding: 8px;
-    opacity: 1;
+    position: relative;
+    z-index: 1;
+    font-size: 1rem;
+    line-height: 1.4;
+    padding: 12px 18px;
+    margin: 0 auto;
+    box-shadow: 0 14px 28px -22px rgba(0, 0, 0, 0.9);
 }
 
-#filter:focus {
-    opacity: 1;
+#filter:focus,
+#filter:focus:not([readonly]) {
+    border-bottom: 0 !important;
+    box-shadow: 0 16px 30px -22px rgba(0, 0, 0, 0.95) !important;
 }
 
 #filter::-webkit-input-placeholder,
 #filter::placeholder {
     color: white !important;
-    opacity: 1;
+    opacity: 0.9;
 }
 
-input[type=text]:focus:not([readonly]) {
-    border-bottom: 1px solid gray;
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+#loadinganimation {
+    width: 44px;
+    height: 44px;
+    align-self: center;
+    margin: 12px auto;
 }
 
-.history-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#pushhistory {
-    width: 40%;
+#pushitem.card {
+    margin: 0;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(127, 127, 127, 0.35);
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.035)),
+        var(--theme-background-color);
+    box-shadow: 0 8px 22px -18px rgba(0, 0, 0, 0.9);
 }
 
 #pushitem {
-    display: flex;
-    flex-direction: row;
-    padding: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+#pushitem.clickable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px -20px rgba(0, 0, 0, 0.95);
 }
 
 #left {
-    flex-grow: 2;
+    min-width: 0;
 }
 
 #right {
-    justify-content: flex-end;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
     white-space: nowrap;
 }
 
-#smstitle,
 #title,
+#smstitle,
 #link,
-#clipboardword{
-    font-size: 18px;
-    font-weight: normal;
-    color: rgba(0, 0, 0, 0.87);
-    line-height: 1.5;
+#clipboardword {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--theme-text-color);
+    line-height: 1.35;
+}
+
+#text {
+    font-size: 0.95rem;
+    color: var(--theme-accent-color-lowlight);
+    opacity: 0.92;
+    margin-top: 4px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#date {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--theme-accent-color-lowlight);
+    background: rgba(127, 127, 127, 0.2);
+    border-radius: 999px;
+    padding: 4px 10px;
+}
+
+#icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: rgba(127, 127, 127, 0.18);
+    border: 1px solid rgba(127, 127, 127, 0.35);
+}
+
+a,
+a#link {
+    color: var(--theme-accent-color);
 }
 
 a#link {
-    color: #FF9800;
+    display: block;
+    margin-top: 8px;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+a#link:hover {
+    text-decoration: underline;
+}
+
+#files {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#pushitemfile {
+    background: rgba(127, 127, 127, 0.16);
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+img#image {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 8px;
+    padding: 0;
+}
+
+#loading {
+    margin-top: 8px;
+    height: 30px;
+    width: 30px;
+}
+
+#clipboardholder {
+    display: block;
+    margin-top: 10px;
+}
+
+#clipboard {
+    width: 100%;
+    margin-top: 6px;
+    border: 1px solid rgba(127, 127, 127, 0.32);
+    border-radius: 10px;
+    background: rgba(127, 127, 127, 0.16);
+    color: var(--theme-text-color) !important;
+    -webkit-text-fill-color: var(--theme-text-color) !important;
+    padding: 8px 10px;
+    box-sizing: border-box;
+}
+
+#clipboard:disabled {
+    opacity: 1;
+}
+
+#sms {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--theme-accent-color);
+    background: rgba(127, 127, 127, 0.16);
+    border-radius: 0 10px 10px 0;
+}
+
+#smsnumber,
+#smstext {
+    color: var(--theme-accent-color-lowlight);
+    word-break: break-word;
+}
+
+#smsnumber {
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+#smstext {
+    margin-top: 4px;
+}
+
+#nohistoryerror {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
+        var(--theme-background-color);
+    font-weight: 700;
+    color: var(--theme-text-color);
+    border: 1px solid rgba(127, 127, 127, 0.25);
+}
+
+#nohistoryerrordebug {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: var(--theme-accent-color-lowlight);
+    word-break: break-word;
 }
 
 .clickable {
     cursor: pointer;
 }
 
-img#image {
-    width: 100%;
-    padding: 10px;
-}
-#icon {
-	width: 75px;
-}
-#loading {
-    margin-top: 10px;
-    height: 50px;
-    width: 50px;
-}
 </style>
 
 <body>
@@ -131,7 +322,7 @@ img#image {
         </div>
     </div>
     <div class="history-wrap">
-        <div id="pushhistory" class="optionContainer">
+        <div id="pushhistory">
         </div>
     </div>
 </body>
