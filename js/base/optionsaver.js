@@ -420,7 +420,7 @@ var onvoicecontinuoussave = async function (option, value) {
 	UtilsVoice.toggleContinuous(() => devices, getVoiceWakeup, getVoiceContinuous, callbackPromptFunc, null, errorFunc);
 };
 var onautoclipboardsave = function (option, value) {
-	console.log("Auto clipboard: " + value);
+	console.log("Auto clipboard: " + getSensitiveLogPreview(value));
 	if (handleAutoClipboard) {
 		handleAutoClipboard();
 	}

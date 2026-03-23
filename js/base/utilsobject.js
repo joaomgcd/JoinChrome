@@ -71,6 +71,16 @@ var UtilsObject = {
 	"errorPromise": function (errorMessage) {
 		return Promise.reject(new Error(errorMessage));
 	},
+	"isMissingDriveFileError": function (error) {
+		if (!error) {
+			return false;
+		}
+		var errorMessage = error.message ? error.message : error;
+		if (!errorMessage) {
+			return false;
+		}
+		return ("" + errorMessage).indexOf("File doesn't exist on your google drive: ") >= 0;
+	},
 	"ignoreError": function (error) {
 		console.log("Unimportant error: " + error);
 	},

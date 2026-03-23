@@ -25,6 +25,3 @@ chrome.notifications.onClicked.addListener(id => {
 chrome.notifications.onButtonClicked.addListener((id, index) => {
     console.log("Notification button clicked", id, index)
 })
-// chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-//     console.log("Context menu clicked", info, tab);
-// });

@@ -32,12 +32,14 @@ class EventBusCrossContext {
         return "on" + className;
     }
     constructor() {
-        chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const messageType = message["messageType"];
             if (!messageType || messageType != EventBusCrossContext.MESSAGE_TYPE_EVENT_BUS) return false;
 
             console.log(EventBusCrossContext.TAG, message);
-            const funcToCall = await this.#functionMap[message.action];
+            const funcToCall = this.#functionMap[message.action];
+            if (!funcToCall) return false;
+
             funcToCall(message)
             return false;
         });

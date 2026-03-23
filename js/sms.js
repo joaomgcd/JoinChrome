@@ -143,7 +143,9 @@ var ContactsGetter = function (deviceId) {
 			setRefreshing(false);
 			return me.processResults(sortFieldGetter, sortDescending);
 		} catch (error) {
-			console.error(error);
+			if (!UtilsObject.isMissingDriveFileError(error)) {
+				console.error(error);
+			}
 			setRefreshing(false);
 			return UtilsObject.errorPromise("Error downloading SMS files: " + error);
 		}
@@ -695,7 +697,9 @@ var SmsApp = function () {
 				UtilsDom.replaceAllSvgInline();
 			}
 		} catch (error) {
-			console.error(error);
+			if (!UtilsObject.isMissingDriveFileError(error)) {
+				console.error(error);
+			}
 			var deviceSelected = await me.assureDeviceIdSelected();
 			setPlaceholderText("Seems that the SMS service was not enabled for this device or that some files were not synced.</br></br>Enabling SMS remotely now, please wait...");
 			setRefreshing(true);
@@ -747,7 +751,9 @@ var SmsApp = function () {
 					return revealMmsAttachment(smsAttachmentElement, true);
 				} else {
 					imageElement.src = "error.png"
-					console.error(error);
+					if (!UtilsObject.isMissingDriveFileError(error)) {
+						console.error(error);
+					}
 				}
 				/*var linkToReveal = UtilsDom.createElement(smsAttachmentElement,"a",imageElementId);
 				linkToReveal.innerHTML = " Try Again";

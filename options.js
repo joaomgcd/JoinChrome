@@ -1,10 +1,6 @@
 
 var back = chrome.extension.getBackgroundPage();
 back.eventBus = EventBusCrossContext.get();
-if (typeof joinDiagLog != "function") {
-	var joinDiagLog = function () {
-	}
-}
 var wasDocumentLoaded = false;
 document.addEventListener('DOMContentLoaded', () => {
 	wasDocumentLoaded = true;
@@ -58,10 +54,8 @@ var manageFavoriteCommandTextArea = function (deviceCommand) {
 	}
 }
 const load = async () => {
-	joinDiagLog("options:load:start", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 
 	await chrome.extension.getBackgroundPage().setLocalDeviceNameFromDeviceList();
-	joinDiagLog("options:afterSetLocalDeviceNameFromDeviceList", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 	var createElement = function (parent, tag, id, attributes) {
 		var el = document.createElement(tag);
 		el.setAttribute('id', id);
@@ -284,27 +278,21 @@ const load = async () => {
 		passwordStatus.innerHTML = text;
 	}
 	var ensureLocalDeviceName = async function () {
-		joinDiagLog("options:ensureLocalDeviceName:start", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 		if (localStorage.deviceName) {
-			joinDiagLog("options:ensureLocalDeviceName:alreadySet", { localDeviceName: localStorage.deviceName });
 			return localStorage.deviceName;
 		}
 		await back.refreshDevices();
 		await back.setLocalDeviceNameFromDeviceList();
-		joinDiagLog("options:ensureLocalDeviceName:afterRefresh", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 		if (localStorage.deviceName) {
 			return localStorage.deviceName;
 		}
 		try {
-			joinDiagLog("options:ensureLocalDeviceName:registerDevice");
 			await back.registerDevice();
 			await back.refreshDevices();
 			await back.setLocalDeviceNameFromDeviceList();
-			joinDiagLog("options:ensureLocalDeviceName:afterRegister", { localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 		} catch (error) {
 			console.log("Error ensuring local device registration");
 			console.log(error);
-			joinDiagLog("options:ensureLocalDeviceName:error", { error: error && error.toString ? error.toString() : error });
 		}
 		return localStorage.deviceName;
 	}
@@ -389,7 +377,6 @@ const load = async () => {
 
 		document.getElementById("appiconandname").onclick = function () { openTab("http://joaoapps.com/join"); };
 		document.getElementById("deviceName").innerHTML = (await ensureLocalDeviceName()) || "";
-		joinDiagLog("options:onDocumentLoaded:deviceNameRendered", { renderedDeviceName: document.getElementById("deviceName").innerHTML, localDeviceId: localStorage.deviceId });
 		var optionTabSelectors = document.querySelectorAll("[showtab]");
 		for (var i = 0; i < optionTabSelectors.length; i++) {
 			var optionTabSelector = optionTabSelectors[i];

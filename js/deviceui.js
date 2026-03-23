@@ -1,9 +1,5 @@
 
 var back = chrome.extension.getBackgroundPage();
-if (typeof joinDiagLog != "function") {
-	var joinDiagLog = function () {
-	}
-}
 var DeviceUIEventHandler = function () {
 
 	this.onStatusReceived = function (status) {
@@ -43,7 +39,6 @@ var deviceUIEventHandler = new DeviceUIEventHandler();
 back.eventBus.register(deviceUIEventHandler);
 
 var deviceIdsToGetStatus = UtilsDevices.getDevices() ? UtilsDevices.getDevices().where(device => UtilsDevices.canReportStatus(device)).select(device => device.deviceId) : [];
-joinDiagLog("deviceui:init", { deviceIdsToGetStatusCount: deviceIdsToGetStatus ? deviceIdsToGetStatus.length : 0, storedDevicesCount: UtilsDevices.getDevices() ? UtilsDevices.getDevices().length : 0, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 var requestedStatus = false;
 addEventListener("unload", function (event) {
 	back.console.log("Unloading device UI...");
@@ -58,7 +53,6 @@ var writeDevices = async function () {
 
 	isWritingDevices = true;
 	const devices = await UtilsDevices.getDevices();
-	joinDiagLog("deviceui:writeDevices:start", { devicesCount: devices ? devices.length : null, localDeviceId: localStorage.deviceId, localDeviceName: localStorage.deviceName });
 	try {
 		var commandContainerElement = document.getElementById("devices");
 		commandContainerElement.innerHTML = "";
@@ -68,7 +62,6 @@ var writeDevices = async function () {
 		var deviceButtonsHtml = await importComponent('../components/device-buttons.js', '#devicebuttons');
 		var buttonsElement = null;
 		if (!devices) {
-			joinDiagLog("deviceui:writeDevices:noDevicesArray");
 			return;
 		}
 		var selectedDevice = devices.first(device => device.deviceId == localStorage.lastHoveredDeviceId);
@@ -178,7 +171,6 @@ var writeDevices = async function () {
 			devicesElement.appendChild(deviceElement);
 			deviceElements.push(deviceElement);
 		};
-		joinDiagLog("deviceui:writeDevices:visibleDevices", { visibleDevicesCount: deviceElements.length, totalDevicesCount: devices.length });
 
 		var findButtonElement = function (e) {
 			if (e.commandLink) {
@@ -349,7 +341,6 @@ var writeDevices = async function () {
 		} else {
 			deviceHover({ "target": deviceElements[0] });
 		}
-		joinDiagLog("deviceui:writeDevices:done", { lastHoveredDeviceId: localStorage.lastHoveredDeviceId, visibleDevicesCount: deviceElements.length });
 
 	} finally {
 		isWritingDevices = false;
@@ -357,7 +348,6 @@ var writeDevices = async function () {
 
 }
 document.addEventListener('DOMContentLoaded', async function () {
-	joinDiagLog("deviceui:DOMContentLoaded");
 	await writeDevices();
 	//	setDeviceCommandHeight();
 });

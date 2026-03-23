@@ -1,16 +1,9 @@
 if (!self["getToken"]) {
 	self["getToken"] = back.getToken;
 }
-if (typeof joinDiagLog != "function") {
-	var joinDiagLog = function () {
-	}
-}
 var doRequestWithAuth = async function (method, url, content, callback, callbackError, isRetry, tokenInput) {
-	joinDiagLog("web:doRequestWithAuth:start", { method: method, url: url, hasTokenInput: !!tokenInput, hasContent: !!content, isRetry: !!isRetry });
 	const token = await getToken(null, tokenInput);
-	joinDiagLog("web:doRequestWithAuth:token", { method: method, url: url, hasToken: !!token });
 	if (token == null) {
-		joinDiagLog("web:doRequestWithAuth:noAuth", { method: method, url: url });
 		if (callbackError != null) {
 			callbackError("noauth");
 		}
@@ -34,7 +27,7 @@ var doRequestWithAuth = async function (method, url, content, callback, callback
 		}
 
 			try {
-				console.log("Fetching: " + url);
+				console.log("Fetching: " + getSensitiveLogPreview(url));
 				let response = await fetch(url, options);
 				let result;
 
@@ -43,11 +36,9 @@ var doRequestWithAuth = async function (method, url, content, callback, callback
 				} catch (err) {
 					result = await response.text();
 				}
-				joinDiagLog("web:doRequestWithAuth:response", { method: method, url: url, status: response.status, resultType: typeof result, hasUserAuthError: !!(result && result.userAuthError) });
 
 				if (!isRetry && result.userAuthError) {
 					console.log("Retrying with new token...");
-					joinDiagLog("web:doRequestWithAuth:userAuthErrorRetry", { method: method, url: url });
 					await removeCachedAuthToken();
 					return await doRequestWithAuth(method, url, content, callback, callbackError, true);
 				}
@@ -56,7 +47,6 @@ var doRequestWithAuth = async function (method, url, content, callback, callback
 				}
 				return result;
 			} catch (error) {
-				joinDiagLog("web:doRequestWithAuth:error", { method: method, url: url, error: error && error.toString ? error.toString() : error });
 				if (callbackError != null) {
 					callbackError(error);
 				} else {
@@ -154,7 +144,7 @@ var doGetBase64 = function (url, callback) {
 		return;
 	}
 	getToken(function (accessToken) {
-		console.log("Getting binary: " + url);
+		console.log("Getting binary: " + getSensitiveLogPreview(url));
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
 		if (isDriveUrl(url)) {

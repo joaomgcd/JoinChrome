@@ -288,7 +288,9 @@ var PushHistory = function(deviceId){
 			errorElement.innerHTML = "No push history for this device.";
 			var errorElementDebug = UtilsDom.createElement(targetElement,"div","nohistoryerrordebug");
 			errorElementDebug.innerHTML = "Error detail: " + error;
-			console.error(error);
+			if (!UtilsObject.isMissingDriveFileError(error)) {
+				console.error(error);
+			}
 		});
 	}
 }

@@ -14,6 +14,24 @@ function wait(millis) {
     return new Promise(resolve => setTimeout(resolve, millis));
 };
 
+function getSensitiveLogPreview(value, maxLength = 10) {
+    if (value == null) {
+        return value;
+    }
+    let textValue = value;
+    if (typeof textValue != "string") {
+        try {
+            textValue = JSON.stringify(textValue);
+        } catch (error) {
+            textValue = String(textValue);
+        }
+    }
+    if (textValue.length <= maxLength) {
+        return textValue;
+    }
+    return `${textValue.substring(0, maxLength)}...`;
+}
+
 class CrossContext {
     static TYPE_LISTENER = "listener"
     static TYPE_CALLER = "caller"
@@ -164,7 +182,7 @@ class CrossContext {
                     console.log("Error from cross context call", possibleError);
                     throw possibleError;
                 }
-                if (result != null && CrossContext.RESULT_OK in result) {
+                if (result != null && typeof result === "object" && CrossContext.RESULT_OK in result) {
                     if (result[CrossContext.RESULT_OK]) {
                         const value = result.value;
                         const lastArg = input[input.length - 1];
@@ -315,7 +333,7 @@ if (isServiceWorker) {
     var gcmTokenGetter = null;
     const getFromPending = async () => {
         const token = await gcmTokenGetter;
-        console.log("token", token);
+        console.log("token", getSensitiveLogPreview(token));
         gcmTokenGetter = null;
         return token;
     }
