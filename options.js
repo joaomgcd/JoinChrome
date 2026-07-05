@@ -281,6 +281,12 @@ const load = async () => {
 		if (localStorage.deviceName) {
 			return localStorage.deviceName;
 		}
+		if (!await back.isBrowserCloudPushSupported()) {
+			localStorage.deviceName = /\bEdg\//.test(navigator.userAgent)
+				? "Microsoft Edge (send-only)"
+				: "Browser (send-only)";
+			return localStorage.deviceName;
+		}
 		await back.refreshDevices();
 		await back.setLocalDeviceNameFromDeviceList();
 		if (localStorage.deviceName) {
