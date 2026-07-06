@@ -202,8 +202,10 @@ class CrossContext {
                 }
                 const possibleError = result && result[CrossContext.RESULT_ERROR];
                 if (possibleError) {
-                    console.log("Error from cross context call", possibleError);
-                    throw possibleError;
+                    const err = new Error(possibleError.message || "Unknown error");
+                    if (possibleError.stack) err.stack = possibleError.stack;
+                    console.log("Error from cross context call", err);
+                    throw err;
                 }
                 if (result != null && typeof result === "object" && CrossContext.RESULT_OK in result) {
                     if (result[CrossContext.RESULT_OK]) {
@@ -229,7 +231,16 @@ class CrossContext {
 const isServiceWorker = typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWorkerGlobalScope;
 const hasNativeInstanceIdInCurrentContext = typeof chrome.instanceID !== "undefined"
     && typeof chrome.instanceID.getToken === "function";
-const hasNativeInstanceId = isServiceWorker && hasNativeInstanceIdInCurrentContext;
+// Cloud push receiving needs both Instance ID, for the registration token,
+// and gcm.onMessage, to actually deliver pushes. A browser exposing only one
+// would otherwise register as a receiver that can never receive. Require both
+// so callers fall back to send-only cleanly instead of failing silently.
+const hasNativeGcmMessagingInCurrentContext = typeof chrome.gcm !== "undefined"
+    && !!chrome.gcm.onMessage
+    && typeof chrome.gcm.onMessage.addListener === "function";
+const hasNativeInstanceId = isServiceWorker
+    && hasNativeInstanceIdInCurrentContext
+    && hasNativeGcmMessagingInCurrentContext;
 if (isServiceWorker) {
     self.isInstanceIdAvailable = () => hasNativeInstanceId;
 }
@@ -312,7 +323,7 @@ if (!isServiceWorker) {
     };
 
     chrome.instanceID = {
-        isAvailable: async () => hasNativeInstanceIdInCurrentContext,
+        isAvailable: CrossContext.call("isInstanceIdAvailable"),
         getToken: CrossContext.call("chrome.instanceID.getToken")
     };
 
