@@ -60,6 +60,7 @@ const backgroundPage = (() => {
         getOptionType: call("getOptionType"),
         getURLParameter: call("getURLParameter"),
         registerDevice: call("registerDevice"),
+        isBrowserCloudPushSupported: call("isBrowserCloudPushSupported"),
         pushCall: call("pushCall"),
         resetNotifications: call("resetNotifications"),
         getAddDismissEverywhereButton: call("getAddDismissEverywhereButton"),

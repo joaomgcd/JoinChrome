@@ -563,7 +563,7 @@ export class App{
             this.fcmClient.setEventBusCallback(async ({data,clazz})=> await EventBus.post(data,clazz));
             this.fcmClient.initPage(
                 async token => {
-                    console.log("Got token!",token);
+                    console.log("Got token!");
                     this._fcmClient = this.fcmClient;
                     resolve(this.fcmClient);
                 },
