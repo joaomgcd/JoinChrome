@@ -1721,39 +1721,42 @@ var showNotification = function (title, message, timeout, notificationId) {
 		}, timeout);
 	});
 }
-var registerDevice = function (callback, callbackError) {
-	var registrationId = localStorage.regIdLocal;
-	var registrationId2 = localStorage.regIdLocal2;
-	if (!registrationId2) {
-		registrationId2 = registrationId;
-	}
+var registerDevice = async function (callback, callbackError) {
+	try {
+		if (!localStorage.regIdLocal || !localStorage.regIdLocal2) {
+			await ensurePushRegistrationIds();
+		}
 
-	var myName = localStorage.deviceName || "Chrome";
-	return doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/", { "deviceId": localStorage.deviceId, "regId": registrationId, "regId2": registrationId2, "deviceName": myName, "deviceType": 3 })
-		.then(function (result) {
-			if (!result || !result.deviceId) {
-				var errorMessage = (result && result.errorMessage) ? result.errorMessage : JSON.stringify(result);
-				throw new Error("Invalid registerDevice response: " + errorMessage);
-			}
-			if (localStorage.deviceId == result.deviceId) {
-				result.sameDeviceId = true;
-			}
-			localStorage.deviceId = result.deviceId;
-			localStorage.regIdServer = result.regId;
-			if (callback) {
-				callback(result);
-			}
-			return result;
-		})
-		.catch(function (error) {
-			console.log("registerDevice error: " + error);
-			if (callbackError) {
-				callbackError(error);
-			}
-			if (!callback) {
-				return Promise.reject(error);
-			}
-		});
+		var registrationId = localStorage.regIdLocal;
+		var registrationId2 = localStorage.regIdLocal2 || registrationId;
+		if (!registrationId) {
+			throw new Error("Cannot register device because no GCM registration ID is available");
+		}
+
+		var myName = localStorage.deviceName || "Chrome";
+		var result = await doPostWithAuthPromise(joinserver + "registration/v1/registerDevice/", { "deviceId": localStorage.deviceId, "regId": registrationId, "regId2": registrationId2, "deviceName": myName, "deviceType": 3 });
+		if (!result || !result.deviceId) {
+			var errorMessage = (result && result.errorMessage) ? result.errorMessage : JSON.stringify(result);
+			throw new Error("Invalid registerDevice response: " + errorMessage);
+		}
+		if (localStorage.deviceId == result.deviceId) {
+			result.sameDeviceId = true;
+		}
+		localStorage.deviceId = result.deviceId;
+		localStorage.regIdServer = result.regId;
+		if (callback) {
+			callback(result);
+		}
+		return result;
+	} catch (error) {
+		console.log("registerDevice error: " + error);
+		if (callbackError) {
+			callbackError(error);
+		}
+		if (!callback) {
+			throw error;
+		}
+	}
 }
 var handlePushMessage = message => {
 	console.log(message);
@@ -1876,10 +1879,62 @@ var setLocalDeviceNameFromDeviceList = function () {
 	}
 	localStorage.deviceName = myDevice.deviceName;
 }
-const getInstanceIdToken = senderId => {
-	return new Promise((resolve, reject) => {
-		chrome.instanceID.getToken({ "authorizedEntity": senderId, "scope": "GCM" }, resolve);
-	});
+var isBrowserCloudPushSupported = async function () {
+	try {
+		return Boolean(await chrome.instanceID.isAvailable());
+	} catch (error) {
+		return false;
+	}
+}
+var ensureLocalDisplayDeviceName = function () {
+	if (!localStorage.deviceName) {
+		localStorage.deviceName = /\bEdg\//.test(navigator.userAgent)
+			? "Microsoft Edge (send-only)"
+			: "Browser (send-only)";
+	}
+	return localStorage.deviceName;
+}
+const getInstanceIdToken = async senderId => {
+	if (!await isBrowserCloudPushSupported()) {
+		throw new Error("Cloud push receiving is unavailable because this browser does not expose the Chromium GCM/Instance ID extension APIs.");
+	}
+	const registrationId = await chrome.instanceID.getToken({ "authorizedEntity": senderId, "scope": "GCM" });
+	if (!registrationId) {
+		throw new Error(`No GCM registration ID returned for sender ${senderId}`);
+	}
+	return registrationId;
+}
+
+let pushRegistrationPromise = null;
+const ensurePushRegistrationIds = async () => {
+	if (!await isBrowserCloudPushSupported()) {
+		throw new Error("Cloud push receiving is unavailable because this browser does not expose the Chromium GCM/Instance ID extension APIs.");
+	}
+	if (localStorage.regIdLocal && localStorage.regIdLocal2) {
+		return {
+			resultRegId1: { "success": true, "sameRegId": true },
+			resultRegId2: { "success": true, "sameRegId": true }
+		};
+	}
+
+	if (!pushRegistrationPromise) {
+		pushRegistrationPromise = (async () => {
+			const registrationId1 = await getInstanceIdToken("596310809542");
+			const registrationId2 = await getInstanceIdToken("737484412860");
+			const resultRegId1 = handleRegIdRegistration(registrationId1, "regIdLocal");
+			const resultRegId2 = handleRegIdRegistration(registrationId2, "regIdLocal2");
+			if (!resultRegId1.success || !resultRegId2.success) {
+				throw new Error("Unable to initialize Join push registration IDs");
+			}
+			return { resultRegId1, resultRegId2 };
+		})();
+	}
+
+	try {
+		return await pushRegistrationPromise;
+	} finally {
+		pushRegistrationPromise = null;
+	}
 }
 //const fcmClient = new FCMClientImplementation();
 /*fcmClient.getTokens()
@@ -1891,22 +1946,17 @@ const getInstanceIdToken = senderId => {
 	handlePushMessage(payload);
 });*/
 const initPushTokens = async () => {
-	const registrationId1 = await getInstanceIdToken("596310809542");
-	//const registrationId2 = await fcmClient.getToken("737484412860");
-	const registrationId2 = await getInstanceIdToken("737484412860");
-
-	var resultRegId1 = handleRegIdRegistration(registrationId1, "regIdLocal");
-	if (!resultRegId1.success) return;
-
-	var resultRegId2 = handleRegIdRegistration(registrationId2, "regIdLocal2");
-	if (!resultRegId2.success) return;
-
-	setLocalDeviceNameFromDeviceList();
-	if (devices && resultRegId1.sameRegId && resultRegId2.sameRegId && localStorage.deviceId) {
-		return;
-	}
-
 	try {
+		if (!await isBrowserCloudPushSupported()) {
+			ensureLocalDisplayDeviceName();
+			return;
+		}
+		const { resultRegId1, resultRegId2 } = await ensurePushRegistrationIds();
+		setLocalDeviceNameFromDeviceList();
+		if (devices && resultRegId1.sameRegId && resultRegId2.sameRegId && localStorage.deviceId) {
+			return;
+		}
+
 		const result = await registerDevice();
 		if (!result?.sameDeviceId) {
 			await refreshDevices();

@@ -17,18 +17,56 @@ var Tests = function () {
 		this.push(new TestPopup());
 		this.push(new TestGetSms());
 	}
+	var formatTestError = function (error) {
+		if (error == null) return "Unknown error";
+		if (typeof error == "string") return error;
+
+		var details = [];
+		var addDetail = function (label, value) {
+			if (value == null || value === "") return;
+			var text;
+			try {
+				text = typeof value == "string" ? value : JSON.stringify(value);
+			} catch (serializationError) {
+				text = String(value);
+			}
+			text = text
+				.replace(/ya29\.[A-Za-z0-9._-]+/g, "[OAuth token hidden]")
+				.replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [hidden]");
+			var entry = label ? label + ": " + text : text;
+			if (text && text != "{}" && details.indexOf(entry) < 0) details.push(entry);
+		};
+
+		addDetail("", error.message);
+		addDetail("Status", error.statusText || error.status);
+		addDetail("Error", error.errorMessage);
+		addDetail("Response", error.responseText);
+		addDetail("Code", error.code);
+		addDetail("", error.error && (error.error.message || error.error));
+		addDetail("", error.data && (error.data.message || error.data.error || error.data));
+
+		if (details.length == 0) {
+			var ownProperties = {};
+			try {
+				Object.getOwnPropertyNames(error).forEach(function (key) {
+					ownProperties[key] = error[key];
+				});
+				addDetail("", ownProperties);
+			} catch (propertyError) {
+				addDetail("", String(error));
+			}
+		}
+		return details.join(" | ") || "Check your connection";
+	}
 	var handleTestError = function (error) {
-		console.error(error);
-		var errorMessage = error?.statusText ?? error?.message ?? JSON.stringify(error);
-		if (errorMessage == "{}") {
-			errorMessage = null;
-		}
-		if (!errorMessage) {
-			errorMessage = "Check your connection";
-		}
-		return { "success": false, "errorMessage": errorMessage };
+		var formattedError = formatTestError(error);
+		console.error("Join diagnostic failed: " + formattedError);
+		return { "success": false, "errorMessage": formattedError };
 	}
 	var handleTestResult = function (test, result) {
+		if (!result || typeof result != "object") {
+			result = { "success": false, "errorMessage": formatTestError(result) };
+		}
 		var testElement = test.testElement;
 		var textElement = testElement.querySelector("#text");
 		var iconElement = testElement.querySelector("#iconstatus");
@@ -99,10 +137,19 @@ var TestResult = function () {
 	this.fixMessage = null;
 	this.successMessage = null;
 }
+var getUnsupportedCloudPushTestResult = async function () {
+	if (await back.isBrowserCloudPushSupported()) return null;
+	return {
+		"success": true,
+		"successMessage": "Not applicable in Microsoft Edge: Edge does not expose the GCM/Instance ID extension APIs required to register this browser as a Join cloud-push receiver."
+	};
+}
 var TestSendPush = function () {
 	var me = this;
 	this.description = "Sending Push to server";
 	this.execute = async function () {
+		var unsupported = await getUnsupportedCloudPushTestResult();
+		if (unsupported) return unsupported;
 		var gcmPush = new GCMPush();
 		gcmPush.text = TEST_PUSH_TEXT;
 		const result = await gcmPush.send(localStorage.deviceId);
@@ -131,6 +178,8 @@ TestReceivePush = function () {
 		return result;
 	};
 	this.execute = async function (callback) {
+		var unsupported = await getUnsupportedCloudPushTestResult();
+		if (unsupported) return unsupported;
 		return await this.receiveTestPush();
 	}
 }
@@ -141,6 +190,8 @@ var TestReceivePushRegId = function () {
 	var me = this;
 	this.description = "Receiving Push with GCM key";
 	this.execute = async function (callback) {
+		var unsupported = await getUnsupportedCloudPushTestResult();
+		if (unsupported) return unsupported;
 		var gcmPush = new GCMPush();
 		gcmPush.text = TEST_PUSH_TEXT;
 		gcmPush.regId = localStorage.regIdLocal;
@@ -215,18 +266,26 @@ var TestRegister = function () {
 	var me = this;
 	this.description = "Testing registration on Join's server";
 	this.execute = async function () {
+		var unsupported = await getUnsupportedCloudPushTestResult();
+		if (unsupported) return unsupported;
 		const result = await back.registerDevice();
-		if (result.success && result.errorMessage) {
-			result.successMessage = result.errorMessage;
+		if (!result || !result.deviceId) {
+			throw new Error("Join did not return a device registration ID.");
 		}
-		return result;
+		var testResult = new TestResult();
+		testResult.successMessage = result.sameDeviceId
+			? "Device registration is current."
+			: "Device registered successfully.";
+		return testResult;
 	}
 }
 TestRegister.prototype = new Test();
 var TestCompareGcmKeys = function () {
 	var me = this;
 	this.description = "Comparing GCM keys";
-	this.execute = function (callback) {
+	this.execute = async function (callback) {
+		var unsupported = await getUnsupportedCloudPushTestResult();
+		if (unsupported) return unsupported;
 		return doGetWithAuthPromise(joinserver + "registration/v1/getGcmKey/?deviceId=" + localStorage.deviceId)
 			.then(function (result) {
 				if (!result.success) {
@@ -269,7 +328,7 @@ var TestAuthToken = function () {
 			UtilsObject.timeOut(timeOutSeconds * 1000)
 		])
 			.then(function (token) {
-				return { "success": true, "successMessage": "This is a secret so don't show it to anyone: token: " + token };
+				return { "success": true, "successMessage": "Auth token refreshed successfully (value hidden)." };
 			})
 			.catch(function () {
 				return { "success": false, "errorMessage": "Didn't receive token after " + timeOutSeconds + " seconds", "fixMessage": "Did you sign in with your account? Try re-installing the extension. If that doesn't work contact the developer." };

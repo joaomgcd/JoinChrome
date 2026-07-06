@@ -78,14 +78,18 @@ class CrossContext {
         });
     }
     static #getBackgroundFunctionFromCall(call) {
-        if (call.indexOf(".") < 0) {
-            return self[call];
-        }
+        if (typeof call !== "string" || call.length === 0) return null;
+
         const callParts = call.split('.');
-        const context = callParts.slice(0, callParts.length - 1).reduce((obj, part) => obj[part], self);
+        let context = self;
+        for (const part of callParts.slice(0, -1)) {
+            if (context == null || !(part in context)) return null;
+            context = context[part];
+        }
+
         const functionName = callParts[callParts.length - 1];
-        const fun = context[functionName].bind(context);
-        return fun;
+        const candidate = context == null ? null : context[functionName];
+        return typeof candidate === "function" ? candidate.bind(context) : null;
     }
     static #backgroundListeners = {}
     static addBackgroundListener({ call, id = CrossContext.LISTENER_ID_DEFAULT, addEventListenerType, replyTo }) {
@@ -155,20 +159,26 @@ class CrossContext {
     }
 
     static async callBackgroundFunction({ call, input, sendResponse, target }) {
-        const fun = CrossContext.#getBackgroundFunctionFromCall(call);
-        if (fun == null) {
-            await sendResponse({ [CrossContext.RESULT_OK]: false });
-            return;
-        }
-
-        // console.log("Calling background function", self, call, target, fun)
         try {
+            const fun = CrossContext.#getBackgroundFunctionFromCall(call);
+            if (fun == null) {
+                sendResponse({ [CrossContext.RESULT_OK]: false });
+                return;
+            }
+
+            // console.log("Calling background function", self, call, target, fun)
             const output = await fun(...input);
-            await sendResponse({ [CrossContext.RESULT_OK]: true, value: output });
+            sendResponse({ [CrossContext.RESULT_OK]: true, value: output });
         } catch (e) {
             const errorResponse = {};
-            errorResponse[CrossContext.RESULT_ERROR] = { message: e.toString(), stack: e.stack, info: JSON.stringify(e) };
-            await sendResponse(errorResponse);
+            errorResponse[CrossContext.RESULT_ERROR] = {
+                message: e && e.message ? e.message : String(e),
+                stack: e && e.stack ? e.stack : null,
+                info: (() => {
+                    try { return JSON.stringify(e); } catch (_) { return String(e); }
+                })()
+            };
+            sendResponse(errorResponse);
         }
     }
     static call(call, target = CrossContext.TARGET_SERVICE_WORKER) {
@@ -176,7 +186,20 @@ class CrossContext {
             const intputWithoutFunctions = input.filter(i => typeof i !== "function");
             const maxAttempts = 30;
             for (let attempt = 0; attempt < maxAttempts; attempt++) {
-                const result = await chrome.runtime.sendMessage({ call, type: CrossContext.TYPE_CALLER, input: intputWithoutFunctions, target });
+                let result;
+                try {
+                    result = await chrome.runtime.sendMessage({ call, type: CrossContext.TYPE_CALLER, input: intputWithoutFunctions, target });
+                } catch (error) {
+                    const message = error && error.message ? error.message : String(error);
+                    const transient = message.includes("message channel closed")
+                        || message.includes("Receiving end does not exist")
+                        || message.includes("Extension context invalidated");
+                    if (transient && attempt < maxAttempts - 1) {
+                        await wait(100);
+                        continue;
+                    }
+                    throw error;
+                }
                 const possibleError = result && result[CrossContext.RESULT_ERROR];
                 if (possibleError) {
                     console.log("Error from cross context call", possibleError);
@@ -204,6 +227,12 @@ class CrossContext {
     }
 }
 const isServiceWorker = typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWorkerGlobalScope;
+const hasNativeInstanceIdInCurrentContext = typeof chrome.instanceID !== "undefined"
+    && typeof chrome.instanceID.getToken === "function";
+const hasNativeInstanceId = isServiceWorker && hasNativeInstanceIdInCurrentContext;
+if (isServiceWorker) {
+    self.isInstanceIdAvailable = () => hasNativeInstanceId;
+}
 const isOffscreenPage = self["isOffscreenPage"] ?? false;
 const isForegroundPage = self["isForegroundPage"] ?? false;
 console.log("Self", self, "Is Service Worker", isServiceWorker, "Is Offscreen Page", isOffscreenPage, "Is Foreground Page", isForegroundPage);
@@ -283,6 +312,7 @@ if (!isServiceWorker) {
     };
 
     chrome.instanceID = {
+        isAvailable: async () => hasNativeInstanceIdInCurrentContext,
         getToken: CrossContext.call("chrome.instanceID.getToken")
     };
 
@@ -328,27 +358,46 @@ if (!isServiceWorker) {
 }
 
 if (isServiceWorker) {
-    //needed because otherwise if you do too many requests in a row you'll get an exception
-    const originalGetToken = chrome.instanceID.getToken;
-    var gcmTokenGetter = null;
-    const getFromPending = async () => {
-        const token = await gcmTokenGetter;
-        console.log("token", getSensitiveLogPreview(token));
-        gcmTokenGetter = null;
-        return token;
-    }
-    chrome.instanceID.getToken = async function (...input) {
-        if (gcmTokenGetter) {
-            console.log("getGCMToken using pending request")
-            return await getFromPending();
+    if (hasNativeInstanceId) {
+        // chrome.instanceID.getToken is callback-based. Convert it to a Promise for
+        // cross-context callers and coalesce only identical sender/scope requests.
+        const originalGetToken = chrome.instanceID.getToken.bind(chrome.instanceID);
+    const pendingInstanceIdRequests = new Map();
+
+    chrome.instanceID.getToken = async function (options = {}) {
+        const requestKey = `${options.authorizedEntity || ""}:${options.scope || ""}`;
+        const existingRequest = pendingInstanceIdRequests.get(requestKey);
+        if (existingRequest) {
+            console.log("getGCMToken using pending request", requestKey);
+            return await existingRequest;
         }
 
-        console.log("getGCMToken using new request")
-        gcmTokenGetter = originalGetToken(...input);
-        return await getFromPending();
+        console.log("getGCMToken using new request", requestKey);
+        const request = new Promise((resolve, reject) => {
+            originalGetToken(options, registrationId => {
+                if (chrome.runtime.lastError) {
+                    reject(new Error(chrome.runtime.lastError.message));
+                    return;
+                }
+                if (!registrationId) {
+                    reject(new Error("chrome.instanceID.getToken returned no registration ID"));
+                    return;
+                }
+                resolve(registrationId);
+            });
+        });
+
+        pendingInstanceIdRequests.set(requestKey, request);
+        try {
+            const registrationId = await request;
+            console.log("GCM registration ID acquired", requestKey);
+            return registrationId;
+        } finally {
+            pendingInstanceIdRequests.delete(requestKey);
+        }
+    }
     }
 
-    
     // I need to replace the original addListener with my own because sometimes gcms will arrive before a background page registers its listeners and those pushes wouldn't be delivered. Wait for the listeners to be available and the push it.
     const replaceListenerThatWakesUpServiceWorker = (addListenerOnThis, tag) => {
         const joinListeners = [];
@@ -375,7 +424,9 @@ if (isServiceWorker) {
         }
     }
     replaceListenerThatWakesUpServiceWorker(chrome.contextMenus.onClicked, "context menu click");
-    replaceListenerThatWakesUpServiceWorker(chrome.gcm.onMessage, "gcm");
+    if (chrome.gcm && chrome.gcm.onMessage && chrome.gcm.onMessage.addListener) {
+        replaceListenerThatWakesUpServiceWorker(chrome.gcm.onMessage, "gcm");
+    }
     // const joinGcmListeners = [];
     // const joinContextMenuListeners = [];
     // chrome.gcm.onMessage.addListener(async payload => {

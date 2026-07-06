@@ -1,8 +1,8 @@
 {
-	"name": "Join",
+	"name": "Join (Patched Unpacked)",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.9.2",
+	"version": "1.9.3",
 	"permissions": [
 		"identity",
 		"identity.email",
@@ -92,5 +92,6 @@
 			"https://www.googleapis.com/auth/drive.file"
 		]
 	},
+	"version_name": "1.9.3 patched.6",
 	"manifest_version": 3
 }
