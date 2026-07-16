@@ -177,16 +177,20 @@ var back = chrome.extension.getBackgroundPage();
 
 /*************************NOTIFICATION PAGES***********************/
 var notificationPages = {
-	"com.joaomgcd.autoinput":"http://joaoapps.com/autoinput/",
-	"com.joaomgcd.autovoice":"http://joaoapps.com/autovoice/",
+	"com.joaomgcd.autoinput":"https://joaoapps.com/autoinput/",
+	"com.joaomgcd.autovoice":"https://joaoapps.com/autovoice/",
 	"com.facebook.lite":"https://www.facebook.com/notifications",
 	"com.facebook.katana":"https://www.facebook.com/notifications",
-	"com.google.android.talk":"https://hangouts.google.com/",
 	"com.whatsapp":"https://web.whatsapp.com/",
-	"com.google.android.youtube":"https://www.youtube.com/feed/subscriptions",
-	"com.google.android.apps.plus":"https://plus.google.com/u/0/notifications/all",
+	"com.google.android.youtube":"https://www.youtube.com/results?search_query={query}",
  	"reddit.news": "https://www.reddit.com/message/inbox/",
-	"com.google.android.apps.playconsole":"https://play.google.com/apps/publish/"
+	"com.google.android.apps.playconsole":"https://play.google.com/console/",
+	"com.instagram.android":"https://www.instagram.com/explore/search/keyword/?q={query}",
+	"com.google.android.gm":"https://mail.google.com/mail/u/0/#search/{query}",
+	"com.google.android.apps.chromecast.app":"https://home.google.com/u/0/home/",
+	"com.google.android.apps.dynamite":"https://chat.google.com/u/0/app/search?q={query}",
+	"com.android.vending":"https://play.google.com/store/search?q={query}",
+	"com.google.android.play.games":"https://play.google.com/store/search?q={query}"
 };
 var copyUserNotificationPages = async function(){
 	try{
@@ -199,13 +203,30 @@ var copyUserNotificationPages = async function(){
 		console.log(err);
 	}
 }
+var applyNotificationPageTemplate = function(url, notification){
+	if(!url || typeof url != "string"){
+		return url;
+	}
+	notification = notification || {};
+	var title = notification.title == null ? "" : String(notification.title);
+	var text = notification.text == null ? "" : String(notification.text);
+	var replacements = {
+		"query": [title, text].filter(value => value).join(" "),
+		"title": title,
+		"text": text
+	};
+	for(var name in replacements){
+		url = url.split("{" + name + "}").join(encodeURIComponent(replacements[name]));
+	}
+	return url;
+}
 var getNotificationPage = async function(notification){
 	await copyUserNotificationPages();
 	var url = notificationPages[notification.appPackage];
 	if(!url && notification.url){
 		url = notification.url;
 	}
-	return url;
+	return applyNotificationPageTemplate(url, notification);
 }
 var openNotificationPage = async function(notification){
 	await copyUserNotificationPages();

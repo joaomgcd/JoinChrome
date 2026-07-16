@@ -469,3 +469,73 @@ var defaultValues = {
 	"favoritevideoDownloadenable": true,
 	"favoriteaudioDownloadenable": true
 };
+
+var migrateNotificationPages = function(){
+	var version = "9";
+	if(localStorage.notificationwebsitesversion == version){
+		return;
+	}
+	var stored = localStorage.notificationwebsites;
+	if(stored){
+		try{
+			var pages = JSON.parse(stored);
+			var changed = false;
+			if(pages["com.joaomgcd.autoinput"] == "http://joaoapps.com/autoinput/"){
+				pages["com.joaomgcd.autoinput"] = notificationPages["com.joaomgcd.autoinput"];
+				changed = true;
+			}
+			if(pages["com.joaomgcd.autovoice"] == "http://joaoapps.com/autovoice/"){
+				pages["com.joaomgcd.autovoice"] = notificationPages["com.joaomgcd.autovoice"];
+				changed = true;
+			}
+			if(pages["com.google.android.apps.plus"] == "https://plus.google.com/u/0/notifications/all"){
+				delete pages["com.google.android.apps.plus"];
+				changed = true;
+			}
+			if(pages["com.google.android.apps.playconsole"] == "https://play.google.com/apps/publish/"){
+				pages["com.google.android.apps.playconsole"] = notificationPages["com.google.android.apps.playconsole"];
+				changed = true;
+			}
+			if(pages["com.google.android.youtube"] == "https://www.youtube.com/feed/subscriptions"){
+				pages["com.google.android.youtube"] = notificationPages["com.google.android.youtube"];
+				changed = true;
+			}
+			if(pages["com.google.android.apps.dynamite"] == "https://chat.google.com/u/0/#search/{query}"){
+				pages["com.google.android.apps.dynamite"] = notificationPages["com.google.android.apps.dynamite"];
+				changed = true;
+			}
+			if(pages["com.google.android.talk"] == "https://hangouts.google.com/"){
+				delete pages["com.google.android.talk"];
+				changed = true;
+			}
+			if(pages["com.instagram.android"] == null){
+				pages["com.instagram.android"] = notificationPages["com.instagram.android"];
+				changed = true;
+			}
+			if(pages["com.google.android.gm"] == null){
+				pages["com.google.android.gm"] = notificationPages["com.google.android.gm"];
+				changed = true;
+			}
+			if(pages["com.google.android.apps.dynamite"] == null){
+				pages["com.google.android.apps.dynamite"] = notificationPages["com.google.android.apps.dynamite"];
+				changed = true;
+			}
+			if(pages["com.android.vending"] == null){
+				pages["com.android.vending"] = notificationPages["com.android.vending"];
+				changed = true;
+			}
+			if(pages["com.google.android.play.games"] == null){
+				pages["com.google.android.play.games"] = notificationPages["com.google.android.play.games"];
+				changed = true;
+			}
+			if(changed){
+				localStorage.notificationwebsites = JSON.stringify(pages, null, 1);
+			}
+		}catch(error){
+			console.log("Couldn't migrate notification websites", error);
+			return;
+		}
+	}
+	localStorage.notificationwebsitesversion = version;
+}
+migrateNotificationPages();
