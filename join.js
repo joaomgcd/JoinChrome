@@ -193,48 +193,74 @@ var waitingForAuthCallbacks = [];
 		}
 	}
 }*/
-var getAuthTokenBackground = async function (callback, selectAccount) {
-	if (isLocalAccessTokenValid()) {
-		if (callback) {
-			callback(localStorage.accessToken)
-		}
-		return;
+var AUTH_REFRESH_MARGIN_MS = 5 * 60 * 1000;
+var AUTH_REFRESH_CHECK_INTERVAL_MS = 60 * 1000;
+var AUTH_REFRESH_BACKOFF_MS = 10 * 60 * 1000;
+var USER_INFO_TIMEOUT_MS = 10 * 1000;
+var DEFAULT_TOKEN_EXPIRES_IN_SECONDS = 3600;
+var currentAuthFlow = null;
+var pendingAuthFlows = 0;
+//Drops a token from Chrome's identity cache so the next request mints a new one
+var removeCachedAuthTokenFromChrome = async function (token) {
+	try {
+		await chrome.identity.removeCachedAuthToken({ "token": token });
+	} catch (error) {
+		console.log("chrome.identity.removeCachedAuthToken failed: " + (error?.message || error));
 	}
-	var authUrl = await getAuthUrl(selectAccount, true);
-	if (localStorage.userinfo) {
-		var userinfo = JSON.parse(localStorage.userinfo);
-		if (userinfo.email) {
-			authUrl += "&login_hint=" + userinfo.email;
-		}
-	}
-	fetch(authUrl, { "redirect": 'manual', "credentials": 'include' }).then(function (response) {
-		return response.text();
-	}).then(function (response) {
-		var tokenIndex = response.indexOf("access_token=");
-		if (tokenIndex > 0) {
-			var token = response.substring(tokenIndex + 13)
-			token = token.substring(0, token.indexOf("&"))
-			var expiresIn = response.substring(response.indexOf("expires_in=") + 11);
-			expiresIn = expiresIn.substring(0, expiresIn.indexOf("\""));
-			expiresIn = parseInt(expiresIn.match(/\d+/)[0]);
-			setLocalAccessToken(token, expiresIn);
-			console.log(getSensitiveLogPreview(token));
-			console.log(expiresIn);
-			if (callback) {
-				callback(token);
-			}
-		} else {
-			getAuthTokenFromTab(callback, selectAccount);
-		}
-	}).catch(function (error) {
-		console.log('There has been a problem with your fetch operation: ' + error.message);
-
-		if (callback) {
-			callback(null);
-		}
-	});
 }
-var authTabId = null;
+//Gets a token from Chrome's identity cache without ever showing UI
+var getAuthTokenFromChromeSilently = async function () {
+	try {
+		var tokenResult = await chrome.identity.getAuthToken({ 'interactive': false });
+		return tokenResult?.token || null;
+	} catch (error) {
+		console.log("chrome.identity.getAuthToken failed: " + (error?.message || error));
+		return null;
+	}
+}
+//Runs the OAuth flow in Chrome's own auth window and returns the redirect URL that holds the token
+var launchAuthWebFlow = async function (selectAccount, interactive) {
+	try {
+		var url = await getAuthUrl(selectAccount);
+		if (!selectAccount && localStorage.userinfo) {
+			var userinfo = JSON.parse(localStorage.userinfo);
+			if (userinfo.email) {
+				url += "&login_hint=" + encodeURIComponent(userinfo.email);
+			}
+		}
+		return await chrome.identity.launchWebAuthFlow({ "url": url, "interactive": !!interactive });
+	} catch (error) {
+		console.log("launchWebAuthFlow failed (interactive " + !!interactive + "): " + (error?.message || error));
+		return null;
+	}
+}
+var getAuthParamFromUrl = function (url, name) {
+	if (!url) {
+		return null;
+	}
+	try {
+		var parsedUrl = new URL(url);
+		var hash = parsedUrl.hash ? parsedUrl.hash.replace(/^#/, "") : "";
+		return new URLSearchParams(hash).get(name) || parsedUrl.searchParams.get(name);
+	} catch (error) {
+		return null;
+	}
+}
+var setAccessTokenFromRedirectUrl = function (redirectUrl) {
+	var token = getAuthTokenFromUrl(redirectUrl);
+	if (!token) {
+		return null;
+	}
+	var expiresIn = parseInt(getAuthParamFromUrl(redirectUrl, "expires_in"));
+	setLocalAccessToken(token, expiresIn > 0 ? expiresIn : DEFAULT_TOKEN_EXPIRES_IN_SECONDS);
+	return token;
+}
+var isLocalAccessTokenExpiringSoon = function () {
+	if (!localStorage.authExpires) {
+		return true;
+	}
+	return (new Number(localStorage.authExpires) - Date.now()) < AUTH_REFRESH_MARGIN_MS;
+}
 var lastAuthFailTime = 0;
 var AUTH_COOLDOWN_MS = 5000;
 var isLocalAccessTokenValid = function () {
@@ -288,137 +314,109 @@ var getAuthUrlDebugInfo = function (url, changeInfo) {
 	}
 	return info;
 }
+//Serializes auth attempts so concurrent callers and the background refresh never overlap
+var runAuthFlow = function (flow) {
+	pendingAuthFlows++;
+	isDoingAuth = true;
+	var previousFlow = currentAuthFlow || Promise.resolve();
+	currentAuthFlow = previousFlow.then(flow).catch(function (error) {
+		console.log("Error getting auth token: " + error);
+		return null;
+	}).then(function (token) {
+		pendingAuthFlows--;
+		isDoingAuth = pendingAuthFlows > 0;
+		return token;
+	});
+	return currentAuthFlow;
+}
+//Chrome's identity cache is only usable while its profile account is the one Join is logged in with
+var isChromeProfileStoredAccount = async function () {
+	if (!localStorage.userinfo) {
+		return true;
+	}
+	var userInfoFromStorage = JSON.parse(localStorage.userinfo);
+	if (!userInfoFromStorage.email) {
+		return true;
+	}
+	var userInfoFromChrome = await chrome.identity.getProfileUserInfo();
+	return !!userInfoFromChrome?.email && userInfoFromChrome.email == userInfoFromStorage.email;
+}
+//Asks Chrome for a token, dropping the cached one first if it hands back the token that's already stale here
+var getTokenFromChromeForStoredAccount = async function () {
+	if (!await isChromeProfileStoredAccount()) {
+		return null;
+	}
+	var tokenFromChrome = await getAuthTokenFromChromeSilently();
+	if (tokenFromChrome && tokenFromChrome == localStorage.accessToken) {
+		await removeCachedAuthTokenFromChrome(tokenFromChrome);
+		tokenFromChrome = await getAuthTokenFromChromeSilently();
+		if (tokenFromChrome == localStorage.accessToken) {
+			return null;
+		}
+	}
+	if (!tokenFromChrome) {
+		return null;
+	}
+	setLocalAccessToken(tokenFromChrome, DEFAULT_TOKEN_EXPIRES_IN_SECONDS);
+	return tokenFromChrome;
+}
+//Stores the account the token belongs to before callers use it, so login_hint stays in sync
+var updateUserInfo = function (token) {
+	return new Promise(function (resolve) {
+		var resolved = false;
+		var finish = function () {
+			if (resolved) {
+				return;
+			}
+			resolved = true;
+			resolve();
+		}
+		getUserInfo(function (userInfoFromStorage) {
+			console.log("Logged in with: " + getSensitiveLogPreview(userInfoFromStorage?.email));
+			finish();
+		}, true, token);
+		setTimeout(finish, USER_INFO_TIMEOUT_MS);
+	});
+}
+//Tries Chrome and the silent flow first, only opening the visible sign in window when the user allows it
+var doAuthFlow = async function (selectAccount) {
+	var token = null;
+	if (!selectAccount) {
+		token = await getTokenFromChromeForStoredAccount();
+		if (!token) {
+			token = setAccessTokenFromRedirectUrl(await launchAuthWebFlow(false, false));
+		}
+	}
+	if (!token && (selectAccount || !getDontPromptUserLogin())) {
+		token = setAccessTokenFromRedirectUrl(await launchAuthWebFlow(selectAccount, true));
+	}
+	if (!token) {
+		lastAuthFailTime = Date.now();
+		return getDontPromptUserLogin() ? (localStorage.accessToken || null) : null;
+	}
+	console.log("Got auth token: " + getSensitiveLogPreview(token));
+	await updateUserInfo(token);
+	return token;
+}
+//Gets a token, only showing the Google sign in window when the silent flow can't complete
 var getAuthTokenFromTab = async function (callback, selectAccount) {
-
-	if (getDontPromptUserLogin()) {
-		callback(localStorage.accessToken);
-		return;
-	}
-	if (!selectAccount && (Date.now() - lastAuthFailTime) < AUTH_COOLDOWN_MS) {
-		if (callback) {
-			callback(null);
+	var token = await runAuthFlow(async function () {
+		if (selectAccount) {
+			removeAuthToken();
+			return await doAuthFlow(true);
 		}
-		return;
-	}
-	if (selectAccount) {
-		removeAuthToken();
-	}
-	//removeAuthToken();
-	if (isLocalAccessTokenValid()) {
-		if (callback) {
-			callback(localStorage.accessToken);
+		if (isLocalAccessTokenValid()) {
+			return localStorage.accessToken;
 		}
-	} else {
-		var focusOnAuthTabId = async function () {
-			if (authTabId) {
-				await chrome.tabs.update(authTabId, { "active": true });
-				if (!localStorage.warnedLogin) {
-					localStorage.warnedLogin = true;
-					alert("Please login to use Join");
-				}
-			} else {
-				//alert("Something went wrong. Please reload the Join extension.");
-			}
+		if ((Date.now() - lastAuthFailTime) < AUTH_COOLDOWN_MS) {
+			return null;
 		}
-			if (!isDoingAuth) {
-				isDoingAuth = true;
-				var url = await getAuthUrl(selectAccount);
-
-			if (localStorage.userinfo) {
-				var userinfo = JSON.parse(localStorage.userinfo);
-				if (userinfo.email) {
-					url += "&login_hint=" + userinfo.email;
-				}
-			}
-				var closeListener = async function (tabId, removeInfo) {
-					if (authTabId && tabId == authTabId) {
-						await finisher(tabId, null, null, true, "tab_closed");
-					}
-				}
-				var authListenerUpdateCount = 0;
-				var authListener = async function (tabId, changeInfo, tab) {
-						authListenerUpdateCount++;
-						if (tab?.url && (tabId == authTabId || tab.url.indexOf(AUTH_CALLBACK_URL) == 0 || (changeInfo?.status == "complete" && tab.url.indexOf("accounts.google.com") >= 0))) {
-						}
-						if (tab?.url && tab.url.indexOf(await getCliendId()) > 0) {
-							authTabId = tabId;
-							await focusOnAuthTabId();
-						}
-						if (tab && tab.url && tab.url.indexOf(AUTH_CALLBACK_URL) == 0) {
-							var redirect_url = tab.url;
-							var token = getAuthTokenFromUrl(redirect_url);
-							if (token) {
-								await finisher(tabId, token, redirect_url, false, "token_found");
-								return;
-							}
-							if (redirect_url.indexOf("error=") >= 0) {
-								await finisher(tabId, null, redirect_url, false, "oauth_error");
-								return;
-							}
-						}
-				}
-				var finisherCalled = false;
-				var finisher = async function (tabId, token, redirect_url, tabAlreadyClosed, reason) {
-					if (finisherCalled) return;
-					finisherCalled = true;
-					authTabId = null;
-					chrome.tabs.onUpdated.removeListener(authListener);
-					chrome.tabs.onRemoved.removeListener(closeListener);
-					console.log("Auth token found from tab: " + getSensitiveLogPreview(token));
-				if (!tabAlreadyClosed) {
-					try {
-						await chrome.tabs.remove(tabId);
-					} catch (error) {
-						console.log("Error closing auth tab");
-						console.log(error);
-					}
-				}
-				var finishCalled = false;
-				var finshCallback = function (token) {
-					if (finishCalled) return;
-					finishCalled = true;
-					if (callback) {
-						callback(token);
-					}
-					waitingForAuthCallbacks.doForAll(function (waitingCallback) {
-						waitingCallback(token)
-					});
-					waitingForAuthCallbacks = [];
-					isDoingAuth = false;
-				}
-				if (token && redirect_url) {
-					var expiresIn = new Number(getURLParameter(redirect_url, "expires_in"));
-					setLocalAccessToken(token, expiresIn);
-					console.log("Token expires in " + expiresIn + " seconds");
-					getUserInfo(function (userInfoFromStorage) {
-						console.log("Logged in with: " + getSensitiveLogPreview(userInfoFromStorage.email));
-						finshCallback(token);
-					}, true, token);
-					setTimeout(function () {
-						if (!finishCalled) {
-							console.log("getUserInfo timed out, proceeding with token");
-							finshCallback(token);
-						}
-					}, 10000);
-				} else {
-					lastAuthFailTime = Date.now();
-					finshCallback(null);
-				}
-
-			}
-			chrome.tabs.onUpdated.addListener(authListener);
-			chrome.tabs.onRemoved.addListener(closeListener)
-			openTab(url, { selected: false, active: false }, function (tab) {
-				console.log("Tab auth created");
-				console.log(tab);
-			});
-		} else {
-			if (callback) {
-				waitingForAuthCallbacks.push(callback);
-				await focusOnAuthTabId();
-			}
-		}
+		return await doAuthFlow(false);
+	});
+	if (callback) {
+		callback(token);
 	}
+	return token;
 }
 var getAuthTokenFromChrome = function (callback) {
 
@@ -435,37 +433,39 @@ var getAuthToken = function (callback, selectAccount, token) {
 		}
 		return;
 	}
-	if (selectAccount) {
-		getAuthTokenFromTab(callback, selectAccount);
+	if (!selectAccount && isLocalAccessTokenValid()) {
+		if (callback) {
+			callback(localStorage.accessToken);
+		}
 		return;
 	}
-	chrome.identity.getProfileUserInfo(function (userInfoFromChrome) {
-		if (localStorage.userinfo) {
-			var userInfoFromStorage = JSON.parse(localStorage.userinfo);
-			if (userInfoFromStorage.email && userInfoFromStorage.email != userInfoFromChrome.email) {
-				getAuthTokenBackground(callback, selectAccount);
-				return;
-			}
-		}
-		if (!userInfoFromChrome.email) {
-			getAuthTokenFromTab(callback, selectAccount);
-			return;
-		}
-		chrome.identity.getAuthToken({ 'interactive': true }, function (tokenResult) {
-			if (chrome.runtime.lastError || !tokenResult?.token) {
-				console.log("chrome.identity.getAuthToken failed: " + chrome.runtime.lastError?.message);
-				getAuthTokenFromTab(callback, selectAccount);
-				return;
-			}
-			setLocalAccessToken(tokenResult.token, 3600);
-			if (callback) {
-				callback(tokenResult.token);
-			}
-		});
-
-	});
-
+	getAuthTokenFromTab(callback, selectAccount);
 }
+//Renews the cached token shortly before it expires so pushes never wait for authentication
+var refreshAuthTokenIfNeeded = async function () {
+	if (isDoingAuth || !localStorage.accessToken || !isLocalAccessTokenExpiringSoon()) {
+		return;
+	}
+	if ((Date.now() - lastAuthFailTime) < AUTH_REFRESH_BACKOFF_MS) {
+		return;
+	}
+	await runAuthFlow(async function () {
+		if (!isLocalAccessTokenExpiringSoon()) {
+			return localStorage.accessToken;
+		}
+		var token = await getTokenFromChromeForStoredAccount();
+		if (!token) {
+			token = setAccessTokenFromRedirectUrl(await launchAuthWebFlow(false, false));
+		}
+		if (!token) {
+			lastAuthFailTime = Date.now();
+			return null;
+		}
+		await updateUserInfo(token);
+		return token;
+	});
+}
+setInterval(refreshAuthTokenIfNeeded, AUTH_REFRESH_CHECK_INTERVAL_MS);
 var getAuthTokenFromUrl = function (url) {
 	if (!url) {
 		return null;
@@ -538,7 +538,11 @@ var getURLParameter = function (url, name) {
 	return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(url) || [, ""])[1].replace(/\+/g, '%20')) || null
 }
 var removeCachedAuthToken = async function (callback) {
+	var token = localStorage.accessToken;
 	removeAuthToken();
+	if (token) {
+		await removeCachedAuthTokenFromChrome(token);
+	}
 	if (callback) {
 		callback();
 	}

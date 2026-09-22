@@ -2,7 +2,7 @@
 	"name": "Join",
 	"short_name": "Join",
 	"description": "Bring your devices together",
-	"version": "1.9.2",
+	"version": "1.9.3",
 	"permissions": [
 		"identity",
 		"identity.email",
@@ -20,8 +20,7 @@
 	],
 	"host_permissions": [
 		"https://joinjoaomgcd.appspot.com/",
-		"http://localhost:8080/",
-		"https://accounts.google.com/o/oauth2/v2/auth/"
+		"http://localhost:8080/"
 	],
 	"content_security_policy": {
 		"extension_pages": "script-src 'self'; object-src 'self'"

@@ -317,7 +317,10 @@ if (!isServiceWorker) {
     };
     chrome.identity = {
         getProfileUserInfo: CrossContext.call("chrome.identity.getProfileUserInfo"),
-        getAuthToken: CrossContext.call("chrome.identity.getAuthToken")
+        getAuthToken: CrossContext.call("chrome.identity.getAuthToken"),
+        removeCachedAuthToken: CrossContext.call("chrome.identity.removeCachedAuthToken"),
+        getRedirectURL: CrossContext.call("chrome.identity.getRedirectURL"),
+        launchWebAuthFlow: CrossContext.call("chrome.identity.launchWebAuthFlow")
     };
     chrome.runtime = {
         getManifest: CrossContext.call("chrome.runtime.getManifest"),
@@ -346,6 +349,21 @@ if (isServiceWorker) {
         console.log("getGCMToken using new request")
         gcmTokenGetter = originalGetToken(...input);
         return await getFromPending();
+    }
+
+    //Reuses the auth window that's already open so a retried cross context call never opens a second one
+    const originalLaunchWebAuthFlow = chrome.identity.launchWebAuthFlow;
+    var webAuthFlowLauncher = null;
+    chrome.identity.launchWebAuthFlow = async function (...input) {
+        if (webAuthFlowLauncher) {
+            return await webAuthFlowLauncher;
+        }
+        webAuthFlowLauncher = originalLaunchWebAuthFlow.call(chrome.identity, ...input);
+        try {
+            return await webAuthFlowLauncher;
+        } finally {
+            webAuthFlowLauncher = null;
+        }
     }
 
     

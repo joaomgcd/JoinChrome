@@ -844,16 +844,15 @@ var getCliendId = async function(){
 	const manifest = await chrome.runtime.getManifest();
 	return manifest.oauth2.client_id_web;
 }
-var getAuthUrl = async function(selectAccount,background){
+//The chromiumapp.org URI Chrome intercepts to end the OAuth flow
+var getAuthRedirectUrl = async function(){
+	return await chrome.identity.getRedirectURL();
+}
+var getAuthUrl = async function(selectAccount){
 	var manifest = await chrome.runtime.getManifest();
 	var url = "https://accounts.google.com/o/oauth2/v2/auth?response_type=token";
 	url += "&client_id=" + await getCliendId();
-	if(!background){
-		url += "&redirect_uri=" + encodeURIComponent(AUTH_CALLBACK_URL);
-	}else{
-		url += "&redirect_uri=postmessage";
-		url += "&origin=" + encodeURIComponent("https://joinjoaomgcd.appspot.com");
-	}
+	url += "&redirect_uri=" + encodeURIComponent(await getAuthRedirectUrl());
 	url += "&scope=" + encodeURIComponent(manifest.oauth2.scopes.joinJoaomgcd(" "));
 	if(selectAccount){
 		url += "&prompt=select_account";
