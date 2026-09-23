@@ -2166,7 +2166,7 @@ var handleAutoClipboard = function () {
 		autoCheckClipboard = true;
 		getClipboard(function (clipboardData) {
 			lastClipboard = clipboardData;
-			checkClipboardRecursive();
+			setTimeout(checkClipboardRecursive);
 		});
 	} else {
 		autoCheckClipboard = false;
